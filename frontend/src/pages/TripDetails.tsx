@@ -83,6 +83,50 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const [finishComments, setFinishComments] = useState('');
   const [isFinishing, setIsFinishing] = useState(false);
 
+  // Destination Modal states
+  const [showAddDest, setShowAddDest] = useState(false);
+  const [editingDest, setEditingDest] = useState<Destination | null>(null);
+  const [destCity, setDestCity] = useState('');
+  const [destState, setDestState] = useState('');
+  const [destCountry, setDestCountry] = useState('Brasil');
+  const [destArrival, setDestArrival] = useState('');
+  const [destDeparture, setDestDeparture] = useState('');
+  const [destNotes, setDestNotes] = useState('');
+
+  // Reservation Modal states
+  const [showAddRes, setShowAddRes] = useState(false);
+  const [editingRes, setEditingRes] = useState<Reservation | null>(null);
+  const [resType, setResType] = useState<'hospedagem' | 'voo' | 'transporte' | 'restaurante' | 'ingresso' | 'seguro'>('hospedagem');
+  const [resTitle, setResTitle] = useState('');
+  const [resProvider, setResProvider] = useState('');
+  const [resBookingCode, setResBookingCode] = useState('');
+  const [resTotalValue, setResTotalValue] = useState('0');
+  const [resPaymentStatus, setResPaymentStatus] = useState<'pago' | 'pendente'>('pago');
+  const [resCheckin, setResCheckin] = useState('');
+  const [resCheckout, setResCheckout] = useState('');
+  const [resNotes, setResNotes] = useState('');
+
+  // Edit Expense Modal state
+  const [editingExp, setEditingExp] = useState<Expense | null>(null);
+  const [editExpTitle, setEditExpTitle] = useState('');
+  const [editExpCategory, setEditExpCategory] = useState('alimentacao');
+  const [editExpAmount, setEditExpAmount] = useState('');
+  const [editExpStatus, setEditExpStatus] = useState<'pago' | 'pendente'>('pago');
+  const [editExpDate, setEditExpDate] = useState('');
+
+  // Edit Checklist Modal state
+  const [editingCheck, setEditingCheck] = useState<ChecklistItem | null>(null);
+  const [editCheckTitle, setEditCheckTitle] = useState('');
+  const [editCheckPriority, setEditCheckPriority] = useState<'baixa' | 'media' | 'alta'>('media');
+
+  // Luggage Modal states
+  const [showAddLug, setShowAddLug] = useState(false);
+  const [editingLug, setEditingLug] = useState<LuggageItem | null>(null);
+  const [lugDesc, setLugDesc] = useState('');
+  const [lugCategory, setLugCategory] = useState('roupas');
+  const [lugQuantity, setLugQuantity] = useState('1');
+  const [lugNotes, setLugNotes] = useState('');
+
   useEffect(() => {
     loadAllTripData();
   }, [tripId]);
@@ -222,6 +266,284 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const handleToggleChecklist = async (item: ChecklistItem) => {
     const updated = await api.updateChecklistItem(item.id, { is_completed: !item.is_completed });
     setChecklists(checklists.map(c => c.id === updated.id ? updated : c));
+  };
+
+  // ---------------- Handlers: Destinos ----------------
+  const handleAddDestination = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!destCity) return;
+    try {
+      const created = await api.createDestination({
+        trip_id: tripId,
+        city: destCity,
+        country: destCountry,
+        state_region: destState || undefined,
+        arrival_date: destArrival || undefined,
+        departure_date: destDeparture || undefined,
+        notes: destNotes || undefined
+      });
+      setDestinations([...destinations, created]);
+      setShowAddDest(false);
+      setDestCity('');
+      setDestState('');
+      setDestCountry('Brasil');
+      setDestArrival('');
+      setDestDeparture('');
+      setDestNotes('');
+    } catch (err: any) {
+      alert(err.message || 'Erro ao adicionar destino.');
+    }
+  };
+
+  const handleStartEditDest = (dest: Destination) => {
+    setEditingDest(dest);
+    setDestCity(dest.city);
+    setDestState(dest.state_region || '');
+    setDestCountry(dest.country);
+    setDestArrival(dest.arrival_date || '');
+    setDestDeparture(dest.departure_date || '');
+    setDestNotes(dest.notes || '');
+  };
+
+  const handleSaveEditDest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDest || !destCity) return;
+    try {
+      const updated = await api.updateDestination(editingDest.id, {
+        city: destCity,
+        country: destCountry,
+        state_region: destState || undefined,
+        arrival_date: destArrival || null as any,
+        departure_date: destDeparture || null as any,
+        notes: destNotes || undefined
+      });
+      setDestinations(destinations.map(d => d.id === updated.id ? updated : d));
+      setEditingDest(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar destino.');
+    }
+  };
+
+  const handleDeleteDest = async (dest: Destination) => {
+    if (!confirm(`Deseja realmente remover o destino "${dest.city}"?`)) return;
+    try {
+      await api.deleteDestination(dest.id);
+      setDestinations(destinations.filter(d => d.id !== dest.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover destino.');
+    }
+  };
+
+  // ---------------- Handlers: Reservas ----------------
+  const handleAddReservation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resTitle) return;
+    try {
+      const created = await api.createReservation({
+        trip_id: tripId,
+        type: resType,
+        title: resTitle,
+        provider: resProvider || undefined,
+        booking_code: resBookingCode || undefined,
+        total_value: parseFloat(resTotalValue) || 0,
+        payment_status: resPaymentStatus,
+        start_datetime: resCheckin ? resCheckin + 'T00:00:00' : undefined,
+        end_datetime: resCheckout ? resCheckout + 'T00:00:00' : undefined,
+        notes: resNotes || undefined
+      });
+      setReservations([...reservations, created]);
+      setShowAddRes(false);
+      setResTitle('');
+      setResProvider('');
+      setResBookingCode('');
+      setResTotalValue('0');
+      setResCheckin('');
+      setResCheckout('');
+      setResNotes('');
+    } catch (err: any) {
+      alert(err.message || 'Erro ao criar reserva.');
+    }
+  };
+
+  const handleStartEditRes = (res: Reservation) => {
+    setEditingRes(res);
+    setResType(res.type);
+    setResTitle(res.title);
+    setResProvider(res.provider || '');
+    setResBookingCode(res.booking_code || '');
+    setResTotalValue(String(res.total_value));
+    setResPaymentStatus(res.payment_status);
+    setResCheckin(res.start_datetime ? res.start_datetime.slice(0, 10) : '');
+    setResCheckout(res.end_datetime ? res.end_datetime.slice(0, 10) : '');
+    setResNotes(res.notes || '');
+  };
+
+  const handleSaveEditRes = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRes || !resTitle) return;
+    try {
+      const updated = await api.updateReservation(editingRes.id, {
+        type: resType,
+        title: resTitle,
+        provider: resProvider || undefined,
+        booking_code: resBookingCode || undefined,
+        total_value: parseFloat(resTotalValue) || 0,
+        payment_status: resPaymentStatus,
+        start_datetime: resCheckin ? resCheckin + 'T00:00:00' : null as any,
+        end_datetime: resCheckout ? resCheckout + 'T00:00:00' : null as any,
+        notes: resNotes || undefined
+      });
+      setReservations(reservations.map(r => r.id === updated.id ? updated : r));
+      setEditingRes(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar reserva.');
+    }
+  };
+
+  const handleDeleteRes = async (res: Reservation) => {
+    if (!confirm(`Deseja realmente remover a reserva "${res.title}"?`)) return;
+    try {
+      await api.deleteReservation(res.id);
+      setReservations(reservations.filter(r => r.id !== res.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover reserva.');
+    }
+  };
+
+  // ---------------- Handlers: Financeiro ----------------
+  const handleStartEditExp = (exp: Expense) => {
+    setEditingExp(exp);
+    setEditExpTitle(exp.title);
+    setEditExpCategory(exp.category);
+    setEditExpAmount(String(exp.amount));
+    setEditExpStatus(exp.payment_status);
+    setEditExpDate(exp.date);
+  };
+
+  const handleSaveEditExp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExp || !editExpTitle) return;
+    try {
+      const updated = await api.updateExpense(editingExp.id, {
+        title: editExpTitle,
+        category: editExpCategory,
+        amount: parseFloat(editExpAmount) || 0,
+        payment_status: editExpStatus,
+        date: editExpDate
+      });
+      setExpenses(expenses.map(exp => exp.id === updated.id ? updated : exp));
+      setEditingExp(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar despesa.');
+    }
+  };
+
+  const handleDeleteExp = async (exp: Expense) => {
+    if (!confirm(`Deseja realmente remover a despesa "${exp.title}"?`)) return;
+    try {
+      await api.deleteExpense(exp.id);
+      setExpenses(expenses.filter(e => e.id !== exp.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover despesa.');
+    }
+  };
+
+  // ---------------- Handlers: Checklists ----------------
+  const handleStartEditCheck = (item: ChecklistItem) => {
+    setEditingCheck(item);
+    setEditCheckTitle(item.title);
+    setEditCheckPriority(item.priority);
+  };
+
+  const handleSaveEditCheck = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCheck || !editCheckTitle) return;
+    try {
+      const updated = await api.updateChecklistItem(editingCheck.id, {
+        title: editCheckTitle,
+        priority: editCheckPriority
+      });
+      setChecklists(checklists.map(c => c.id === updated.id ? updated : c));
+      setEditingCheck(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar item do checklist.');
+    }
+  };
+
+  const handleDeleteCheck = async (item: ChecklistItem) => {
+    if (!confirm(`Deseja realmente remover a tarefa "${item.title}"?`)) return;
+    try {
+      await api.deleteChecklistItem(item.id);
+      setChecklists(checklists.filter(c => c.id !== item.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover tarefa.');
+    }
+  };
+
+  // ---------------- Handlers: Malas e Bagagem ----------------
+  const handleToggleLuggagePacked = async (item: LuggageItem) => {
+    try {
+      const updated = await api.updateLuggageItem(item.id, { is_packed: !item.is_packed });
+      setLuggage(luggage.map(l => l.id === updated.id ? updated : l));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar mala.');
+    }
+  };
+
+  const handleAddLuggage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lugDesc) return;
+    try {
+      const created = await api.createLuggageItem({
+        trip_id: tripId,
+        description: lugDesc,
+        category: lugCategory,
+        quantity: parseInt(lugQuantity, 10) || 1,
+        notes: lugNotes || undefined
+      });
+      setLuggage([...luggage, created]);
+      setShowAddLug(false);
+      setLugDesc('');
+      setLugQuantity('1');
+      setLugNotes('');
+    } catch (err: any) {
+      alert(err.message || 'Erro ao adicionar item na mala.');
+    }
+  };
+
+  const handleStartEditLug = (item: LuggageItem) => {
+    setEditingLug(item);
+    setLugDesc(item.description);
+    setLugCategory(item.category);
+    setLugQuantity(String(item.quantity));
+    setLugNotes(item.notes || '');
+  };
+
+  const handleSaveEditLug = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLug || !lugDesc) return;
+    try {
+      const updated = await api.updateLuggageItem(editingLug.id, {
+        description: lugDesc,
+        category: lugCategory,
+        quantity: parseInt(lugQuantity, 10) || 1,
+        notes: lugNotes || undefined
+      });
+      setLuggage(luggage.map(l => l.id === updated.id ? updated : l));
+      setEditingLug(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar item da mala.');
+    }
+  };
+
+  const handleDeleteLug = async (item: LuggageItem) => {
+    if (!confirm(`Deseja realmente remover o item "${item.description}" da mala?`)) return;
+    try {
+      await api.deleteLuggageItem(item.id);
+      setLuggage(luggage.filter(l => l.id !== item.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover item da mala.');
+    }
   };
 
   const handleOpenFinishModal = () => {
@@ -536,26 +858,66 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Destinos da Viagem</h2>
               <p className="text-xs text-slate-500">Múltiplos destinos, cidades e períodos (RF05)</p>
             </div>
+            <button
+              onClick={() => setShowAddDest(true)}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Adicionar Destino</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {destinations.map(d => (
-              <div key={d.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 flex items-center justify-center mb-3">
-                  <MapPin className="w-5 h-5" />
+          {destinations.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+              <MapPin className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="font-semibold text-sm">Nenhum destino cadastrado</p>
+              <p className="text-xs text-slate-400 mt-1">Adicione as cidades ou países por onde a família passará.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {destinations.map(d => (
+                <div key={d.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm relative group">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 flex items-center justify-center">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleStartEditDest(d)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Editar destino"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteDest(d)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Excluir destino"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">{d.city}</h3>
+                  <p className="text-xs text-slate-500">{d.state_region ? `${d.state_region}, ` : ''}{d.country}</p>
+
+                  {(d.arrival_date || d.departure_date) && (
+                    <p className="text-xs text-brand-600 dark:text-brand-400 mt-3 font-medium">
+                      {d.arrival_date ? new Date(d.arrival_date + 'T00:00:00').toLocaleDateString('pt-BR') : ''} até{' '}
+                      {d.departure_date ? new Date(d.departure_date + 'T00:00:00').toLocaleDateString('pt-BR') : ''}
+                    </p>
+                  )}
+
+                  {d.notes && (
+                    <p className="text-xs text-slate-500 italic mt-2 border-t border-slate-100 dark:border-slate-800 pt-2">
+                      {d.notes}
+                    </p>
+                  )}
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">{d.city}</h3>
-                <p className="text-xs text-slate-500">{d.state_region ? `${d.state_region}, ` : ''}{d.country}</p>
-
-                {(d.arrival_date || d.departure_date) && (
-                  <p className="text-xs text-brand-600 dark:text-brand-400 mt-3 font-medium">
-                    {d.arrival_date ? new Date(d.arrival_date + 'T00:00:00').toLocaleDateString('pt-BR') : ''} até{' '}
-                    {d.departure_date ? new Date(d.departure_date + 'T00:00:00').toLocaleDateString('pt-BR') : ''}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -567,12 +929,20 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Reservas Confirmadas e Pendentes</h2>
               <p className="text-xs text-slate-500">Hospedagens, voos, transportes, ingressos e seguro-viagem</p>
             </div>
+            <button
+              onClick={() => setShowAddRes(true)}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nova Reserva</span>
+            </button>
           </div>
 
           {reservations.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
               <Calendar className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
               <p className="font-semibold text-sm">Nenhuma reserva registrada para esta viagem</p>
+              <p className="text-xs text-slate-400 mt-1">Cadastre hotéis, passagens aéreas ou aluguel de veículos.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -582,11 +952,27 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                     <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300">
                       {res.type}
                     </span>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                      res.payment_status === 'pago' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                    }`}>
-                      {res.payment_status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                        res.payment_status === 'pago' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {res.payment_status}
+                      </span>
+                      <button
+                        onClick={() => handleStartEditRes(res)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Editar reserva"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteRes(res)}
+                        className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Excluir reserva"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   <h3 className="font-bold text-base text-slate-900 dark:text-white mt-2">{res.title}</h3>
@@ -595,6 +981,14 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                   {res.booking_code && (
                     <div className="mt-3 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 text-xs font-mono text-slate-700 dark:text-slate-300">
                       Código / Localizador: <span className="font-bold">{res.booking_code}</span>
+                    </div>
+                  )}
+
+                  {(res.start_datetime || res.end_datetime) && (
+                    <div className="mt-2 text-xs text-slate-500">
+                      <span>Período: </span>
+                      {res.start_datetime ? new Date(res.start_datetime).toLocaleDateString('pt-BR') : ''}
+                      {res.end_datetime ? ` até ${new Date(res.end_datetime).toLocaleDateString('pt-BR')}` : ''}
                     </div>
                   )}
 
@@ -621,7 +1015,7 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
             </div>
             <button
               onClick={() => setShowAddExp(true)}
-              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Registrar Despesa</span>
@@ -648,26 +1042,53 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                   <th className="py-3 px-4">Data</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4 text-right">Valor</th>
+                  <th className="py-3 px-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                {expenses.map(e => (
-                  <tr key={e.id}>
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{e.title}</td>
-                    <td className="py-3 px-4 text-slate-500">{e.category}</td>
-                    <td className="py-3 px-4 text-slate-500">{new Date(e.date + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
-                        e.payment_status === 'pago' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                      }`}>
-                        {e.payment_status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">
-                      R$ {Number(e.amount).toFixed(2)}
+                {expenses.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      Nenhuma despesa cadastrada nesta viagem.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  expenses.map(e => (
+                    <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">{e.title}</td>
+                      <td className="py-3 px-4 text-slate-500 capitalize">{e.category}</td>
+                      <td className="py-3 px-4 text-slate-500">{new Date(e.date + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
+                          e.payment_status === 'pago' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {e.payment_status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">
+                        R$ {Number(e.amount).toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleStartEditExp(e)}
+                            className="p-1 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            title="Editar despesa"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteExp(e)}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            title="Excluir despesa"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -684,59 +1105,160 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
             </div>
             <button
               onClick={() => setShowAddCheck(true)}
-              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar Tarefa</span>
             </button>
           </div>
 
-          <div className="space-y-2">
-            {checklists.map(item => (
-              <div
-                key={item.id}
-                onClick={() => handleToggleChecklist(item)}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-brand-500 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-md flex items-center justify-center border ${
-                    item.is_completed ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 dark:border-slate-700'
-                  }`}>
-                    {item.is_completed && <CheckCircle2 className="w-3.5 h-3.5" />}
+          {checklists.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+              <ListCheck className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="font-semibold text-sm">Nenhuma tarefa no checklist</p>
+              <p className="text-xs text-slate-400 mt-1">Crie lembretes de documentos, vacinas ou compras antes de viajar.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {checklists.map(item => (
+                <div
+                  key={item.id}
+                  onClick={() => handleToggleChecklist(item)}
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center justify-between cursor-pointer hover:border-brand-500 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
+                      item.is_completed ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 dark:border-slate-700'
+                    }`}>
+                      {item.is_completed && <CheckCircle2 className="w-3.5 h-3.5" />}
+                    </div>
+                    <span className={`text-sm font-medium ${item.is_completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                      {item.title}
+                    </span>
                   </div>
-                  <span className={`text-sm font-medium ${item.is_completed ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-200'}`}>
-                    {item.title}
-                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
+                      item.priority === 'alta' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {item.priority}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEditCheck(item);
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Editar tarefa"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCheck(item);
+                      }}
+                      className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Excluir tarefa"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                  item.priority === 'alta' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  {item.priority}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Tab 6: Malas e Bagagem (RF28) */}
       {activeTab === 'bagagem' && (
         <div className="space-y-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Organização de Bagagem</h2>
-            <p className="text-xs text-slate-500">Roupas, medicamentos, eletrônicos e itens essenciais por familiar</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Organização de Bagagem</h2>
+              <p className="text-xs text-slate-500">Roupas, medicamentos, eletrônicos e itens essenciais por familiar (RF28)</p>
+            </div>
+            <button
+              onClick={() => setShowAddLug(true)}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Adicionar Item à Mala</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {['roupas', 'higiene', 'eletronicos', 'medicamentos', 'acessorios'].map(cat => (
-              <div key={cat} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl">
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white capitalize mb-2">{cat}</h3>
-                <div className="text-xs text-slate-400 italic">
-                  Itens preparados para a viagem da família
+          {luggage.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+              <Luggage className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="font-semibold text-sm">Nenhum item na mala ainda</p>
+              <p className="text-xs text-slate-400 mt-1">Organize roupas, calçados, nécessaires e eletrônicos para não esquecer nada.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {luggage.map(item => (
+                <div
+                  key={item.id}
+                  className={`bg-white dark:bg-slate-900 border rounded-2xl p-4 flex items-center justify-between transition-all ${
+                    item.is_packed
+                      ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20'
+                      : 'border-slate-200 dark:border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => handleToggleLuggagePacked(item)}
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-colors ${
+                        item.is_packed
+                          ? 'bg-emerald-600 border-emerald-600 text-white'
+                          : 'border-slate-300 dark:border-slate-700 text-transparent hover:border-brand-500'
+                      }`}
+                      title={item.is_packed ? 'Item na mala' : 'Marcar como guardado'}
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                    </button>
+                    <div>
+                      <h4 className={`font-semibold text-sm ${item.is_packed ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'}`}>
+                        {item.description}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
+                        <span className="capitalize px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold">
+                          {item.category}
+                        </span>
+                        {item.quantity > 1 && (
+                          <span className="font-medium text-slate-600 dark:text-slate-300">
+                            Qtd: {item.quantity}
+                          </span>
+                        )}
+                        {item.notes && (
+                          <span className="italic text-slate-500 truncate max-w-xs" title={item.notes}>
+                            • {item.notes}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <button
+                      onClick={() => handleStartEditLug(item)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Editar item da mala"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteLug(item)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Excluir item da mala"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1157,6 +1679,780 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>{isFinishing ? 'Salvando...' : 'Salvar e Concluir'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Adicionar Destino */}
+      {showAddDest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowAddDest(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-brand-600" />
+              <span>Adicionar Destino</span>
+            </h3>
+            <form onSubmit={handleAddDestination} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cidade</label>
+                <input
+                  type="text"
+                  required
+                  value={destCity}
+                  onChange={e => setDestCity(e.target.value)}
+                  placeholder="Ex: Gramado / Paris / Rio de Janeiro"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Estado / Região</label>
+                  <input
+                    type="text"
+                    value={destState}
+                    onChange={e => setDestState(e.target.value)}
+                    placeholder="Ex: RS / RJ / Île-de-France"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">País</label>
+                  <input
+                    type="text"
+                    required
+                    value={destCountry}
+                    onChange={e => setDestCountry(e.target.value)}
+                    placeholder="Brasil"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Chegada (opcional)</label>
+                  <input
+                    type="date"
+                    value={destArrival}
+                    onChange={e => setDestArrival(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Partida (opcional)</label>
+                  <input
+                    type="date"
+                    value={destDeparture}
+                    onChange={e => setDestDeparture(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Dicas</label>
+                <textarea
+                  rows={2}
+                  value={destNotes}
+                  onChange={e => setDestNotes(e.target.value)}
+                  placeholder="Informações adicionais do destino..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddDest(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Destino
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Destino */}
+      {editingDest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingDest(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Destino</span>
+            </h3>
+            <form onSubmit={handleSaveEditDest} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Cidade</label>
+                <input
+                  type="text"
+                  required
+                  value={destCity}
+                  onChange={e => setDestCity(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Estado / Região</label>
+                  <input
+                    type="text"
+                    value={destState}
+                    onChange={e => setDestState(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">País</label>
+                  <input
+                    type="text"
+                    required
+                    value={destCountry}
+                    onChange={e => setDestCountry(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Chegada</label>
+                  <input
+                    type="date"
+                    value={destArrival}
+                    onChange={e => setDestArrival(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Partida</label>
+                  <input
+                    type="date"
+                    value={destDeparture}
+                    onChange={e => setDestDeparture(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Dicas</label>
+                <textarea
+                  rows={2}
+                  value={destNotes}
+                  onChange={e => setDestNotes(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingDest(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Adicionar Reserva */}
+      {showAddRes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowAddRes(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-brand-600" />
+              <span>Nova Reserva</span>
+            </h3>
+            <form onSubmit={handleAddReservation} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipo de Reserva</label>
+                <select
+                  value={resType}
+                  onChange={e => setResType(e.target.value as any)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="hospedagem">Hospedagem / Hotel / Pousada</option>
+                  <option value="voo">Voo / Passagem Aérea</option>
+                  <option value="transporte">Transporte / Aluguel de Carro</option>
+                  <option value="restaurante">Restaurante / Alimentação</option>
+                  <option value="ingresso">Ingresso / Passeio</option>
+                  <option value="seguro">Seguro Viagem</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título</label>
+                <input
+                  type="text"
+                  required
+                  value={resTitle}
+                  onChange={e => setResTitle(e.target.value)}
+                  placeholder="Ex: Hotel Fasano / Voo GOL G3 1234"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fornecedor / Cia</label>
+                  <input
+                    type="text"
+                    value={resProvider}
+                    onChange={e => setResProvider(e.target.value)}
+                    placeholder="Booking / Latam / etc."
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Código / Localizador</label>
+                  <input
+                    type="text"
+                    value={resBookingCode}
+                    onChange={e => setResBookingCode(e.target.value)}
+                    placeholder="Ex: XYZ123"
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none font-mono"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Check-in / Início</label>
+                  <input
+                    type="date"
+                    value={resCheckin}
+                    onChange={e => setResCheckin(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Check-out / Fim</label>
+                  <input
+                    type="date"
+                    value={resCheckout}
+                    onChange={e => setResCheckout(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Valor Total (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={resTotalValue}
+                    onChange={e => setResTotalValue(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pagamento</label>
+                  <select
+                    value={resPaymentStatus}
+                    onChange={e => setResPaymentStatus(e.target.value as any)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="pago">Pago</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddRes(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Reserva
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Reserva */}
+      {editingRes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingRes(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Reserva</span>
+            </h3>
+            <form onSubmit={handleSaveEditRes} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipo de Reserva</label>
+                <select
+                  value={resType}
+                  onChange={e => setResType(e.target.value as any)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="hospedagem">Hospedagem / Hotel / Pousada</option>
+                  <option value="voo">Voo / Passagem Aérea</option>
+                  <option value="transporte">Transporte / Aluguel de Carro</option>
+                  <option value="restaurante">Restaurante / Alimentação</option>
+                  <option value="ingresso">Ingresso / Passeio</option>
+                  <option value="seguro">Seguro Viagem</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título</label>
+                <input
+                  type="text"
+                  required
+                  value={resTitle}
+                  onChange={e => setResTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Fornecedor / Cia</label>
+                  <input
+                    type="text"
+                    value={resProvider}
+                    onChange={e => setResProvider(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Código / Localizador</label>
+                  <input
+                    type="text"
+                    value={resBookingCode}
+                    onChange={e => setResBookingCode(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none font-mono"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Check-in / Início</label>
+                  <input
+                    type="date"
+                    value={resCheckin}
+                    onChange={e => setResCheckin(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Check-out / Fim</label>
+                  <input
+                    type="date"
+                    value={resCheckout}
+                    onChange={e => setResCheckout(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Valor Total (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={resTotalValue}
+                    onChange={e => setResTotalValue(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pagamento</label>
+                  <select
+                    value={resPaymentStatus}
+                    onChange={e => setResPaymentStatus(e.target.value as any)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="pago">Pago</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingRes(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Despesa */}
+      {editingExp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingExp(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Despesa</span>
+            </h3>
+            <form onSubmit={handleSaveEditExp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
+                <input
+                  type="text"
+                  required
+                  value={editExpTitle}
+                  onChange={e => setEditExpTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                  <select
+                    value={editExpCategory}
+                    onChange={e => setEditExpCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="alimentacao">Alimentação</option>
+                    <option value="hospedagem">Hospedagem</option>
+                    <option value="passagens">Passagens</option>
+                    <option value="transporte">Transporte</option>
+                    <option value="passeios">Passeios</option>
+                    <option value="compras">Compras</option>
+                    <option value="seguro_viagem">Seguro Viagem</option>
+                    <option value="outras">Outras</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Valor (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={editExpAmount}
+                    onChange={e => setEditExpAmount(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Data</label>
+                  <input
+                    type="date"
+                    required
+                    value={editExpDate}
+                    onChange={e => setEditExpDate(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Situação</label>
+                  <select
+                    value={editExpStatus}
+                    onChange={e => setEditExpStatus(e.target.value as any)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="pago">Pago</option>
+                    <option value="pendente">Pendente</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingExp(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Checklist */}
+      {editingCheck && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingCheck(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Tarefa</span>
+            </h3>
+            <form onSubmit={handleSaveEditCheck} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tarefa</label>
+                <input
+                  type="text"
+                  required
+                  value={editCheckTitle}
+                  onChange={e => setEditCheckTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Prioridade</label>
+                <select
+                  value={editCheckPriority}
+                  onChange={e => setEditCheckPriority(e.target.value as any)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="baixa">Baixa</option>
+                  <option value="media">Média</option>
+                  <option value="alta">Alta</option>
+                </select>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCheck(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Adicionar Item à Mala */}
+      {showAddLug && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowAddLug(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Luggage className="w-5 h-5 text-brand-600" />
+              <span>Adicionar à Mala</span>
+            </h3>
+            <form onSubmit={handleAddLuggage} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Descrição do Item</label>
+                <input
+                  type="text"
+                  required
+                  value={lugDesc}
+                  onChange={e => setLugDesc(e.target.value)}
+                  placeholder="Ex: Protetor Solar / Camisetas / Carregador"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                  <select
+                    value={lugCategory}
+                    onChange={e => setLugCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="roupas">Roupas</option>
+                    <option value="higiene">Higiene / Nécessaire</option>
+                    <option value="eletronicos">Eletrônicos</option>
+                    <option value="medicamentos">Medicamentos</option>
+                    <option value="acessorios">Acessórios</option>
+                    <option value="documentos">Documentos</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Quantidade</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={lugQuantity}
+                    onChange={e => setLugQuantity(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Detalhes (opcional)</label>
+                <input
+                  type="text"
+                  value={lugNotes}
+                  onChange={e => setLugNotes(e.target.value)}
+                  placeholder="Ex: Levar na mala de mão"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddLug(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar na Mala
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Item da Mala */}
+      {editingLug && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingLug(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Item da Mala</span>
+            </h3>
+            <form onSubmit={handleSaveEditLug} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Descrição do Item</label>
+                <input
+                  type="text"
+                  required
+                  value={lugDesc}
+                  onChange={e => setLugDesc(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                  <select
+                    value={lugCategory}
+                    onChange={e => setLugCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="roupas">Roupas</option>
+                    <option value="higiene">Higiene / Nécessaire</option>
+                    <option value="eletronicos">Eletrônicos</option>
+                    <option value="medicamentos">Medicamentos</option>
+                    <option value="acessorios">Acessórios</option>
+                    <option value="documentos">Documentos</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Quantidade</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={lugQuantity}
+                    onChange={e => setLugQuantity(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Detalhes (opcional)</label>
+                <input
+                  type="text"
+                  value={lugNotes}
+                  onChange={e => setLugNotes(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingLug(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
                 </button>
               </div>
             </form>

@@ -209,7 +209,7 @@ export interface ChecklistItem {
 export interface LuggageItem {
   id: number;
   trip_id: number;
-  user_id: number;
+  user_id?: number;
   description: string;
   category: string;
   quantity: number;

@@ -202,6 +202,19 @@ class ApiClient {
     });
   }
 
+  async updateDestination(id: number, dest: Partial<Destination>): Promise<Destination> {
+    return await this.request<Destination>(`/destinations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dest)
+    });
+  }
+
+  async deleteDestination(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/destinations/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- Attractions & Reviews ----------------
   async getAttractions(destinationId?: number, category?: string, isFavorite?: boolean): Promise<Attraction[]> {
     const params = new URLSearchParams();
@@ -301,6 +314,19 @@ class ApiClient {
     });
   }
 
+  async updateReservation(id: number, res: Partial<Reservation>): Promise<Reservation> {
+    return await this.request<Reservation>(`/reservations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(res)
+    });
+  }
+
+  async deleteReservation(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/reservations/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- Finances ----------------
   async getExpenses(tripId: number): Promise<Expense[]> {
     const expenses = await this.request<Expense[]>(`/finances/trip/${tripId}/expenses`);
@@ -328,6 +354,35 @@ class ApiClient {
     return await this.request<Expense>('/finances/expenses', {
       method: 'POST',
       body: JSON.stringify(expense)
+    });
+  }
+
+  async updateExpense(id: number, data: Partial<Expense>): Promise<Expense> {
+    if (!navigator.onLine) {
+      offlineStorage.enqueue({
+        entity_type: 'expense',
+        action: 'update',
+        payload: { id, ...data }
+      });
+      return { id, ...data } as Expense;
+    }
+    return await this.request<Expense>(`/finances/expenses/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteExpense(id: number): Promise<{ message: string }> {
+    if (!navigator.onLine) {
+      offlineStorage.enqueue({
+        entity_type: 'expense',
+        action: 'delete',
+        payload: { id }
+      });
+      return { message: 'Excluído localmente (offline).' };
+    }
+    return await this.request<{ message: string }>(`/finances/expenses/${id}`, {
+      method: 'DELETE'
     });
   }
 
@@ -374,6 +429,12 @@ class ApiClient {
     });
   }
 
+  async deleteChecklistItem(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/checklists/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   async getLuggageItems(tripId: number, userId?: number): Promise<LuggageItem[]> {
     let url = `/checklists/luggage/${tripId}`;
     if (userId) url += `?user_id=${userId}`;
@@ -391,6 +452,12 @@ class ApiClient {
     return await this.request<LuggageItem>(`/checklists/luggage/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
+    });
+  }
+
+  async deleteLuggageItem(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/checklists/luggage/${id}`, {
+      method: 'DELETE'
     });
   }
 

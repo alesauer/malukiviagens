@@ -159,7 +159,7 @@ def create_luggage_item(
 
     item = LuggageItem(
         trip_id=lug_in.trip_id,
-        user_id=lug_in.user_id,
+        user_id=lug_in.user_id or current_user.id,
         description=lug_in.description,
         category=lug_in.category,
         quantity=lug_in.quantity,

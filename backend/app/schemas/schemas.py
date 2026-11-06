@@ -562,7 +562,7 @@ class ChecklistItemOut(BaseModel):
 
 class LuggageItemCreate(BaseModel):
     trip_id: int
-    user_id: int
+    user_id: Optional[int] = None
     description: str
     category: str = "roupas"
     quantity: int = 1

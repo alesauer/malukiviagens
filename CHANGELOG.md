@@ -1,0 +1,62 @@
+# CHANGELOG — Travel Manager
+
+## [1.0.0] — 05/11/2026
+
+### Adicionado
+- **Fundação & Infraestrutura:**
+  - Estrutura de pastas completa para Frontend e Backend.
+  - Arquivos `Dockerfile` (Backend e Frontend) e `docker-compose.yml` e `docker-compose.prod.yml`.
+  - Configurações por variáveis de ambiente (`.env.example`).
+  - Banco de dados relacional com SQLAlchemy e migrações automáticas com Alembic.
+- **Autenticação & Grupo Familiar (RF01, RF02):**
+  - Cadastro de usuários com hash seguro Bcrypt.
+  - Login e autenticação via tokens JWT com tempo de expiração configurável.
+  - Recuperação de senha assistida.
+  - Grupo familiar compartilhado com administrador e convites por e-mail com token de segurança.
+- **Viagens & Destinos (RF03, RF04, RF05, RF06):**
+  - Cadastro completo de viagens com categorias e transição automática e manual de status.
+  - Suporte a múltiplos destinos por viagem.
+  - Catálogo permanente de destinos reutilizáveis.
+  - Participantes familiares e externos convidados.
+- **Atrações & Avaliações Familiares (RF07, RF08):**
+  - Catálogo permanente de estabelecimentos, museus, parques e restaurantes.
+  - Avaliações e notas individuais de familiares (1 a 5 estrelas) com média familiar calculada.
+  - Marcação de favoritos e links diretos para reservas e mapas.
+- **Roteiros & Atividades (RF09):**
+  - Roteiro diário com organização de horários, custos e endereços.
+  - Suporte a catálogo de atividades sem data definida.
+  - Marcação de atividades concluídas e acompanhamento em tempo real.
+- **Reservas & Transportes (RF11 a RF15, RF18, RF19):**
+  - Módulos para hospedagens, voos, transportes terrestres, restaurantes, ingressos e apólices de seguro.
+  - Lançamento automático opcional de despesas no módulo financeiro a partir de reservas.
+- **Documentos & Segurança (RF20, RF21, RF22):**
+  - Área segura para documentos pessoais e das viagens.
+  - Validação de formato (PDF, JPG, PNG) e limite de tamanho (máx 25MB).
+  - Download protegido com verificação de autenticação no grupo familiar.
+- **Financeiro em Reais (RF16, RF17):**
+  - Orçamentos por categorias e acompanhamento de gastos realizados versus orçados.
+  - Situação de pagamento simplificada: Pago e Pendente.
+  - Divisão e acompanhamento de gastos por integrante.
+- **Organização & Bagagens (RF27, RF28, RF29):**
+  - Checklists com prazos e prioridades (baixa, média, alta).
+  - Listas de bagagem individualizadas por familiar e divididas por categorias.
+  - Contatos de emergência acessíveis offline com discagem rápida por toque.
+- **Inteligência Artificial (RF10, RF23, RF26, RF38):**
+  - Assistente inteligente de viagens com respostas estruturadas e fontes de pesquisa.
+  - Extração inteligente de dados em comprovantes e bilhetes (RF23).
+  - Sugestão e geração de roteiros de viagem em linguagem natural.
+- **Integrações Externas (RF24, RF25, RF31, RF32):**
+  - Previsão do tempo por destino.
+  - Integração com Google Maps e links externos.
+  - Exportação de compromissos para Google Agenda no formato iCalendar (`.ics`).
+  - Associação de álbuns do Google Fotos às viagens.
+- **PWA & Modo Offline (RF34):**
+  - Service Worker e manifesto PWA instalável no celular.
+  - Fila local de alterações e sincronização em lote com o backend (`/sync/batch`).
+  - Detecção e aviso de conectividade em tempo real.
+- **Relatórios & Administração (RF36, RF39, RF40, RF41):**
+  - Emissão de relatórios em PDF com ReportLab.
+  - Exportação de planilhas Excel (`.xlsx`) com openpyxl.
+  - Exportação e importação integral de viagens em formato JSON.
+  - Histórico de auditoria registrando criação, edição e exclusão feitas pela família.
+  - Sistema de backup completo (PostgreSQL + arquivos anexados) em arquivo ZIP com rotação dos últimos 4 arquivos.

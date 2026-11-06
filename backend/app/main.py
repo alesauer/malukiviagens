@@ -38,6 +38,17 @@ app.add_middleware(
 )
 
 # Healthcheck
+@app.get("/", tags=["Geral"])
+def root():
+    return {
+        "app": settings.APP_NAME,
+        "status": "online",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/api/v1/health",
+        "frontend": "http://localhost:3024"
+    }
+
 @app.get("/api/v1/health", response_model=HealthResponse, tags=["Saúde"])
 def health_check():
     return HealthResponse(

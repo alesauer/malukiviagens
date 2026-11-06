@@ -19,6 +19,7 @@ export const Reports: React.FC = () => {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBackingUp, setIsBackingUp] = useState(false);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -60,6 +61,28 @@ export const Reports: React.FC = () => {
     }
   };
 
+  const handleDownloadPdf = async (tripId: number, title?: string) => {
+    try {
+      setDownloadingId(`pdf_${tripId}`);
+      await api.downloadPdfReport(tripId, title);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao exportar PDF.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  const handleDownloadExcel = async (tripId: number, title?: string) => {
+    try {
+      setDownloadingId(`excel_${tripId}`);
+      await api.downloadExcelReport(tripId, title);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao exportar Excel.');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-20">
       <div>
@@ -98,25 +121,23 @@ export const Reports: React.FC = () => {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <a
-                    href={api.getPdfReportUrl(trip.id)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-brand-500 transition-colors"
+                  <button
+                    onClick={() => handleDownloadPdf(trip.id, trip.title)}
+                    disabled={downloadingId === `pdf_${trip.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-brand-500 transition-colors disabled:opacity-50"
                   >
                     <FileDown className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Relatório PDF</span>
-                  </a>
+                    <span>{downloadingId === `pdf_${trip.id}` ? 'Gerando...' : 'Relatório PDF'}</span>
+                  </button>
 
-                  <a
-                    href={api.getExcelReportUrl(trip.id)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-brand-500 transition-colors"
+                  <button
+                    onClick={() => handleDownloadExcel(trip.id, trip.title)}
+                    disabled={downloadingId === `excel_${trip.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:border-brand-500 transition-colors disabled:opacity-50"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Planilha Excel</span>
-                  </a>
+                    <span>{downloadingId === `excel_${trip.id}` ? 'Gerando...' : 'Planilha Excel'}</span>
+                  </button>
 
                   <a
                     href={api.getJsonExportUrl(trip.id)}

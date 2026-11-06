@@ -494,20 +494,64 @@ class ApiClient {
   }
 
   getCalendarIcsUrl(tripId: number) {
-    return `${API_BASE_URL}/integrations/calendar/export-ics/${tripId}`;
+    const tokenParam = this.token ? `?token=${encodeURIComponent(this.token)}` : '';
+    return `${API_BASE_URL}/integrations/calendar/export-ics/${tripId}${tokenParam}`;
   }
 
   // ---------------- Reports & Backups ----------------
   getPdfReportUrl(tripId: number) {
-    return `${API_BASE_URL}/reports/trip/${tripId}/pdf`;
+    const tokenParam = this.token ? `?token=${encodeURIComponent(this.token)}` : '';
+    return `${API_BASE_URL}/reports/trip/${tripId}/pdf${tokenParam}`;
   }
 
   getExcelReportUrl(tripId: number) {
-    return `${API_BASE_URL}/reports/trip/${tripId}/excel`;
+    const tokenParam = this.token ? `?token=${encodeURIComponent(this.token)}` : '';
+    return `${API_BASE_URL}/reports/trip/${tripId}/excel${tokenParam}`;
   }
 
   getJsonExportUrl(tripId: number) {
-    return `${API_BASE_URL}/reports/trip/${tripId}/json`;
+    const tokenParam = this.token ? `?token=${encodeURIComponent(this.token)}` : '';
+    return `${API_BASE_URL}/reports/trip/${tripId}/json${tokenParam}`;
+  }
+
+  async downloadPdfReport(tripId: number, title?: string): Promise<void> {
+    const token = this.token;
+    const res = await fetch(`${API_BASE_URL}/reports/trip/${tripId}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Erro ao gerar relatório PDF.' }));
+      throw new Error(err.detail || 'Erro ao baixar PDF');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `relatorio-viagem-${tripId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  async downloadExcelReport(tripId: number, title?: string): Promise<void> {
+    const token = this.token;
+    const res = await fetch(`${API_BASE_URL}/reports/trip/${tripId}/excel`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Erro ao gerar planilha Excel.' }));
+      throw new Error(err.detail || 'Erro ao baixar Excel');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `planilha-viagem-${tripId}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 
   async createBackup(): Promise<{ message: string; detail: string }> {

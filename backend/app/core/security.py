@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.models import User, FamilyMember, FamilyGroup
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
@@ -38,7 +38,8 @@ def decode_access_token(token: str) -> Optional[dict]:
         return None
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    header_token: Optional[str] = Depends(oauth2_scheme),
+    token: Optional[str] = None,
     db: Session = Depends(get_db)
 ) -> User:
     credentials_exception = HTTPException(
@@ -46,7 +47,10 @@ def get_current_user(
         detail="Credenciais inválidas ou token expirado",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    payload = decode_access_token(token)
+    auth_token = header_token or token
+    if not auth_token:
+        raise credentials_exception
+    payload = decode_access_token(auth_token)
     if payload is None:
         raise credentials_exception
     user_id: str = payload.get("sub")

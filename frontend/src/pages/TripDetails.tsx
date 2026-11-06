@@ -126,6 +126,7 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const [lugCategory, setLugCategory] = useState('roupas');
   const [lugQuantity, setLugQuantity] = useState('1');
   const [lugNotes, setLugNotes] = useState('');
+  const [downloadingFormat, setDownloadingFormat] = useState<string | null>(null);
 
   useEffect(() => {
     loadAllTripData();
@@ -266,6 +267,28 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const handleToggleChecklist = async (item: ChecklistItem) => {
     const updated = await api.updateChecklistItem(item.id, { is_completed: !item.is_completed });
     setChecklists(checklists.map(c => c.id === updated.id ? updated : c));
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingFormat('pdf');
+      await api.downloadPdfReport(tripId, trip?.title);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao exportar PDF.');
+    } finally {
+      setDownloadingFormat(null);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      setDownloadingFormat('excel');
+      await api.downloadExcelReport(tripId, trip?.title);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao exportar Excel.');
+    } finally {
+      setDownloadingFormat(null);
+    }
   };
 
   // ---------------- Handlers: Destinos ----------------
@@ -601,24 +624,24 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
         </button>
 
         <div className="flex flex-wrap items-center gap-2">
-          <a
-            href={api.getPdfReportUrl(trip.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          <button
+            onClick={handleDownloadPdf}
+            disabled={downloadingFormat === 'pdf'}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            title="Baixar relatório completo em PDF"
           >
             <FileDown className="w-4 h-4 text-rose-500" />
-            <span>PDF</span>
-          </a>
-          <a
-            href={api.getExcelReportUrl(trip.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            <span>{downloadingFormat === 'pdf' ? 'Gerando...' : 'PDF'}</span>
+          </button>
+          <button
+            onClick={handleDownloadExcel}
+            disabled={downloadingFormat === 'excel'}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            title="Baixar planilha de despesas e roteiro em Excel"
           >
             <FileDown className="w-4 h-4 text-emerald-600" />
-            <span>Excel</span>
-          </a>
+            <span>{downloadingFormat === 'excel' ? 'Gerando...' : 'Excel'}</span>
+          </button>
           <a
             href={api.getCalendarIcsUrl(trip.id)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"

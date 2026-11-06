@@ -9,7 +9,6 @@ import {
   ArrowRight,
   TrendingUp,
   Sparkles,
-  Luggage,
   CheckCircle2
 } from 'lucide-react';
 import { api } from '../services/api';
@@ -49,41 +48,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate }) => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-brand-700 via-emerald-600 to-teal-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-brand-700/10 relative overflow-hidden">
-        <div className="absolute right-0 top-0 bottom-0 opacity-10 pointer-events-none flex items-center pr-6">
-          <Luggage className="w-64 h-64" />
-        </div>
-
-        <div className="relative z-10 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-medium mb-3 backdrop-blur-sm">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>{family ? family.name : 'Painel Familiar'}</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Olá, {user.name.split(' ')[0]}! Pronto para a próxima viagem?
-          </h1>
-          <p className="mt-2 text-brand-100 text-sm leading-relaxed">
-            Centralize roteiros, reservas, documentos e orçamentos familiares em um só lugar.
-          </p>
-
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={() => onNavigate('trips')}
-              className="bg-white text-brand-700 hover:bg-brand-50 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Nova Viagem</span>
-            </button>
-            <button
-              onClick={() => onNavigate('ai')}
-              className="bg-white/15 hover:bg-white/25 text-white border border-white/20 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 backdrop-blur-sm transition-all"
-            >
-              <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>Pedir Roteiro à IA</span>
-            </button>
-          </div>
-        </div>
+      {/* Ações Rápidas Discretas */}
+      <div className="flex flex-wrap items-center justify-end gap-2.5">
+        <button
+          onClick={() => onNavigate('trips')}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs"
+        >
+          <Plus className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+          <span>Nova Viagem</span>
+        </button>
+        <button
+          onClick={() => onNavigate('ai')}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+          <span>Pedir Roteiro à IA</span>
+        </button>
       </div>
 
       {/* Key Metrics Grid */}

@@ -91,6 +91,16 @@ Serviços iniciados:
 - **Backend FastAPI:** `http://localhost:3025`
 - **PostgreSQL:** `localhost:3026`
 
+### 4.1 Credenciais de Acesso Inicial
+Você pode se cadastrar diretamente clicando em **"Criar Conta"** na tela de login, ou utilizar o usuário de demonstração/administrador padrão:
+- **E-mail:** `admin@viagens.com`
+- **Senha:** `admin123`
+
+Para recriar o usuário inicial a qualquer momento no backend:
+```bash
+python seed.py
+```
+
 ---
 
 ## 5. Como Implantar na VPS Hostinger

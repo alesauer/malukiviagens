@@ -273,6 +273,20 @@ class ApiClient {
     });
   }
 
+  async deleteActivity(id: number): Promise<{ message: string }> {
+    if (!navigator.onLine) {
+      offlineStorage.enqueue({
+        entity_type: 'activity',
+        action: 'delete',
+        payload: { id }
+      });
+      return { message: 'Excluído localmente (offline).' };
+    }
+    return await this.request<{ message: string }>(`/activities/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- Reservations ----------------
   async getReservations(tripId: number, resType?: string): Promise<Reservation[]> {
     let url = `/reservations/trip/${tripId}`;

@@ -16,7 +16,8 @@ import {
   Star,
   ExternalLink,
   AlertCircle,
-  X
+  X,
+  Pencil
 } from 'lucide-react';
 import { api } from '../services/api';
 import {
@@ -53,6 +54,15 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const [actDate, setActDate] = useState('');
   const [actTime, setActTime] = useState('');
   const [actCost, setActCost] = useState('0');
+
+  // Edit Activity Modal state
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editActTitle, setEditActTitle] = useState('');
+  const [editActCategory, setEditActCategory] = useState('passeio');
+  const [editActDate, setEditActDate] = useState('');
+  const [editActTime, setEditActTime] = useState('');
+  const [editActCost, setEditActCost] = useState('0');
+  const [editActNotes, setEditActNotes] = useState('');
 
   // New Expense Modal state
   const [showAddExp, setShowAddExp] = useState(false);
@@ -129,6 +139,45 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const handleToggleActivity = async (activity: Activity) => {
     const updated = await api.updateActivity(activity.id, { is_completed: !activity.is_completed });
     setActivities(activities.map(a => a.id === updated.id ? updated : a));
+  };
+
+  const handleStartEditActivity = (act: Activity) => {
+    setEditingActivity(act);
+    setEditActTitle(act.title);
+    setEditActCategory(act.category || 'passeio');
+    setEditActDate(act.date || '');
+    setEditActTime(act.time ? act.time.slice(0, 5) : '');
+    setEditActCost(act.estimated_cost ? String(act.estimated_cost) : '0');
+    setEditActNotes(act.notes || '');
+  };
+
+  const handleSaveEditActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingActivity || !editActTitle) return;
+    try {
+      const updated = await api.updateActivity(editingActivity.id, {
+        title: editActTitle,
+        category: editActCategory,
+        date: editActDate ? editActDate : null as any,
+        time: editActTime ? editActTime : null as any,
+        estimated_cost: parseFloat(editActCost) || 0,
+        notes: editActNotes.trim() || undefined
+      });
+      setActivities(activities.map(a => a.id === updated.id ? updated : a));
+      setEditingActivity(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar atividade.');
+    }
+  };
+
+  const handleDeleteActivity = async (act: Activity) => {
+    if (!confirm(`Deseja realmente excluir a atividade "${act.title}" do roteiro?`)) return;
+    try {
+      await api.deleteActivity(act.id);
+      setActivities(activities.filter(a => a.id !== act.id));
+    } catch (err: any) {
+      alert(err.message || 'Erro ao excluir atividade.');
+    }
   };
 
   const handleAddExpense = async (e: React.FormEvent) => {
@@ -446,8 +495,31 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                             R$ {Number(act.estimated_cost).toFixed(2)}
                           </span>
                         )}
+                        {act.notes && (
+                          <span className="text-slate-500 italic max-w-xs truncate" title={act.notes}>
+                            • {act.notes}
+                          </span>
+                        )}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Ações da Atividade: Editar e Excluir */}
+                  <div className="flex items-center gap-1 ml-3 shrink-0">
+                    <button
+                      onClick={() => handleStartEditActivity(act)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Editar atividade"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteActivity(act)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Excluir atividade"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -731,6 +803,116 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
                   className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
                 >
                   Salvar Atividade
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Atividade */}
+      {editingActivity && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingActivity(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Atividade</span>
+            </h3>
+
+            <form onSubmit={handleSaveEditActivity} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título</label>
+                <input
+                  type="text"
+                  required
+                  value={editActTitle}
+                  onChange={e => setEditActTitle(e.target.value)}
+                  placeholder="Ex: Visita ao Museu / Passeio de Barco"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                <select
+                  value={editActCategory}
+                  onChange={e => setEditActCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="passeio">Passeio / Ponto Turístico</option>
+                  <option value="alimentacao">Alimentação / Restaurante</option>
+                  <option value="transporte">Transporte / Deslocamento</option>
+                  <option value="cultura">Cultura / Museu / Show</option>
+                  <option value="hospedagem">Hospedagem</option>
+                  <option value="compras">Compras</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Data (opcional)</label>
+                  <input
+                    type="date"
+                    value={editActDate}
+                    onChange={e => setEditActDate(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Horário (opcional)</label>
+                  <input
+                    type="time"
+                    value={editActTime}
+                    onChange={e => setEditActTime(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Custo Estimado (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editActCost}
+                  onChange={e => setEditActCost(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Observações / Dicas (opcional)</label>
+                <textarea
+                  rows={2}
+                  value={editActNotes}
+                  onChange={e => setEditActNotes(e.target.value)}
+                  placeholder="Ex: Ingressos comprados, ponto de encontro..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingActivity(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors"
+                >
+                  Salvar Alterações
                 </button>
               </div>
             </form>

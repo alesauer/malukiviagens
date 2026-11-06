@@ -194,3 +194,4 @@ def delete_document(
     )
 
     return MessageResponse(message=f"Documento '{title}' excluído com sucesso.")
+

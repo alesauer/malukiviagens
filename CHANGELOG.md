@@ -60,3 +60,4 @@
   - Exportação e importação integral de viagens em formato JSON.
   - Histórico de auditoria registrando criação, edição e exclusão feitas pela família.
   - Sistema de backup completo (PostgreSQL + arquivos anexados) em arquivo ZIP com rotação dos últimos 4 arquivos.
+

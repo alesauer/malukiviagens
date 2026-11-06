@@ -158,3 +158,4 @@ def delete_destination(
     )
 
     return MessageResponse(message=f"Destino '{city_name}' excluído com sucesso.")
+

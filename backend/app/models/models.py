@@ -448,3 +448,4 @@ class AuditLog(Base):
 
     family = relationship("FamilyGroup", back_populates="audit_logs")
     user = relationship("User")
+

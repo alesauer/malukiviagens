@@ -245,3 +245,4 @@ def get_financial_summary(
         by_category=by_category,
         by_person=by_person
     )
+

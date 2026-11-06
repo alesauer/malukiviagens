@@ -10,7 +10,7 @@ import {
   Clock,
   History
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services/api';
 import { Trip } from '../types';
 
 export const Reports: React.FC = () => {
@@ -35,7 +35,7 @@ export const Reports: React.FC = () => {
       setBackups(backupList);
 
       // Fetch audit logs
-      const res = await fetch('http://localhost:8000/api/v1/audit/logs', {
+      const res = await fetch(`${API_BASE_URL}/audit/logs`, {
         headers: { 'Authorization': `Bearer ${api.getToken()}` }
       });
       if (res.ok) {
@@ -227,3 +227,4 @@ export const Reports: React.FC = () => {
     </div>
   );
 };
+

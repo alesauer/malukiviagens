@@ -63,10 +63,10 @@ source .venv/bin/activate
 
 pip install -r requirements.txt
 alembic upgrade head
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 3025
 ```
-A API estará disponível em: `http://localhost:8000`  
-Documentação Swagger interativa: `http://localhost:8000/docs`
+A API estará disponível em: `http://localhost:3025`  
+Documentação Swagger interativa: `http://localhost:3025/docs`
 
 ### 3.2 Frontend
 ```bash
@@ -74,7 +74,7 @@ cd frontend
 npm install
 npm run dev
 ```
-O frontend estará acessível em: `http://localhost:3000`
+O frontend estará acessível em: `http://localhost:3024`
 
 ---
 
@@ -87,9 +87,9 @@ docker compose up -d --build
 ```
 
 Serviços iniciados:
-- **Frontend PWA:** `http://localhost:3000`
-- **Backend FastAPI:** `http://localhost:8000`
-- **PostgreSQL:** `localhost:5432`
+- **Frontend PWA:** `http://localhost:3024`
+- **Backend FastAPI:** `http://localhost:3025`
+- **PostgreSQL:** `localhost:3026`
 
 ---
 
@@ -124,7 +124,7 @@ Serviços iniciados:
        server_name viagens.seudominio.com;
 
        location / {
-           proxy_pass http://127.0.0.1:3000;
+           proxy_pass http://127.0.0.1:3024;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -132,7 +132,7 @@ Serviços iniciados:
        }
 
        location /api/ {
-           proxy_pass http://127.0.0.1:8000/api/;
+           proxy_pass http://127.0.0.1:3025/api/;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -164,3 +164,4 @@ npm run build
 
 Repositório no GitHub:  
 [https://github.com/alesauer/malukiviagens.git](https://github.com/alesauer/malukiviagens.git)
+

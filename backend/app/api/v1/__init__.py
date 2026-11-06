@@ -40,3 +40,4 @@ api_router.include_router(reports.router, prefix="/reports", tags=["Relatórios 
 api_router.include_router(backup.router, prefix="/backup", tags=["Backup e Restauração"])
 api_router.include_router(audit.router, prefix="/audit", tags=["Auditoria"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notificações"])
+

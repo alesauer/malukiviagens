@@ -28,3 +28,4 @@ def list_audit_logs(
         query = query.filter(AuditLog.action == action)
 
     return query.order_by(AuditLog.timestamp.desc()).limit(100).all()
+

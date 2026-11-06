@@ -268,3 +268,4 @@ async def import_trip_json(
     db.refresh(trip)
 
     return MessageResponse(message=f"Viagem '{trip.title}' importada com sucesso com ID {trip.id}.")
+

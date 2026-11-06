@@ -148,3 +148,4 @@ def delete_activity(
     )
 
     return MessageResponse(message=f"Atividade '{title}' excluída com sucesso.")
+

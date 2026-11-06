@@ -853,3 +853,4 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
     </div>
   );
 };
+

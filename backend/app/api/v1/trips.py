@@ -300,3 +300,4 @@ def remove_participant(
     )
 
     return MessageResponse(message="Participante removido com sucesso.")
+

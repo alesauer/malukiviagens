@@ -164,3 +164,4 @@ export const AIAssistant: React.FC = () => {
     </div>
   );
 };
+

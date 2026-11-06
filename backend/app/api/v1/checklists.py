@@ -203,3 +203,4 @@ def delete_luggage_item(
     db.delete(item)
     db.commit()
     return MessageResponse(message=f"Item de bagagem '{desc}' excluído com sucesso.")
+

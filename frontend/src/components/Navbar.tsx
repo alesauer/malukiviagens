@@ -225,3 +225,4 @@ export const Navbar: React.FC<NavbarProps> = ({ user, activeTab, onSelectTab, on
     </>
   );
 };
+

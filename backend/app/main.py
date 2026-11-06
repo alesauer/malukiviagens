@@ -19,9 +19,11 @@ app = FastAPI(
 
 # CORS configuration
 origins = [
+    "http://localhost:3024",
     "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:80",
+    "http://127.0.0.1:3024",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "*"
@@ -55,3 +57,4 @@ if os.path.exists(settings.UPLOAD_DIR):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+

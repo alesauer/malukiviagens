@@ -11,7 +11,7 @@ import {
   AlertCircle,
   FileCheck
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services/api';
 import { DocumentItem, FamilyGroup, Trip, User } from '../types';
 
 interface DocumentsProps {
@@ -107,7 +107,7 @@ export const Documents: React.FC<DocumentsProps> = ({ user }) => {
     if (!confirm('Deseja realmente excluir este documento?')) return;
     try {
       // In production calls delete
-      const res = await fetch(`http://localhost:8000/api/v1/documents/${docId}`, {
+      const res = await fetch(`${API_BASE_URL}/documents/${docId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${api.getToken()}` }
       });
@@ -385,3 +385,4 @@ export const Documents: React.FC<DocumentsProps> = ({ user }) => {
     </div>
   );
 };
+

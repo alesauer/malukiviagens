@@ -116,3 +116,4 @@ class AIService:
             "confidence": 0.92,
             "raw_summary": f"Documento '{filename}' analisado com sucesso. Informações pré-preenchidas para revisão e confirmação (RF23)."
         }
+

@@ -138,3 +138,4 @@ def confirm_password_reset(req: PasswordResetConfirm, db: Session = Depends(get_
     user.hashed_password = get_password_hash(req.new_password)
     db.commit()
     return MessageResponse(message="Senha redefinida com sucesso. Faça login com a nova senha.")
+

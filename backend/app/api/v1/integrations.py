@@ -143,3 +143,4 @@ def add_photo_album(
     db.commit()
     db.refresh(album)
     return album
+

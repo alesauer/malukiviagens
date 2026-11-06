@@ -132,3 +132,4 @@ def test_full_modules_suite():
     assert r_finish.status_code == 200
     assert r_finish.json()["status"] == "realizada"
     assert r_finish.json()["general_rating"] == 4.8
+

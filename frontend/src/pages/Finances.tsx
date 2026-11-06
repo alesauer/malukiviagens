@@ -337,3 +337,4 @@ export const Finances: React.FC = () => {
     </div>
   );
 };
+

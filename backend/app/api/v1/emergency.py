@@ -88,3 +88,4 @@ def delete_emergency_contact(
     )
 
     return MessageResponse(message=f"Contato de emergência '{name}' excluído com sucesso.")
+

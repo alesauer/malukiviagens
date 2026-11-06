@@ -178,3 +178,4 @@ def delete_reservation(
     )
 
     return MessageResponse(message=f"Reserva '{title}' excluída com sucesso.")
+

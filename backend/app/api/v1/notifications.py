@@ -35,3 +35,4 @@ def mark_as_read(
     notif.is_read = True
     db.commit()
     return MessageResponse(message="Notificação marcada como lida.")
+

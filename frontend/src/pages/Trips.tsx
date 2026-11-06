@@ -346,3 +346,4 @@ export const Trips: React.FC<TripsProps> = ({ initialTripId, onClearInitialTripI
     </div>
   );
 };
+

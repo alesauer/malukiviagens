@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Luggage, Lock, Mail, User as UserIcon, Phone, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
-import { api } from '../services/api';
+import { api, API_BASE_URL } from '../services/api';
 import { User } from '../types';
 
 interface LoginProps {
@@ -33,7 +33,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       if (isReset) {
         if (!resetToken) {
           // Request reset
-          const res = await fetch('http://localhost:8000/api/v1/auth/password-reset-request', {
+          const res = await fetch(`${API_BASE_URL}/auth/password-reset-request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -42,7 +42,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           setSuccessMsg(data.message + (data.detail ? ` (${data.detail})` : ''));
         } else {
           // Confirm reset
-          const res = await fetch('http://localhost:8000/api/v1/auth/password-reset-confirm', {
+          const res = await fetch(`${API_BASE_URL}/auth/password-reset-confirm`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token: resetToken, new_password: newPassword })
@@ -290,3 +290,4 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     </div>
   );
 };
+

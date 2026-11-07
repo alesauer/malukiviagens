@@ -171,6 +171,13 @@ export interface ExpenseSplit {
   is_settled: boolean;
 }
 
+export interface BudgetCategory {
+  id: number;
+  trip_id: number;
+  category: string;
+  budgeted_amount: number;
+}
+
 export interface Expense {
   id: number;
   trip_id: number;

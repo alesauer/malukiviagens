@@ -12,7 +12,7 @@ from app.core.config import settings
 from app.core.security import get_current_user, get_user_family_id
 from app.core.audit import log_audit
 from app.models.models import User, Document, FamilyGroup, Trip
-from app.schemas.schemas import DocumentOut, MessageResponse
+from app.schemas.schemas import DocumentOut, DocumentUpdate, MessageResponse
 
 router = APIRouter()
 
@@ -157,6 +157,40 @@ def download_document(
         filename=doc.file_name,
         media_type=doc.file_type
     )
+
+@router.put("/{document_id}", response_model=DocumentOut)
+def update_document(
+    document_id: int,
+    doc_in: DocumentUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    family_id = get_user_family_id(current_user, db)
+    doc = db.query(Document).filter(Document.id == document_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Documento não encontrado.")
+
+    if doc.family_id != family_id:
+        raise HTTPException(status_code=403, detail="Acesso restrito.")
+
+    update_data = doc_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(doc, field, value)
+
+    db.commit()
+    db.refresh(doc)
+
+    log_audit(
+        db=db,
+        family_id=family_id,
+        user_id=current_user.id,
+        action="update",
+        entity_type="document",
+        entity_id=doc.id,
+        description=f"Metadados do documento '{doc.title}' atualizados por {current_user.name}."
+    )
+
+    return doc
 
 @router.delete("/{document_id}", response_model=MessageResponse)
 def delete_document(

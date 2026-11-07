@@ -17,7 +17,22 @@ import {
   ExternalLink,
   AlertCircle,
   X,
-  Pencil
+  Pencil,
+  Users,
+  UserPlus,
+  FileText,
+  Upload,
+  Eye,
+  Edit2,
+  Paperclip,
+  ShieldCheck,
+  Plane,
+  Hotel,
+  Car,
+  Utensils,
+  Ticket,
+  AlertTriangle,
+  FolderOpen
 } from 'lucide-react';
 import { api } from '../services/api';
 import {
@@ -27,13 +42,18 @@ import {
   Reservation,
   Expense,
   ChecklistItem,
-  LuggageItem
+  LuggageItem,
+  TripParticipant,
+  BudgetCategory,
+  DocumentItem
 } from '../types';
+
+export type TripTab = 'roteiro' | 'linha-do-tempo' | 'destinos' | 'reservas' | 'viajantes' | 'financeiro' | 'checklists' | 'bagagem' | 'documentos';
 
 interface TripDetailsProps {
   tripId: number;
   onBack: () => void;
-  initialTab?: 'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos';
+  initialTab?: TripTab;
   allTrips?: Trip[];
   onChangeTripId?: (newId: number) => void;
 }
@@ -52,9 +72,60 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [checklists, setChecklists] = useState<ChecklistItem[]>([]);
   const [luggage, setLuggage] = useState<LuggageItem[]>([]);
+  const [participants, setParticipants] = useState<TripParticipant[]>([]);
+  const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos'>(initialTab);
+  const [activeTab, setActiveTab] = useState<TripTab>(initialTab);
   const [loading, setLoading] = useState(true);
+
+  // Edit Trip Modal state
+  const [showEditTrip, setShowEditTrip] = useState(false);
+  const [editTripTitle, setEditTripTitle] = useState('');
+  const [editTripCategory, setEditTripCategory] = useState('ferias');
+  const [editTripStatus, setEditTripStatus] = useState('planejamento');
+  const [editTripStart, setEditTripStart] = useState('');
+  const [editTripEnd, setEditTripEnd] = useState('');
+  const [editTripDest, setEditTripDest] = useState('');
+  const [editTripDesc, setEditTripDesc] = useState('');
+
+  // Trip Participant Modals state
+  const [showAddPart, setShowAddPart] = useState(false);
+  const [partName, setPartName] = useState('');
+  const [partEmail, setPartEmail] = useState('');
+  const [partIsExternal, setPartIsExternal] = useState(false);
+
+  const [editingPart, setEditingPart] = useState<TripParticipant | null>(null);
+  const [editPartName, setEditPartName] = useState('');
+  const [editPartEmail, setEditPartEmail] = useState('');
+  const [editPartIsExternal, setEditPartIsExternal] = useState(false);
+
+  const [deletingPart, setDeletingPart] = useState<TripParticipant | null>(null);
+
+  // Budget Category Modals state
+  const [showAddBudget, setShowAddBudget] = useState(false);
+  const [budgCategory, setBudgCategory] = useState('alimentacao');
+  const [budgAmount, setBudgAmount] = useState('');
+
+  const [editingBudget, setEditingBudget] = useState<BudgetCategory | null>(null);
+  const [editBudgAmount, setEditBudgAmount] = useState('');
+
+  const [deletingBudget, setDeletingBudget] = useState<BudgetCategory | null>(null);
+
+  // Document Modals state
+  const [showUploadDoc, setShowUploadDoc] = useState(false);
+  const [docTitle, setDocTitle] = useState('');
+  const [docCategory, setDocCategory] = useState('outros');
+  const [docNotes, setDocNotes] = useState('');
+  const [docFile, setDocFile] = useState<File | null>(null);
+
+  const [editingDoc, setEditingDoc] = useState<DocumentItem | null>(null);
+  const [editDocTitle, setEditDocTitle] = useState('');
+  const [editDocCategory, setEditDocCategory] = useState('outros');
+  const [editDocNotes, setEditDocNotes] = useState('');
+
+  const [deletingDoc, setDeletingDoc] = useState<DocumentItem | null>(null);
+  const [submittingAction, setSubmittingAction] = useState(false);
 
   useEffect(() => {
     if (initialTab) {
@@ -150,14 +221,16 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
   const loadAllTripData = async () => {
     try {
       setLoading(true);
-      const [t, d, act, res, exp, chk, lug] = await Promise.all([
+      const [t, d, act, res, exp, chk, lug, bgts, docs] = await Promise.all([
         api.getTrip(tripId),
         api.getDestinations(tripId).catch(() => []),
         api.getActivities(tripId).catch(() => []),
         api.getReservations(tripId).catch(() => []),
         api.getExpenses(tripId).catch(() => []),
         api.getChecklists(tripId).catch(() => []),
-        api.getLuggageItems(tripId).catch(() => [])
+        api.getLuggageItems(tripId).catch(() => []),
+        api.getTripBudgets(tripId).catch(() => []),
+        api.getTripDocuments(tripId).catch(() => [])
       ]);
       setTrip(t);
       setDestinations(d);
@@ -166,10 +239,237 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
       setExpenses(exp);
       setChecklists(chk);
       setLuggage(lug);
+      setBudgets(bgts);
+      setDocuments(docs);
+      setParticipants(t.participants || []);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenEditTrip = () => {
+    if (!trip) return;
+    setEditTripTitle(trip.title);
+    setEditTripCategory(trip.category);
+    setEditTripStatus(trip.status);
+    setEditTripStart(trip.start_date);
+    setEditTripEnd(trip.end_date);
+    setEditTripDest(trip.main_destination || '');
+    setEditTripDesc(trip.description || '');
+    setShowEditTrip(true);
+  };
+
+  const handleSaveEditTrip = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!trip || !editTripTitle.trim()) return;
+    try {
+      setSubmittingAction(true);
+      const updated = await api.updateTrip(trip.id, {
+        title: editTripTitle.trim(),
+        category: editTripCategory,
+        status: editTripStatus as any,
+        start_date: editTripStart,
+        end_date: editTripEnd,
+        main_destination: editTripDest.trim() || undefined,
+        description: editTripDesc.trim() || undefined
+      });
+      setTrip(updated);
+      setShowEditTrip(false);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar viagem.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  // Participant handlers
+  const handleAddParticipant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!partName.trim()) return;
+    try {
+      setSubmittingAction(true);
+      const newPart = await api.addTripParticipant(tripId, {
+        name: partName.trim(),
+        email: partEmail.trim() || undefined,
+        is_external: partIsExternal
+      });
+      setParticipants([...participants, newPart]);
+      setShowAddPart(false);
+      setPartName('');
+      setPartEmail('');
+      setPartIsExternal(false);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao adicionar viajante.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleOpenEditParticipant = (part: TripParticipant) => {
+    setEditingPart(part);
+    setEditPartName(part.name);
+    setEditPartEmail(part.email || '');
+    setEditPartIsExternal(part.is_external);
+  };
+
+  const handleSaveEditParticipant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPart || !editPartName.trim()) return;
+    try {
+      setSubmittingAction(true);
+      const updated = await api.updateTripParticipant(tripId, editingPart.id, {
+        name: editPartName.trim(),
+        email: editPartEmail.trim() || undefined,
+        is_external: editPartIsExternal
+      });
+      setParticipants(participants.map(p => p.id === updated.id ? updated : p));
+      setEditingPart(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao salvar viajante.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleDeleteParticipant = async () => {
+    if (!deletingPart) return;
+    try {
+      setSubmittingAction(true);
+      await api.deleteTripParticipant(tripId, deletingPart.id);
+      setParticipants(participants.filter(p => p.id !== deletingPart.id));
+      setDeletingPart(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover viajante.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  // Budget Category handlers
+  const handleAddBudget = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!budgAmount) return;
+    try {
+      setSubmittingAction(true);
+      const newB = await api.setTripBudget({
+        trip_id: tripId,
+        category: budgCategory,
+        budgeted_amount: parseFloat(budgAmount) || 0
+      });
+      setBudgets(prev => {
+        const exists = prev.some(b => b.category === newB.category);
+        if (exists) {
+          return prev.map(b => b.category === newB.category ? newB : b);
+        }
+        return [...prev, newB];
+      });
+      setShowAddBudget(false);
+      setBudgAmount('');
+    } catch (err: any) {
+      alert(err.message || 'Erro ao salvar teto orçamentário.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleSaveEditBudget = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBudget || !editBudgAmount) return;
+    try {
+      setSubmittingAction(true);
+      const updated = await api.setTripBudget({
+        trip_id: tripId,
+        category: editingBudget.category,
+        budgeted_amount: parseFloat(editBudgAmount) || 0
+      });
+      setBudgets(budgets.map(b => b.id === updated.id ? updated : b));
+      setEditingBudget(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar teto orçamentário.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleDeleteBudget = async () => {
+    if (!deletingBudget) return;
+    try {
+      setSubmittingAction(true);
+      await api.deleteTripBudget(deletingBudget.id);
+      setBudgets(budgets.filter(b => b.id !== deletingBudget.id));
+      setDeletingBudget(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao remover teto orçamentário.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  // Document handlers
+  const handleUploadDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docTitle.trim() || !docFile) return;
+    try {
+      setSubmittingAction(true);
+      const formData = new FormData();
+      formData.append('title', docTitle.trim());
+      formData.append('doc_type', docCategory);
+      formData.append('notes', docNotes.trim());
+      formData.append('trip_id', String(tripId));
+      formData.append('file', docFile);
+
+      const newDoc = await api.uploadDocument(formData);
+      setDocuments([newDoc, ...documents]);
+      setShowUploadDoc(false);
+      setDocTitle('');
+      setDocNotes('');
+      setDocFile(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao enviar documento.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleOpenEditDocument = (doc: DocumentItem) => {
+    setEditingDoc(doc);
+    setEditDocTitle(doc.title);
+    setEditDocCategory(doc.doc_type || 'outros');
+    setEditDocNotes(doc.notes || '');
+  };
+
+  const handleSaveEditDocument = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingDoc || !editDocTitle.trim()) return;
+    try {
+      setSubmittingAction(true);
+      const updated = await api.updateDocument(editingDoc.id, {
+        title: editDocTitle.trim(),
+        doc_type: editDocCategory,
+        notes: editDocNotes.trim() || undefined
+      });
+      setDocuments(documents.map(d => d.id === updated.id ? updated : d));
+      setEditingDoc(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao atualizar documento.');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
+  const handleDeleteDocument = async () => {
+    if (!deletingDoc) return;
+    try {
+      setSubmittingAction(true);
+      await api.deleteDocument(deletingDoc.id);
+      setDocuments(documents.filter(d => d.id !== deletingDoc.id));
+      setDeletingDoc(null);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao excluir documento.');
+    } finally {
+      setSubmittingAction(false);
     }
   };
 
@@ -717,6 +1017,15 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
           )}
 
           <button
+            onClick={handleOpenEditTrip}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            title="Editar dados da viagem"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            <span>Editar Viagem</span>
+          </button>
+
+          <button
             onClick={handleDeleteTrip}
             className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
             title="Excluir viagem"
@@ -795,11 +1104,14 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
         <div className="flex overflow-x-auto gap-2 mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 no-scrollbar">
           {[
             { id: 'roteiro', label: `Roteiro (${activities.length})` },
+            { id: 'linha-do-tempo', label: 'Linha do Tempo' },
             { id: 'destinos', label: `Destinos (${destinations.length})` },
             { id: 'reservas', label: `Reservas (${reservations.length})` },
+            { id: 'viajantes', label: `Viajantes (${participants.length})` },
             { id: 'financeiro', label: `Financeiro (${expenses.length})` },
             { id: 'checklists', label: `Checklists (${checklists.length})` },
             { id: 'bagagem', label: `Malas (${luggage.length})` },
+            { id: 'documentos', label: `Documentos (${documents.length})` },
           ].map(tab => (
             <button
               key={tab.id}
@@ -919,6 +1231,212 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
           )}
         </div>
       )}
+
+      {/* Tab: Linha do Tempo e Eventos (RF09, RF10) */}
+      {activeTab === 'linha-do-tempo' && (() => {
+        const timelineItems = [
+          ...activities.map(a => ({
+            id: `act-${a.id}`,
+            type: 'activity' as const,
+            date: a.date || (trip ? trip.start_date : ''),
+            time: a.time ? a.time.slice(0, 5) : '09:00',
+            title: a.title,
+            category: a.category || 'passeio',
+            cost: a.estimated_cost,
+            notes: a.notes,
+            isCompleted: a.is_completed,
+            act: a,
+            res: undefined as Reservation | undefined
+          })),
+          ...reservations.map(r => ({
+            id: `res-${r.id}`,
+            type: 'reservation' as const,
+            date: (r.start_datetime ? r.start_datetime.split('T')[0] : (trip ? trip.start_date : '')),
+            time: (r.start_datetime && r.start_datetime.includes('T') ? r.start_datetime.split('T')[1].slice(0, 5) : '12:00'),
+            title: r.title,
+            category: r.type,
+            cost: r.total_value,
+            notes: [r.provider, r.booking_code ? `Localizador: ${r.booking_code}` : null, r.notes].filter(Boolean).join(' • '),
+            isCompleted: r.payment_status === 'pago',
+            act: undefined as Activity | undefined,
+            res: r
+          }))
+        ].sort((a, b) => {
+          const dComp = a.date.localeCompare(b.date);
+          if (dComp !== 0) return dComp;
+          return a.time.localeCompare(b.time);
+        });
+
+        const grouped: { [date: string]: typeof timelineItems } = {};
+        timelineItems.forEach(item => {
+          if (!grouped[item.date]) grouped[item.date] = [];
+          grouped[item.date].push(item);
+        });
+        const dates = Object.keys(grouped).sort();
+
+        const getCategoryIcon = (category: string) => {
+          switch (category.toLowerCase()) {
+            case 'voo': return <Plane className="w-4 h-4 text-sky-500" />;
+            case 'hospedagem': return <Hotel className="w-4 h-4 text-indigo-500" />;
+            case 'transporte': return <Car className="w-4 h-4 text-amber-500" />;
+            case 'restaurante': return <Utensils className="w-4 h-4 text-orange-500" />;
+            case 'ingresso': return <Ticket className="w-4 h-4 text-purple-500" />;
+            case 'seguro': return <ShieldCheck className="w-4 h-4 text-emerald-500" />;
+            default: return <Clock className="w-4 h-4 text-brand-600" />;
+          }
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Linha do Tempo Integrada</h2>
+                <p className="text-xs text-slate-500">
+                  Visão cronológica unificada de voos, hospedagens, transportes, refeições e atrações
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAddAct(true)}
+                  className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Novo Evento / Atividade</span>
+                </button>
+              </div>
+            </div>
+
+            {dates.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+                <Clock className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                <p className="font-semibold text-sm">Nenhum evento na linha do tempo</p>
+                <p className="text-xs text-slate-400 mt-1">Adicione atividades com datas ou reservas para montar a linha cronológica da viagem.</p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {dates.map(dateStr => {
+                  const items = grouped[dateStr];
+                  const formattedDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  });
+
+                  return (
+                    <div key={dateStr} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-brand-500 ring-4 ring-brand-100 dark:ring-brand-950" />
+                        <h3 className="text-sm font-bold capitalize text-slate-900 dark:text-white">
+                          {formattedDate}
+                        </h3>
+                        <span className="text-xs text-slate-400">({items.length} {items.length === 1 ? 'evento' : 'eventos'})</span>
+                      </div>
+
+                      <div className="relative pl-6 ml-1.5 border-l-2 border-slate-200 dark:border-slate-800 space-y-3">
+                        {items.map(item => (
+                          <div
+                            key={item.id}
+                            className={`p-4 rounded-2xl border bg-white dark:bg-slate-900 transition-all ${
+                              item.isCompleted
+                                ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/10'
+                                : 'border-slate-200 dark:border-slate-800'
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+                                  {getCategoryIcon(item.category)}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                      {item.time}
+                                    </span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300">
+                                      {item.category}
+                                    </span>
+                                    <span className="text-xs text-slate-400 font-medium">
+                                      {item.type === 'activity' ? 'Atividade' : 'Reserva'}
+                                    </span>
+                                  </div>
+                                  <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-1">
+                                    {item.title}
+                                  </h4>
+                                  {item.notes && (
+                                    <p className="text-xs text-slate-500 mt-1">{item.notes}</p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                {item.cost !== undefined && item.cost > 0 && (
+                                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    R$ {item.cost.toFixed(2)}
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  {item.type === 'activity' && item.act && (
+                                    <>
+                                      <button
+                                        onClick={() => handleToggleActivity(item.act!)}
+                                        className={`p-1.5 rounded-lg border text-xs font-semibold ${
+                                          item.act.is_completed
+                                            ? 'text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40'
+                                            : 'text-slate-500 border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+                                        }`}
+                                        title={item.act.is_completed ? 'Concluída' : 'Marcar como concluída'}
+                                      >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleStartEditActivity(item.act!)}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                        title="Editar atividade"
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteActivity(item.act!)}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                        title="Excluir atividade"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </>
+                                  )}
+                                  {item.type === 'reservation' && item.res && (
+                                    <>
+                                      <button
+                                        onClick={() => handleStartEditRes(item.res!)}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                        title="Editar reserva"
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteRes(item.res!)}
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                        title="Excluir reserva"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Tab 2: Destinos (RF05) */}
       {activeTab === 'destinos' && (
@@ -1075,13 +1593,90 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
         </div>
       )}
 
-      {/* Tab 4: Financeiro (RF16) */}
-      {activeTab === 'financeiro' && (
+      {/* Tab: Viajantes da Viagem (RF02, RF03) */}
+      {activeTab === 'viajantes' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Despesas da Viagem</h2>
-              <p className="text-xs text-slate-500">Controle financeiro em reais com divisão por categorias</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Viajantes e Participantes</h2>
+              <p className="text-xs text-slate-500">Membros da família e convidados externos vinculados a esta viagem</p>
+            </div>
+            <button
+              onClick={() => {
+                setPartName('');
+                setPartEmail('');
+                setPartIsExternal(false);
+                setShowAddPart(true);
+              }}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Adicionar Viajante</span>
+            </button>
+          </div>
+
+          {participants.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+              <Users className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="font-semibold text-sm">Nenhum participante adicionado</p>
+              <p className="text-xs text-slate-400 mt-1">Vincule os familiares e convidados que embarcarão nesta viagem.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {participants.map(part => (
+                <div
+                  key={part.id}
+                  className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 flex items-center justify-center font-bold text-sm">
+                      {part.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{part.name}</span>
+                        <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded font-bold ${
+                          part.is_external
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                        }`}>
+                          {part.is_external ? 'Convidado' : 'Família'}
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-400">{part.email || 'Sem e-mail cadastrado'}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEditParticipant(part)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Editar viajante"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDeletingPart(part)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Remover viajante"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab 4: Financeiro (RF16) */}
+      {activeTab === 'financeiro' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Despesas e Orçamento da Viagem</h2>
+              <p className="text-xs text-slate-500">Controle financeiro em reais com metas por categorias</p>
             </div>
             <button
               onClick={() => setShowAddExp(true)}
@@ -1090,6 +1685,87 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
               <Plus className="w-4 h-4" />
               <span>Registrar Despesa</span>
             </button>
+          </div>
+
+          {/* Metas e Tetos Orçamentários por Categoria */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                  <span>Tetos e Metas Orçamentárias por Categoria</span>
+                </h3>
+                <p className="text-xs text-slate-500">Defina limites de gastos por categoria para controlar o orçamento familiar</p>
+              </div>
+              <button
+                onClick={() => {
+                  setBudgCategory('alimentacao');
+                  setBudgAmount('');
+                  setShowAddBudget(true);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Definir Teto</span>
+              </button>
+            </div>
+
+            {budgets.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-3">
+                Nenhum teto orçamentário definido. Clique em "Definir Teto" para acompanhar gastos por categoria.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {budgets.map(b => {
+                  const spentInCat = expenses
+                    .filter(e => e.category.toLowerCase() === b.category.toLowerCase() && e.payment_status === 'pago')
+                    .reduce((sum, e) => sum + (e.amount || 0), 0);
+                  const pct = b.budgeted_amount > 0 ? Math.min(100, (spentInCat / b.budgeted_amount) * 100) : 0;
+                  const isOver = spentInCat > b.budgeted_amount;
+
+                  return (
+                    <div key={b.id} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                          {b.category}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingBudget(b);
+                              setEditBudgAmount(String(b.budgeted_amount));
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                            title="Editar teto"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingBudget(b)}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            title="Remover teto"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-baseline justify-between text-xs">
+                        <span className="text-slate-500">Gasto: <strong className={isOver ? 'text-rose-600 font-bold' : 'text-slate-900 dark:text-white'}>R$ {spentInCat.toFixed(2)}</strong></span>
+                        <span className="text-slate-400">Teto: R$ {b.budgeted_amount.toFixed(2)}</span>
+                      </div>
+
+                      <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          className={`h-full transition-all rounded-full ${isOver ? 'bg-rose-500' : pct > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -1324,6 +2000,97 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Documentos da Viagem (RF32) */}
+      {activeTab === 'documentos' && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Documentos e Apólices da Viagem</h2>
+              <p className="text-xs text-slate-500">Passaportes, vouchers, passagens e apólices de seguro com download offline</p>
+            </div>
+            <button
+              onClick={() => {
+                setDocTitle('');
+                setDocCategory('outros');
+                setDocNotes('');
+                setDocFile(null);
+                setShowUploadDoc(true);
+              }}
+              className="bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Enviar Documento</span>
+            </button>
+          </div>
+
+          {documents.length === 0 ? (
+            <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500">
+              <FileText className="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+              <p className="font-semibold text-sm">Nenhum documento anexado a esta viagem</p>
+              <p className="text-xs text-slate-400 mt-1">Envie vouchers, bilhetes ou apólices de seguro para acesso centralizado.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {documents.map(doc => (
+                <div
+                  key={doc.id}
+                  className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 rounded-2xl shadow-sm flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300">
+                        {doc.doc_type}
+                      </span>
+                      {doc.file_size && (
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {(doc.file_size / 1024).toFixed(0)} KB
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-brand-600 shrink-0" />
+                      <span className="truncate">{doc.title}</span>
+                    </h4>
+                    {doc.notes && (
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{doc.notes}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-slate-100 dark:border-slate-800">
+                    <a
+                      href={api.getDocumentDownloadUrl(doc.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-brand-600 hover:text-brand-500"
+                    >
+                      <FileDown className="w-3.5 h-3.5" />
+                      <span>Baixar</span>
+                    </a>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenEditDocument(doc)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Editar metadados"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setDeletingDoc(doc)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Excluir documento"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -2526,6 +3293,655 @@ export const TripDetails: React.FC<TripDetailsProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Viagem */}
+      {showEditTrip && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowEditTrip(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Informações da Viagem</span>
+            </h3>
+            <form onSubmit={handleSaveEditTrip} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título da Viagem</label>
+                <input
+                  type="text"
+                  required
+                  value={editTripTitle}
+                  onChange={e => setEditTripTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                  <select
+                    value={editTripCategory}
+                    onChange={e => setEditTripCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="ferias">Férias</option>
+                    <option value="trabalho">Trabalho</option>
+                    <option value="fim_de_semana">Fim de Semana</option>
+                    <option value="lua_de_mel">Lua de Mel</option>
+                    <option value="aventura">Aventura</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                  <select
+                    value={editTripStatus}
+                    onChange={e => setEditTripStatus(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  >
+                    <option value="planejamento">Planejamento</option>
+                    <option value="confirmada">Confirmada</option>
+                    <option value="em_andamento">Em Andamento</option>
+                    <option value="realizada">Realizada</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Início</label>
+                  <input
+                    type="date"
+                    required
+                    value={editTripStart}
+                    onChange={e => setEditTripStart(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Data Fim</label>
+                  <input
+                    type="date"
+                    required
+                    value={editTripEnd}
+                    onChange={e => setEditTripEnd(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Destino Principal</label>
+                <input
+                  type="text"
+                  value={editTripDest}
+                  onChange={e => setEditTripDest(e.target.value)}
+                  placeholder="Ex: Florianópolis, SC / Orlando, EUA"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Descrição</label>
+                <textarea
+                  rows={2}
+                  value={editTripDesc}
+                  onChange={e => setEditTripDesc(e.target.value)}
+                  placeholder="Breve resumo da viagem em família..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditTrip(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Adicionar Viajante */}
+      {showAddPart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowAddPart(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-brand-600" />
+              <span>Adicionar Viajante</span>
+            </h3>
+            <form onSubmit={handleAddParticipant} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nome Completo</label>
+                <input
+                  type="text"
+                  required
+                  value={partName}
+                  onChange={e => setPartName(e.target.value)}
+                  placeholder="Ex: João da Silva / Marina Santos"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-mail (opcional)</label>
+                <input
+                  type="email"
+                  value={partEmail}
+                  onChange={e => setPartEmail(e.target.value)}
+                  placeholder="viajante@exemplo.com"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="partIsExt"
+                  checked={partIsExternal}
+                  onChange={e => setPartIsExternal(e.target.checked)}
+                  className="rounded text-brand-600 focus:ring-brand-500"
+                />
+                <label htmlFor="partIsExt" className="text-xs text-slate-700 dark:text-slate-300">
+                  Convidado externo (amigo ou familiar não cadastrado no grupo familiar principal)
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddPart(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Adicionar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Viajante */}
+      {editingPart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingPart(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Viajante</span>
+            </h3>
+            <form onSubmit={handleSaveEditParticipant} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nome Completo</label>
+                <input
+                  type="text"
+                  required
+                  value={editPartName}
+                  onChange={e => setEditPartName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
+                <input
+                  type="email"
+                  value={editPartEmail}
+                  onChange={e => setEditPartEmail(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="editPartIsExt"
+                  checked={editPartIsExternal}
+                  onChange={e => setEditPartIsExternal(e.target.checked)}
+                  className="rounded text-brand-600 focus:ring-brand-500"
+                />
+                <label htmlFor="editPartIsExt" className="text-xs text-slate-700 dark:text-slate-300">
+                  Convidado externo
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingPart(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmação: Excluir Viajante */}
+      {deletingPart && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 rounded-2xl">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Remover Viajante</h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              Deseja realmente desvincular <strong className="text-slate-800 dark:text-slate-200">{deletingPart.name}</strong> desta viagem? Esta ação pode ser desfeita readicionando a pessoa a qualquer momento.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingPart(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteParticipant}
+                disabled={submittingAction}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors disabled:opacity-50"
+              >
+                {submittingAction ? 'Removendo...' : 'Sim, Remover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Definir Teto Orçamentário */}
+      {showAddBudget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowAddBudget(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-600" />
+              <span>Definir Teto Orçamentário</span>
+            </h3>
+            <form onSubmit={handleAddBudget} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria de Gasto</label>
+                <select
+                  value={budgCategory}
+                  onChange={e => setBudgCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="alimentacao">Alimentação / Restaurantes</option>
+                  <option value="hospedagem">Hospedagem</option>
+                  <option value="transporte">Transporte / Voos / Combustível</option>
+                  <option value="passeios">Passeios e Atrações</option>
+                  <option value="compras">Compras e Lojas</option>
+                  <option value="seguro">Seguro Viagem</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Valor Máximo Orçado (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={budgAmount}
+                  onChange={e => setBudgAmount(e.target.value)}
+                  placeholder="0,00"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBudget(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Salvar Teto'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Teto Orçamentário */}
+      {editingBudget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingBudget(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-emerald-600" />
+              <span>Editar Teto: {editingBudget.category}</span>
+            </h3>
+            <form onSubmit={handleSaveEditBudget} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Novo Valor Máximo Orçado (R$)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={editBudgAmount}
+                  onChange={e => setEditBudgAmount(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingBudget(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Salvar Alteração'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmação: Excluir Teto Orçamentário */}
+      {deletingBudget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 rounded-2xl">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Remover Teto</h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              Deseja remover o teto orçamentário para <strong className="text-slate-800 dark:text-slate-200">{deletingBudget.category}</strong>? Os gastos reais da categoria continuarão registrados normalmente.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingBudget(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteBudget}
+                disabled={submittingAction}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors disabled:opacity-50"
+              >
+                {submittingAction ? 'Removendo...' : 'Sim, Remover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Enviar Documento */}
+      {showUploadDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setShowUploadDoc(false)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Upload className="w-5 h-5 text-brand-600" />
+              <span>Enviar Documento da Viagem</span>
+            </h3>
+            <form onSubmit={handleUploadDocument} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título do Documento</label>
+                <input
+                  type="text"
+                  required
+                  value={docTitle}
+                  onChange={e => setDocTitle(e.target.value)}
+                  placeholder="Ex: Apólice Seguradora / Voucher Hotel / Passagem Aérea"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                <select
+                  value={docCategory}
+                  onChange={e => setDocCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="passaporte">Passaporte / RG / Visto</option>
+                  <option value="passagem">Passagem Aérea / Bilhete</option>
+                  <option value="voucher">Voucher / Comprovante</option>
+                  <option value="hospedagem">Reserva de Hospedagem</option>
+                  <option value="seguro">Apólice de Seguro Viagem</option>
+                  <option value="saude">Cartão Vacinal / Saúde</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Arquivo (PDF, PNG, JPG)</label>
+                <input
+                  type="file"
+                  required
+                  onChange={e => setDocFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Instruções (opcional)</label>
+                <input
+                  type="text"
+                  value={docNotes}
+                  onChange={e => setDocNotes(e.target.value)}
+                  placeholder="Ex: Apresentar no balcão de check-in"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadDoc(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Enviando...' : 'Enviar Documento'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editar Metadados do Documento */}
+      {editingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setEditingDoc(null)}
+              className="absolute right-5 top-5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-brand-600" />
+              <span>Editar Dados do Documento</span>
+            </h3>
+            <form onSubmit={handleSaveEditDocument} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título do Documento</label>
+                <input
+                  type="text"
+                  required
+                  value={editDocTitle}
+                  onChange={e => setEditDocTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                <select
+                  value={editDocCategory}
+                  onChange={e => setEditDocCategory(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="passaporte">Passaporte / RG / Visto</option>
+                  <option value="passagem">Passagem Aérea / Bilhete</option>
+                  <option value="voucher">Voucher / Comprovante</option>
+                  <option value="hospedagem">Reserva de Hospedagem</option>
+                  <option value="seguro">Apólice de Seguro Viagem</option>
+                  <option value="saude">Cartão Vacinal / Saúde</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Notas / Instruções</label>
+                <input
+                  type="text"
+                  value={editDocNotes}
+                  onChange={e => setEditDocNotes(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-sm focus:ring-2 focus:ring-brand-500 outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingDoc(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingAction}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-500 transition-colors disabled:opacity-50"
+                >
+                  {submittingAction ? 'Salvando...' : 'Salvar Alterações'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmação: Excluir Documento */}
+      {deletingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="p-2.5 bg-rose-50 dark:bg-rose-950/50 rounded-2xl">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Excluir Documento</h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              Tem certeza que deseja excluir o documento <strong className="text-slate-800 dark:text-slate-200">{deletingDoc.title}</strong>? Esta ação é definitiva e removerá o arquivo anexo dos servidores.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingDoc(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteDocument}
+                disabled={submittingAction}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-colors disabled:opacity-50"
+              >
+                {submittingAction ? 'Excluindo...' : 'Sim, Excluir'}
+              </button>
+            </div>
           </div>
         </div>
       )}

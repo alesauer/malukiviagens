@@ -6,7 +6,7 @@ import { TripDetails } from './TripDetails';
 
 interface TripsProps {
   initialTripId?: number;
-  initialTab?: 'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos';
+  initialTab?: 'roteiro' | 'linha-do-tempo' | 'destinos' | 'reservas' | 'viajantes' | 'financeiro' | 'checklists' | 'bagagem' | 'documentos';
   onClearInitialTripId?: () => void;
 }
 

@@ -8,6 +8,7 @@ from app.core.audit import log_audit
 from app.models.models import User, EmergencyContact
 from app.schemas.schemas import (
     EmergencyContactCreate,
+    EmergencyContactUpdate,
     EmergencyContactOut,
     MessageResponse
 )
@@ -57,6 +58,29 @@ def create_emergency_contact(
         description=f"Contato de emergência '{contact.name}' cadastrado por {current_user.name}."
     )
 
+    return contact
+
+@router.put("/{contact_id}", response_model=EmergencyContactOut)
+def update_emergency_contact(
+    contact_id: int,
+    contact_in: EmergencyContactUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    family_id = get_user_family_id(current_user, db)
+    contact = db.query(EmergencyContact).filter(
+        EmergencyContact.id == contact_id,
+        EmergencyContact.family_id == family_id
+    ).first()
+    if not contact:
+        raise HTTPException(status_code=404, detail="Contato de emergência não encontrado.")
+
+    update_data = contact_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(contact, field, value)
+
+    db.commit()
+    db.refresh(contact)
     return contact
 
 @router.delete("/{contact_id}", response_model=MessageResponse)

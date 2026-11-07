@@ -109,6 +109,11 @@ class TripParticipantCreate(BaseModel):
     email: Optional[EmailStr] = None
     is_external: bool = False
 
+class TripParticipantUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    is_external: Optional[bool] = None
+
 class TripParticipantOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -424,6 +429,17 @@ class DocumentCreate(BaseModel):
     expiration_date: Optional[dt.date] = None
     notes: Optional[str] = None
 
+class DocumentUpdate(BaseModel):
+    title: Optional[str] = None
+    doc_type: Optional[str] = None
+    trip_id: Optional[int] = None
+    reservation_id: Optional[int] = None
+    user_id: Optional[int] = None
+    doc_number: Optional[str] = None
+    issue_date: Optional[dt.date] = None
+    expiration_date: Optional[dt.date] = None
+    notes: Optional[str] = None
+
 class DocumentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -506,6 +522,10 @@ class BudgetCategoryCreate(BaseModel):
     trip_id: int
     category: str
     budgeted_amount: float
+
+class BudgetCategoryUpdate(BaseModel):
+    category: Optional[str] = None
+    budgeted_amount: Optional[float] = None
 
 class BudgetCategoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -595,6 +615,12 @@ class EmergencyContactCreate(BaseModel):
     user_id: Optional[int] = None
     name: str
     phone: str
+    relationship_label: Optional[str] = None
+    notes: Optional[str] = None
+
+class EmergencyContactUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
     relationship_label: Optional[str] = None
     notes: Optional[str] = None
 

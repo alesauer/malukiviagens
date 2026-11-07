@@ -2,12 +2,14 @@ import {
   User,
   FamilyGroup,
   Trip,
+  TripParticipant,
   Destination,
   Attraction,
   Activity,
   Reservation,
   DocumentItem,
   Expense,
+  BudgetCategory,
   FinancialSummary,
   ChecklistItem,
   LuggageItem,
@@ -185,6 +187,26 @@ class ApiClient {
     return await this.request(`/trips/${id}`, { method: 'DELETE' });
   }
 
+  async addTripParticipant(tripId: number, data: Partial<TripParticipant>): Promise<TripParticipant> {
+    return await this.request<TripParticipant>(`/trips/${tripId}/participants`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateTripParticipant(tripId: number, participantId: number, data: Partial<TripParticipant>): Promise<TripParticipant> {
+    return await this.request<TripParticipant>(`/trips/${tripId}/participants/${participantId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteTripParticipant(tripId: number, participantId: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/trips/${tripId}/participants/${participantId}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- Destinations & Catalog ----------------
   async getDestinations(tripId?: number): Promise<Destination[]> {
     const url = tripId ? `/destinations/?trip_id=${tripId}` : '/destinations/';
@@ -236,6 +258,19 @@ class ApiClient {
     return await this.request(`/attractions/${attractionId}/reviews`, {
       method: 'POST',
       body: JSON.stringify({ rating, comment })
+    });
+  }
+
+  async updateAttraction(id: number, data: Partial<Attraction>): Promise<Attraction> {
+    return await this.request<Attraction>(`/attractions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteAttraction(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/attractions/${id}`, {
+      method: 'DELETE'
     });
   }
 
@@ -390,6 +425,23 @@ class ApiClient {
     return await this.request<FinancialSummary>(`/finances/trip/${tripId}/summary`);
   }
 
+  async getTripBudgets(tripId: number): Promise<BudgetCategory[]> {
+    return await this.request<BudgetCategory[]>(`/finances/trip/${tripId}/budgets`);
+  }
+
+  async setTripBudget(data: { trip_id: number; category: string; budgeted_amount: number }): Promise<BudgetCategory> {
+    return await this.request<BudgetCategory>('/finances/budgets', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteTripBudget(budgetId: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/finances/budgets/${budgetId}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- Documents ----------------
   async getFamilyDocuments(familyId: number): Promise<DocumentItem[]> {
     return await this.request<DocumentItem[]>(`/documents/family/${familyId}`);
@@ -408,6 +460,19 @@ class ApiClient {
 
   getDocumentDownloadUrl(docId: number): string {
     return `${API_BASE_URL}/documents/${docId}/download`;
+  }
+
+  async updateDocument(id: number, data: Partial<DocumentItem>): Promise<DocumentItem> {
+    return await this.request<DocumentItem>(`/documents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteDocument(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/documents/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   // ---------------- Checklists & Luggage ----------------
@@ -473,6 +538,25 @@ class ApiClient {
     });
   }
 
+  async updateEmergencyContact(id: number, contact: Partial<EmergencyContact>): Promise<EmergencyContact> {
+    return await this.request<EmergencyContact>(`/emergency/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(contact)
+    });
+  }
+
+  async deleteEmergencyContact(id: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/emergency/${id}`, {
+      method: 'DELETE'
+    });
+  }
+
+  async removeFamilyMember(memberId: number): Promise<{ message: string }> {
+    return await this.request<{ message: string }>(`/families/members/${memberId}`, {
+      method: 'DELETE'
+    });
+  }
+
   // ---------------- AI Assistant ----------------
   async chatAI(prompt: string, tripId?: number): Promise<{ reply: string; sources?: string[]; suggested_actions?: any[] }> {
     return await this.request('/ai/chat', {
@@ -481,8 +565,8 @@ class ApiClient {
     });
   }
 
-  async parseDocumentAI(formData: FormData) {
-    return await this.request('/ai/parse-document', {
+  async parseDocumentAI(formData: FormData): Promise<{ status?: string; extracted_data?: any }> {
+    return await this.request<{ status?: string; extracted_data?: any }>('/ai/parse-document', {
       method: 'POST',
       body: formData
     });

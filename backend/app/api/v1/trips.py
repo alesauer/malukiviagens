@@ -12,6 +12,7 @@ from app.schemas.schemas import (
     TripUpdate,
     TripOut,
     TripParticipantCreate,
+    TripParticipantUpdate,
     TripParticipantOut,
     MessageResponse
 )
@@ -264,6 +265,34 @@ def add_participant(
         description=f"Participante '{part.name}' adicionado à viagem '{trip.title}'."
     )
 
+    return part
+
+@router.put("/{trip_id}/participants/{participant_id}", response_model=TripParticipantOut)
+def update_participant(
+    trip_id: int,
+    participant_id: int,
+    part_in: TripParticipantUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    family_id = get_user_family_id(current_user, db)
+    trip = db.query(Trip).filter(Trip.id == trip_id, Trip.family_id == family_id).first()
+    if not trip:
+        raise HTTPException(status_code=404, detail="Viagem não encontrada.")
+
+    part = db.query(TripParticipant).filter(
+        TripParticipant.id == participant_id,
+        TripParticipant.trip_id == trip_id
+    ).first()
+    if not part:
+        raise HTTPException(status_code=404, detail="Participante não encontrado.")
+
+    update_data = part_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(part, field, value)
+
+    db.commit()
+    db.refresh(part)
     return part
 
 @router.delete("/{trip_id}/participants/{participant_id}", response_model=MessageResponse)

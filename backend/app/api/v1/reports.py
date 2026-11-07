@@ -214,17 +214,112 @@ def export_trip_json(
         "main_destination": trip.main_destination,
         "description": trip.description,
         "notes": trip.notes,
+        "cover_image": trip.cover_image,
+        "general_rating": trip.general_rating,
+        "review_comments": trip.review_comments,
         "destinations": [
-            {"city": d.city, "country": d.country, "arrival_date": str(d.arrival_date), "departure_date": str(d.departure_date)}
+            {
+                "city": d.city,
+                "state_region": d.state_region,
+                "country": d.country,
+                "arrival_date": str(d.arrival_date) if d.arrival_date else None,
+                "departure_date": str(d.departure_date) if d.departure_date else None,
+                "description": d.description,
+                "notes": d.notes
+            }
             for d in trip.destinations
         ],
+        "participants": [
+            {
+                "name": p.name,
+                "email": p.email,
+                "is_external": p.is_external
+            }
+            for p in trip.participants
+        ],
         "activities": [
-            {"title": a.title, "category": a.category, "date": str(a.date) if a.date else None, "time": str(a.time) if a.time else None}
+            {
+                "title": a.title,
+                "category": a.category,
+                "address": a.address,
+                "date": str(a.date) if a.date else None,
+                "time": str(a.time) if a.time else None,
+                "estimated_duration_minutes": a.estimated_duration_minutes,
+                "estimated_cost": float(a.estimated_cost or 0),
+                "is_completed": a.is_completed,
+                "notes": a.notes,
+                "external_link": a.external_link
+            }
             for a in trip.activities
         ],
+        "reservations": [
+            {
+                "type": r.type,
+                "title": r.title,
+                "provider": r.provider,
+                "booking_code": r.booking_code,
+                "start_datetime": r.start_datetime.isoformat() if r.start_datetime else None,
+                "end_datetime": r.end_datetime.isoformat() if r.end_datetime else None,
+                "total_value": float(r.total_value or 0),
+                "currency": r.currency,
+                "payment_status": r.payment_status,
+                "contact_phone": r.contact_phone,
+                "contact_email": r.contact_email,
+                "details_json": r.details_json,
+                "notes": r.notes
+            }
+            for r in trip.reservations
+        ],
         "expenses": [
-            {"title": e.title, "category": e.category, "amount": float(e.amount), "date": str(e.date), "payment_status": e.payment_status}
+            {
+                "title": e.title,
+                "category": e.category,
+                "amount": float(e.amount),
+                "date": str(e.date),
+                "payment_status": e.payment_status,
+                "notes": e.notes
+            }
             for e in trip.expenses
+        ],
+        "budgets": [
+            {
+                "category": b.category,
+                "budgeted_amount": float(b.budgeted_amount)
+            }
+            for b in trip.budgets
+        ],
+        "checklists": [
+            {
+                "title": c.title,
+                "category": c.category,
+                "priority": c.priority,
+                "due_date": str(c.due_date) if c.due_date else None,
+                "is_completed": c.is_completed,
+                "notes": c.notes
+            }
+            for c in trip.checklists
+        ],
+        "luggage": [
+            {
+                "description": l.description,
+                "category": l.category,
+                "quantity": l.quantity,
+                "is_packed": l.is_packed,
+                "notes": l.notes
+            }
+            for l in trip.luggage_items
+        ],
+        "documents": [
+            {
+                "title": doc.title,
+                "doc_type": doc.doc_type,
+                "doc_number": doc.doc_number,
+                "issue_date": str(doc.issue_date) if doc.issue_date else None,
+                "expiration_date": str(doc.expiration_date) if doc.expiration_date else None,
+                "file_name": doc.file_name,
+                "notes": doc.notes
+            }
+            for doc in trip.documents
         ]
     }
 

@@ -200,6 +200,25 @@ def set_trip_budget(
     db.refresh(budget)
     return budget
 
+@router.delete("/budgets/{budget_id}", response_model=MessageResponse)
+def delete_trip_budget(
+    budget_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    family_id = get_user_family_id(current_user, db)
+    budget = db.query(BudgetCategory).join(Trip, Trip.id == BudgetCategory.trip_id).filter(
+        BudgetCategory.id == budget_id,
+        Trip.family_id == family_id
+    ).first()
+    if not budget:
+        raise HTTPException(status_code=404, detail="Orçamento de categoria não encontrado.")
+
+    cat_name = budget.category
+    db.delete(budget)
+    db.commit()
+    return MessageResponse(message=f"Teto de orçamento da categoria '{cat_name}' excluído.")
+
 @router.get("/trip/{trip_id}/summary", response_model=FinancialSummary)
 def get_financial_summary(
     trip_id: int,

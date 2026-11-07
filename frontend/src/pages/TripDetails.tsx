@@ -291,6 +291,17 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
     }
   };
 
+  const handleDownloadIcs = async () => {
+    try {
+      setDownloadingFormat('ics');
+      await api.downloadCalendarIcs(tripId, trip?.title);
+    } catch (err: any) {
+      alert(err.message || 'Erro ao exportar compromissos para Google Agenda (.ics).');
+    } finally {
+      setDownloadingFormat(null);
+    }
+  };
+
   // ---------------- Handlers: Destinos ----------------
   const handleAddDestination = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -642,13 +653,15 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
             <FileDown className="w-4 h-4 text-emerald-600" />
             <span>{downloadingFormat === 'excel' ? 'Gerando...' : 'Excel'}</span>
           </button>
-          <a
-            href={api.getCalendarIcsUrl(trip.id)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          <button
+            onClick={handleDownloadIcs}
+            disabled={downloadingFormat === 'ics'}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            title="Exportar compromissos e reservas para Google Agenda (.ics)"
           >
             <Calendar className="w-4 h-4 text-blue-500" />
-            <span>Google Agenda (.ics)</span>
-          </a>
+            <span>{downloadingFormat === 'ics' ? 'Gerando...' : 'Google Agenda (.ics)'}</span>
+          </button>
 
           {trip.status !== 'realizada' ? (
             <button

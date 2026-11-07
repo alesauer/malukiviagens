@@ -83,8 +83,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors">
-      <OfflineBanner />
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-colors">
       <Navbar
         user={user}
         activeTab={activeTab}
@@ -95,24 +94,27 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
-        {activeTab === 'dashboard' && (
-          <Dashboard user={user} onNavigate={handleNavigate} />
-        )}
-        {activeTab === 'trips' && (
-          <Trips
-            initialTripId={selectedTripId}
-            onClearInitialTripId={() => setSelectedTripId(undefined)}
-          />
-        )}
-        {activeTab === 'reservations' && <Reservations />}
-        {activeTab === 'finances' && <Finances />}
-        {activeTab === 'documents' && <Documents user={user} />}
-        {activeTab === 'explore' && <Explore />}
-        {activeTab === 'family' && <Family user={user} />}
-        {activeTab === 'ai' && <AIAssistant />}
-        {activeTab === 'reports' && <Reports />}
-      </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <OfflineBanner />
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8 max-w-7xl mx-auto w-full">
+          {activeTab === 'dashboard' && (
+            <Dashboard user={user} onNavigate={handleNavigate} />
+          )}
+          {activeTab === 'trips' && (
+            <Trips
+              initialTripId={selectedTripId}
+              onClearInitialTripId={() => setSelectedTripId(undefined)}
+            />
+          )}
+          {activeTab === 'reservations' && <Reservations />}
+          {activeTab === 'finances' && <Finances />}
+          {activeTab === 'documents' && <Documents user={user} />}
+          {activeTab === 'explore' && <Explore />}
+          {activeTab === 'family' && <Family user={user} />}
+          {activeTab === 'ai' && <AIAssistant />}
+          {activeTab === 'reports' && <Reports />}
+        </main>
+      </div>
     </div>
   );
 };

@@ -56,6 +56,33 @@ async def get_weather(
         "forecast": forecast
     }
 
+def format_ics_dt(d_val, t_val=None) -> str:
+    """Formata com segurança datas e horários em string ou objeto datetime para padrão iCalendar UTC"""
+    if not d_val:
+        return datetime.now().strftime("%Y%m%dT090000Z")
+    if isinstance(d_val, str):
+        cleaned = d_val.replace("-", "").replace(":", "").replace("T", "")
+        if len(cleaned) >= 14:
+            return f"{cleaned[:14]}Z"
+        d_str = cleaned[:8]
+    elif hasattr(d_val, "strftime"):
+        if hasattr(d_val, "hour") and d_val.hour != 0:
+            return d_val.strftime("%Y%m%dT%H%M%SZ")
+        d_str = d_val.strftime("%Y%m%d")
+    else:
+        d_str = datetime.now().strftime("%Y%m%d")
+
+    if not t_val:
+        t_str = "090000"
+    elif isinstance(t_val, str):
+        t_str = t_val.replace(":", "")[:6].ljust(6, "0")
+    elif hasattr(t_val, "strftime"):
+        t_str = t_val.strftime("%H%M%S")
+    else:
+        t_str = "090000"
+
+    return f"{d_str}T{t_str}Z"
+
 @router.get("/calendar/export-ics/{trip_id}")
 def export_calendar_ics(
     trip_id: int,
@@ -81,7 +108,7 @@ def export_calendar_ics(
     ]
 
     for act in activities:
-        dt_start = f"{act.date.strftime('%Y%m%d')}T{act.time.strftime('%H%M%S') if act.time else '090000'}Z"
+        dt_start = format_ics_dt(act.date, act.time)
         ics_lines.extend([
             "BEGIN:VEVENT",
             f"UID:activity-{act.id}@travelmanager.local",
@@ -95,8 +122,8 @@ def export_calendar_ics(
         ])
 
     for res in reservations:
-        dt_start = res.start_datetime.strftime('%Y%m%dT%H%M%SZ')
-        dt_end = (res.end_datetime or res.start_datetime).strftime('%Y%m%dT%H%M%SZ')
+        dt_start = format_ics_dt(res.start_datetime)
+        dt_end = format_ics_dt(res.end_datetime or res.start_datetime)
         ics_lines.extend([
             "BEGIN:VEVENT",
             f"UID:res-{res.id}@travelmanager.local",

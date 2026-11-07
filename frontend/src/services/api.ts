@@ -554,6 +554,26 @@ class ApiClient {
     window.URL.revokeObjectURL(url);
   }
 
+  async downloadCalendarIcs(tripId: number, title?: string): Promise<void> {
+    const token = this.token;
+    const res = await fetch(`${API_BASE_URL}/integrations/calendar/export-ics/${tripId}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Erro ao gerar arquivo do calendário (.ics).' }));
+      throw new Error(err.detail || 'Erro ao baixar Google Agenda (.ics)');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agenda-viagem-${tripId}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
   async createBackup(): Promise<{ message: string; detail: string }> {
     return await this.request('/backup/create', { method: 'POST' });
   }

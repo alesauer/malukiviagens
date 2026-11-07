@@ -33,9 +33,18 @@ import {
 interface TripDetailsProps {
   tripId: number;
   onBack: () => void;
+  initialTab?: 'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos';
+  allTrips?: Trip[];
+  onChangeTripId?: (newId: number) => void;
 }
 
-export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
+export const TripDetails: React.FC<TripDetailsProps> = ({
+  tripId,
+  onBack,
+  initialTab = 'roteiro',
+  allTrips,
+  onChangeTripId
+}) => {
   const [trip, setTrip] = useState<Trip | null>(null);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -44,8 +53,14 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
   const [checklists, setChecklists] = useState<ChecklistItem[]>([]);
   const [luggage, setLuggage] = useState<LuggageItem[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos'>('roteiro');
+  const [activeTab, setActiveTab] = useState<'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos'>(initialTab);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // New Activity Modal state
   const [showAddAct, setShowAddAct] = useState(false);
@@ -626,13 +641,32 @@ export const TripDetails: React.FC<TripDetailsProps> = ({ tripId, onBack }) => {
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Top action bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <button
-          onClick={onBack}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-brand-600 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Voltar para viagens</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-brand-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Voltar para viagens</span>
+          </button>
+
+          {allTrips && allTrips.length > 1 && onChangeTripId && (
+            <div className="flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-400 font-medium">Trocar viagem:</span>
+              <select
+                value={tripId}
+                onChange={(e) => onChangeTripId(Number(e.target.value))}
+                className="px-2.5 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-semibold focus:ring-1 focus:ring-brand-500 outline-none cursor-pointer"
+              >
+                {allTrips.map(t => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button

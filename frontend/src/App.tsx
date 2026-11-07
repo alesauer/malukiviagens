@@ -19,6 +19,7 @@ export const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [selectedTripId, setSelectedTripId] = useState<number | undefined>(undefined);
+  const [initialTripTab, setInitialTripTab] = useState<'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos'>('roteiro');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,10 +56,29 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('auth-unauthorized', handleUnauthorized);
   }, []);
 
-  const handleNavigate = (tab: string, tripId?: number) => {
+  const handleNavigate = (tab: string, tripId?: number, tripTab?: 'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos') => {
     setActiveTab(tab);
     if (tripId) {
       setSelectedTripId(tripId);
+    }
+    if (tripTab) {
+      setInitialTripTab(tripTab);
+    }
+  };
+
+  const handleSelectTab = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'trips') {
+      setSelectedTripId(undefined);
+      setInitialTripTab('roteiro');
+    } else if (tab === 'roteiro') {
+      setInitialTripTab('roteiro');
+    } else if (tab === 'checklists') {
+      setInitialTripTab('checklists');
+    } else if (tab === 'malas') {
+      setInitialTripTab('bagagem');
+    } else {
+      setSelectedTripId(undefined);
     }
   };
 
@@ -87,10 +107,7 @@ export const App: React.FC = () => {
       <Navbar
         user={user}
         activeTab={activeTab}
-        onSelectTab={(tab) => {
-          setActiveTab(tab);
-          setSelectedTripId(undefined);
-        }}
+        onSelectTab={handleSelectTab}
         onLogout={handleLogout}
       />
 
@@ -100,9 +117,14 @@ export const App: React.FC = () => {
           {activeTab === 'dashboard' && (
             <Dashboard user={user} onNavigate={handleNavigate} />
           )}
-          {activeTab === 'trips' && (
+          {(activeTab === 'trips' || activeTab === 'roteiro' || activeTab === 'checklists' || activeTab === 'malas') && (
             <Trips
               initialTripId={selectedTripId}
+              initialTab={
+                activeTab === 'roteiro' ? 'roteiro' :
+                activeTab === 'checklists' ? 'checklists' :
+                activeTab === 'malas' ? 'bagagem' : initialTripTab
+              }
               onClearInitialTripId={() => setSelectedTripId(undefined)}
             />
           )}

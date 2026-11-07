@@ -6,10 +6,11 @@ import { TripDetails } from './TripDetails';
 
 interface TripsProps {
   initialTripId?: number;
+  initialTab?: 'roteiro' | 'reservas' | 'financeiro' | 'checklists' | 'bagagem' | 'destinos';
   onClearInitialTripId?: () => void;
 }
 
-export const Trips: React.FC<TripsProps> = ({ initialTripId, onClearInitialTripId }) => {
+export const Trips: React.FC<TripsProps> = ({ initialTripId, initialTab, onClearInitialTripId }) => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(initialTripId || null);
   const [loading, setLoading] = useState(true);
@@ -32,8 +33,15 @@ export const Trips: React.FC<TripsProps> = ({ initialTripId, onClearInitialTripI
   useEffect(() => {
     if (initialTripId) {
       setSelectedTripId(initialTripId);
+    } else if (initialTab && trips.length > 0 && selectedTripId === null) {
+      const defaultTrip = trips.find(t => t.status === 'em_andamento') ||
+                          trips.find(t => t.status === 'planejamento' || t.status === 'confirmada') ||
+                          trips[0];
+      if (defaultTrip) {
+        setSelectedTripId(defaultTrip.id);
+      }
     }
-  }, [initialTripId]);
+  }, [initialTripId, initialTab, trips]);
 
   useEffect(() => {
     loadTrips();
@@ -82,6 +90,9 @@ export const Trips: React.FC<TripsProps> = ({ initialTripId, onClearInitialTripI
     return (
       <TripDetails
         tripId={selectedTripId}
+        initialTab={initialTab || 'roteiro'}
+        allTrips={trips}
+        onChangeTripId={(newId) => setSelectedTripId(newId)}
         onBack={() => {
           setSelectedTripId(null);
           if (onClearInitialTripId) onClearInitialTripId();

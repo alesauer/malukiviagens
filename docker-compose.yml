@@ -6,11 +6,13 @@ services:
       dockerfile: Dockerfile
     container_name: maluki_app
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
-      - SUPABASE_URL=${SITE_URL:-http://localhost}
+      - SUPABASE_URL=${SITE_URL:-http://localhost:3000}
       - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
@@ -57,14 +59,14 @@ services:
       DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
       GOTRUE_API_HOST: 0.0.0.0
       GOTRUE_API_PORT: 9999
-      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost}
-      GOTRUE_URI_ALLOW_LIST: ${SITE_URL:-http://localhost}/*
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost:3000}
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL:-http://localhost:3000}/*
       GOTRUE_DISABLE_SIGNUP: "false"
       GOTRUE_MAILER_AUTOCONFIRM: ${MAILER_AUTOCONFIRM:-true}
       GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
       GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${SITE_URL:-http://localhost}/auth/v1/callback
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${SITE_URL:-http://localhost:3000}/auth/v1/callback
     networks:
       - maluki-net
 
@@ -114,6 +116,8 @@ services:
     image: kong:2.8.1
     container_name: maluki_kong
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:${KONG_PORT:-8000}:8000"
     depends_on:
       - auth
       - rest
@@ -128,32 +132,9 @@ services:
     networks:
       - maluki-net
 
-  # 7. Caddy (Proxy Reverso e SSL Automático Let's Encrypt)
-  caddy:
-    image: caddy:2-alpine
-    container_name: maluki_caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - app
-      - kong
-    environment:
-      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
-      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
-    volumes:
-      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - maluki-net
-
 volumes:
   pgdata:
   storage_data:
-  caddy_data:
-  caddy_config:
 
 networks:
   maluki-net:

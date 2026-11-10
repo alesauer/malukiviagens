@@ -1,30 +1,33 @@
-# Guia de Deploy na VPS com Docker Compose — Maluki Viagens
+# Guia de Deploy na VPS com Apache e Docker Compose — Maluki Viagens
 
-Este guia orienta como subir e rodar toda a infraestrutura do **Maluki Viagens** em uma VPS Linux (Ubuntu 22.04 / 24.04 LTS), com banco de dados PostgreSQL local, autenticação Supabase GoTrue, storage de arquivos, Kong Gateway, Caddy com SSL automático e assistente DeepSeek.
+Este guia orienta o deploy do **Maluki Viagens** em uma VPS Linux com **Apache** como proxy reverso (gerenciando SSL/HTTPS) e os serviços rodando em **Docker Compose** (aplicação Node.js/TanStack Start, PostgreSQL local, GoTrue Auth, Storage e Kong Gateway).
 
 ---
 
 ## 1. Pré-requisitos na VPS
 
-1. **Acesso SSH** como root ou usuário sudo.
-2. **Domínio ou subdomínio** apontado via DNS tipo `A` para o endereço IP da sua VPS:
-   * Exemplo: `viagens.seudominio.com` -> `IP.DA.SUA.VPS`
-3. **Docker & Docker Compose** instalados:
+1. **Acesso SSH** com permissões sudo.
+2. **Apache2** instalado e ativo na VPS:
    ```bash
-   # Instalação rápida do Docker oficial
+   sudo apt update
+   sudo apt install -y apache2 certbot python3-certbot-apache
+   ```
+3. **Módulos do Apache necessários:**
+   ```bash
+   sudo a2enmod proxy proxy_http proxy_wstunnel headers rewrite ssl
+   sudo systemctl restart apache2
+   ```
+4. **Docker & Docker Compose** instalados:
+   ```bash
    curl -fsSL https://get.docker.com | sh
    sudo usermod -aG docker $USER
-   # Ativar docker compose
-   sudo systemctl enable --now docker
    ```
-4. **Portas Liberadas no Firewall:**
-   * `80/tcp` (HTTP para emissão de certificado Let's Encrypt)
-   * `443/tcp` (HTTPS tráfego seguro)
-   * `22/tcp` (SSH)
+5. **Domínio apontado via DNS:**
+   * Tipo `A` apontando seu domínio (ex: `viagens.seudominio.com`) para o IP da VPS.
 
 ---
 
-## 2. Instalação e Configuração
+## 2. Configurar e Iniciar os Containers Docker
 
 ### Passo 1: Clonar o Repositório
 ```bash
@@ -33,63 +36,67 @@ cd MalukiViagens
 ```
 
 ### Passo 2: Gerar as Chaves do Supabase e Banco
-Execute o gerador automático para criar o `POSTGRES_PASSWORD`, `JWT_SECRET`, `SUPABASE_ANON_KEY` e `SUPABASE_SERVICE_ROLE_KEY`:
+Execute o utilitário incluído no projeto:
 ```bash
 node docker/generate-keys.mjs
 ```
+Guarde as chaves geradas (`POSTGRES_PASSWORD`, `JWT_SECRET`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`).
 
 ### Passo 3: Configurar o `.env`
-Copie o modelo de variáveis de ambiente:
 ```bash
 cp .env.example .env
 nano .env
 ```
-Preencha os valores:
-* `SITE_DOMAIN`: seu domínio (ex: `viagens.seudominio.com`)
+Preencha:
 * `SITE_URL`: sua URL completa (ex: `https://viagens.seudominio.com`)
-* `ACME_EMAIL`: seu e-mail para o certificado SSL do Caddy
-* Cole as chaves geradas no Passo 2 (`POSTGRES_PASSWORD`, `JWT_SECRET`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
-* `DEEPSEEK_API_KEY`: sua chave de API DeepSeek obtida em [platform.deepseek.com](https://platform.deepseek.com)
+* `POSTGRES_PASSWORD`, `JWT_SECRET`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (geradas no Passo 2)
+* `DEEPSEEK_API_KEY`: sua chave de API da DeepSeek
 
----
-
-## 3. Subir os Containers
-
-Execute:
+### Passo 4: Subir os Containers
 ```bash
 docker compose up -d --build
 ```
-
-O Docker irá:
-1. Compilar a aplicação TanStack Start / Node.js no container `maluki_app`.
-2. Inicializar o PostgreSQL `maluki_db` e executar automaticamente o script `docker/init-db/01-init.sql` (criando tabelas, RLS, functions e bucket `documents`).
-3. Subir o `maluki_auth` (GoTrue) conectado ao Postgres local.
-4. Subir o `maluki_rest` (PostgREST) e `maluki_storage` (armazenamento local).
-5. Subir o `maluki_kong` (unificando as rotas de API).
-6. Subir o `maluki_caddy`, que obterá o certificado SSL do Let's Encrypt automaticamente para o seu domínio.
+Os containers escutarão em modo seguro no localhost da VPS:
+* Aplicação Web: `127.0.0.1:3000`
+* Kong Gateway (APIs do Supabase): `127.0.0.1:8000`
 
 ---
 
-## 4. Verificação de Status
+## 3. Configurar o Apache como Proxy Reverso
 
-Para acompanhar os logs de inicialização:
+Copie o modelo de VirtualHost do projeto para o Apache:
 ```bash
-docker compose logs -f
+sudo cp docker/apache-vhost.conf /etc/apache2/sites-available/maluki.conf
 ```
 
-Para verificar o status dos containers:
+Edite o arquivo e ajuste o seu domínio:
 ```bash
-docker compose ps
+sudo nano /etc/apache2/sites-available/maluki.conf
+```
+*(Substitua `viagens.seudominio.com` pelo seu domínio real).*
+
+Ative o site no Apache:
+```bash
+sudo a2ensite maluki.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2
 ```
 
-Todos os serviços devem estar no status `Up` ou `healthy`.
+### Emitir o Certificado SSL Gratuito com Certbot
+```bash
+sudo certbot --apache -d viagens.seudominio.com
+```
+
+Pronto! O Certbot configurará os certificados HTTPS automaticamente no Apache.
 
 ---
 
-## 5. Rotina de Backup do Banco Local
+## 4. Comandos Úteis
 
-Para fazer o backup diário dos dados, crie uma tarefa no cron:
-```bash
-# Exemplo de comando de backup:
-docker exec -t maluki_db pg_dump -U postgres postgres > backup_$(date +%Y%m%d).sql
-```
+* **Ver logs dos containers:** `docker compose logs -f`
+* **Status dos containers:** `docker compose ps`
+* **Reiniciar aplicação:** `docker compose restart app`
+* **Backup diário do banco Postgres:**
+  ```bash
+  docker exec -t maluki_db pg_dump -U postgres postgres > backup_$(date +%Y%m%d).sql
+  ```

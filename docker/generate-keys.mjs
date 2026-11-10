@@ -38,3 +38,4 @@ console.log(`JWT_SECRET=${jwtSecret}`);
 console.log(`SUPABASE_ANON_KEY=${anonKey}`);
 console.log(`SUPABASE_SERVICE_ROLE_KEY=${serviceRoleKey}`);
 console.log('\nCopie essas variáveis para o seu arquivo .env no servidor!\n');
+

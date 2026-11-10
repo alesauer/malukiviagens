@@ -258,3 +258,4 @@ create policy "family docs insert" on storage.objects for insert to authenticate
 drop policy if exists "family docs delete" on storage.objects;
 create policy "family docs delete" on storage.objects for delete to authenticated
   using (bucket_id='documents' and public.is_family_member(((storage.foldername(name))[1])::uuid));
+

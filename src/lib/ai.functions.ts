@@ -27,8 +27,8 @@ export const askAssistant = createServerFn({ method: "POST" })
 
     try {
       const instructions =
-          "Você é o assistente de viagens da família no app Maluki Viagens. Responda em português do Brasil, de forma calorosa e objetiva, com markdown simples (títulos curtos, listas). Para roteiros, organize por dia com horários sugeridos e estimativas em R$. Considere crianças e ritmo familiar quando fizer sentido. Contexto: " +
-          tripContext;
+        "Você é o assistente de viagens da família no app Maluki Viagens. Responda em português do Brasil, de forma calorosa e objetiva, com markdown simples (títulos curtos, listas). Para roteiros, organize por dia com horários sugeridos e estimativas em R$. Considere crianças e ritmo familiar quando fizer sentido. Contexto: " +
+        tripContext;
 
       const endpoint = directApiKey
         ? "https://api.deepseek.com/chat/completions"

@@ -1,6 +1,31 @@
 -- Maluki Viagens: Database Initialization for Self-Hosted Supabase / PostgreSQL
 -- Applies full schema, functions, RLS policies, triggers, and storage setup.
 
+-- 0. Ensure auth types and storage permissions
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'auth' AND t.typname = 'factor_type') THEN
+    CREATE TYPE auth.factor_type AS ENUM ('totp', 'webauthn', 'phone');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'auth' AND t.typname = 'factor_status') THEN
+    CREATE TYPE auth.factor_status AS ENUM ('unverified', 'verified');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'auth' AND t.typname = 'aal_level') THEN
+    CREATE TYPE auth.aal_level AS ENUM ('aal1', 'aal2', 'aal3');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'auth' AND t.typname = 'code_challenge_method') THEN
+    CREATE TYPE auth.code_challenge_method AS ENUM ('s256', 'plain');
+  END IF;
+END $$;
+
+GRANT ALL ON SCHEMA storage TO postgres;
+GRANT ALL ON ALL TABLES IN SCHEMA storage TO postgres;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA storage TO postgres;
+GRANT ALL ON ALL ROUTINES IN SCHEMA storage TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage GRANT ALL ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage GRANT ALL ON SEQUENCES TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA storage GRANT ALL ON FUNCTIONS TO postgres;
+
 -- 1. Profiles & Families
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,

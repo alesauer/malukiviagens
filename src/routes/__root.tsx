@@ -93,10 +93,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const envScript = `window.__ENV__ = {
+    SUPABASE_URL: ${JSON.stringify(process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"] || "")},
+    SUPABASE_PUBLISHABLE_KEY: ${JSON.stringify(process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "")}
+  };`;
+
   return (
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: envScript }} />
       </head>
       <body>
         {children}

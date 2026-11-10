@@ -49,6 +49,21 @@ function isH3SwallowedErrorBody(body: string): boolean {
 // twice and renders garbled.
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith("/auth/v1") || url.pathname.startsWith("/rest/v1") || url.pathname.startsWith("/storage/v1")) {
+      const kongBase = (process.env["KONG_INTERNAL_URL"] || "http://kong:8000").replace(/\/+$/, "");
+      const targetUrl = `${kongBase}${url.pathname}${url.search}`;
+      const reqHeaders = new Headers(request.headers);
+      reqHeaders.set("host", new URL(kongBase).host);
+      return fetch(targetUrl, {
+        method: request.method,
+        headers: reqHeaders,
+        body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
+        // @ts-expect-error Node fetch duplex option
+        duplex: "half",
+      });
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);

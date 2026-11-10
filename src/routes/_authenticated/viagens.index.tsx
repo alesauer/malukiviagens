@@ -1,0 +1,261 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Images, MapPin, Plus, Plane } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useFamily } from "@/lib/family";
+import { CATEGORIES, brl, daysUntil, fmtDate, tripLength, tripPhase } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTripCover } from "@/lib/album-cover";
+
+export const Route = createFileRoute("/_authenticated/viagens/")({
+  head: () => ({
+    meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Minhas viagens — Maluki Viagens" },
+      { name: "description", content: "Suas próximas viagens e as que já aconteceram." },
+      { property: "og:title", content: "Minhas viagens — Maluki Viagens" },
+      { property: "og:description", content: "Suas próximas viagens e as que já aconteceram." },
+    ],
+  }),
+  component: TripsPage,
+});
+
+function useTrips() {
+  return useQuery({
+    queryKey: ["trips"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("trips").select("*").order("start_date");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+function TripsPage() {
+  const { data: family } = useFamily();
+  const { data: trips, isLoading } = useTrips();
+  const upcoming = (trips ?? []).filter((t) => tripPhase(t.start_date, t.end_date) !== "realizada");
+  const past = (trips ?? []).filter((t) => tripPhase(t.start_date, t.end_date) === "realizada").reverse();
+  const next = upcoming[0];
+  const firstName = family?.userName.split(" ")[0];
+
+  return (
+    <div className="space-y-10">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Olá{firstName ? `, ${firstName}` : ""} 👋</p>
+          <h1 className="text-4xl font-semibold">Suas viagens</h1>
+        </div>
+        <NewTripDialog />
+      </div>
+
+      {isLoading ? (
+        <Skeleton className="h-56 rounded-3xl" />
+      ) : next ? (
+        <NextTripHero trip={next} />
+      ) : (
+        <EmptyState />
+      )}
+
+      {upcoming.length > 1 && (
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold">Também planejadas</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {upcoming.slice(1).map((t) => <TripCard key={t.id} trip={t} />)}
+          </div>
+        </section>
+      )}
+      {past.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-2xl font-semibold">Memórias</h2>
+          <Timeline trips={past} />
+        </section>
+      )}
+    </div>
+  );
+}
+
+type Trip = NonNullable<ReturnType<typeof useTrips>["data"]>[number];
+
+function Timeline({ trips }: { trips: Trip[] }) {
+  const years = Array.from(new Set(trips.map((t) => t.start_date.slice(0, 4))));
+  return (
+    <ol className="relative ml-3 border-l-2 border-primary/25 md:ml-16">
+      {years.map((y) => (
+        <li key={y} className="pb-6">
+          <div className="relative -ml-3 mb-3 flex items-center gap-3 md:-ml-[4.6rem]">
+            <span className="hidden w-14 text-right font-display text-xl font-semibold text-primary md:block">{y}</span>
+            <span className="size-5 shrink-0 rounded-full border-4 border-background bg-primary shadow-soft" />
+            <span className="font-display text-xl font-semibold text-primary md:hidden">{y}</span>
+          </div>
+          <ul className="space-y-3 pl-6">
+            {trips.filter((t) => t.start_date.startsWith(y)).map((t) => <TimelineItem key={t.id} t={t} />)}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function TimelineItem({ t }: { t: Trip }) {
+  const cover = useTripCover(t.cover_path);
+  return (
+              <li className="relative">
+                <span className="absolute -left-[1.95rem] top-5 size-2.5 rounded-full bg-accent" />
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4 shadow-soft transition hover:border-primary/40">
+                  {cover && <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="size-16 shrink-0 rounded-xl object-cover" />}
+                  <Link to="/viagens/$id" params={{ id: t.id }} className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">
+                      {fmtDate(t.start_date, { day: "2-digit", month: "short" })}
+                      {t.end_date !== t.start_date && ` – ${fmtDate(t.end_date, { day: "2-digit", month: "short" })}`}
+                    </p>
+                    <h3 className="text-lg font-semibold hover:text-primary">{t.title}</h3>
+                    {t.main_destination && <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-3.5" />{t.main_destination}</p>}
+                  </Link>
+                  {t.photos_url && (
+                    <Button asChild variant="secondary" size="sm" className="rounded-full">
+                      <a href={t.photos_url} target="_blank" rel="noreferrer"><Images /> Fotos</a>
+                    </Button>
+                  )}
+                </div>
+              </li>
+  );
+}
+
+function NextTripHero({ trip }: { trip: Trip }) {
+  const d = daysUntil(trip.start_date);
+  const phase = tripPhase(trip.start_date, trip.end_date);
+  const cover = useTripCover(trip.cover_path);
+  return (
+    <Link to="/viagens/$id" params={{ id: trip.id }} style={cover ? { backgroundImage: `linear-gradient(to top, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.2)), url("${cover}")`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} className="group block overflow-hidden rounded-3xl bg-sunset p-8 text-primary-foreground shadow-lift transition hover:-translate-y-0.5 md:p-10">
+      <p className="text-sm font-medium uppercase tracking-widest opacity-80">
+        {phase === "em_andamento" ? "Acontecendo agora" : "Próxima viagem"}
+      </p>
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-semibold md:text-5xl">{trip.title}</h2>
+          <p className="mt-3 flex items-center gap-2 opacity-90">
+            {trip.main_destination && <><MapPin className="size-4" /> {trip.main_destination} · </>}
+            {fmtDate(trip.start_date)} – {fmtDate(trip.end_date)} · {tripLength(trip.start_date, trip.end_date)} dias
+          </p>
+        </div>
+        {phase === "futura" && (
+          <div className="text-right">
+            <div className="font-display text-6xl font-semibold leading-none">{d}</div>
+            <div className="text-sm opacity-80">{d === 1 ? "dia para ir" : "dias para ir"}</div>
+          </div>
+        )}
+      </div>
+      <p className="mt-6 text-sm font-medium opacity-90 group-hover:underline">Abrir planejamento →</p>
+    </Link>
+  );
+}
+
+function TripCard({ trip }: { trip: Trip }) {
+  const cover = useTripCover(trip.cover_path);
+  return (
+    <Link to="/viagens/$id" params={{ id: trip.id }} className="block overflow-hidden rounded-2xl border bg-card shadow-soft transition hover:-translate-y-0.5 hover:border-primary/40">
+      {cover && <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-40 w-full object-cover" />}
+      <div className="p-5">
+      <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium">{CATEGORIES[trip.category] ?? trip.category}</span>
+      <h3 className="mt-3 text-xl font-semibold">{trip.title}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {trip.main_destination ? `${trip.main_destination} · ` : ""}
+        {fmtDate(trip.start_date, { day: "2-digit", month: "short", year: "numeric" })}
+      </p>
+      {Number(trip.budget) > 0 && <p className="mt-3 text-sm">Orçamento {brl(trip.budget)}</p>}
+      </div>
+    </Link>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="rounded-3xl border border-dashed bg-card p-12 text-center">
+      <Plane className="mx-auto size-10 text-accent" />
+      <h2 className="mt-4 text-2xl font-semibold">Nenhuma viagem ainda</h2>
+      <p className="mx-auto mt-2 max-w-sm text-muted-foreground">Crie a primeira e comece a montar o roteiro, as reservas e o orçamento.</p>
+      <div className="mt-6 flex justify-center"><NewTripDialog /></div>
+    </div>
+  );
+}
+
+function NewTripDialog() {
+  const { data: family } = useFamily();
+  const qc = useQueryClient();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [form, setForm] = useState({ title: "", main_destination: "", start_date: "", end_date: "", category: "ferias", budget: "", description: "", photos_url: "" });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      if (!family) throw new Error("Família não carregada");
+      if (form.end_date < form.start_date) throw new Error("A volta precisa ser depois da ida");
+      let cover_path: string | null = null;
+      if (coverFile) {
+        cover_path = `${family.id}/covers/${crypto.randomUUID()}-${coverFile.name.replace(/[^\w.-]/g, "_")}`;
+        const up = await supabase.storage.from("documents").upload(cover_path, coverFile, { contentType: coverFile.type });
+        if (up.error) throw up.error;
+      }
+      const { data, error } = await supabase
+        .from("trips")
+        .insert({ ...form, budget: Number(form.budget || 0), photos_url: form.photos_url.trim() || null, cover_path, family_id: family.id, created_by: family.userId })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: (id) => {
+      qc.invalidateQueries({ queryKey: ["trips"] });
+      setOpen(false);
+      setCoverFile(null);
+      toast.success("Viagem criada!");
+      navigate({ to: "/viagens/$id", params: { id } });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="hero" size="lg"><Plus /> Nova viagem</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle className="font-display text-2xl">Nova viagem</DialogTitle></DialogHeader>
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
+          <div className="space-y-1.5"><Label>Nome da viagem</Label><Input required placeholder="Ex.: Férias em Floripa" value={form.title} onChange={set("title")} /></div>
+          <div className="space-y-1.5"><Label>Destino principal</Label><Input placeholder="Florianópolis, SC" value={form.main_destination} onChange={set("main_destination")} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label>Ida</Label><Input type="date" required value={form.start_date} onChange={set("start_date")} /></div>
+            <div className="space-y-1.5"><Label>Volta</Label><Input type="date" required value={form.end_date} onChange={set("end_date")} /></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Tipo</Label>
+              <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5"><Label>Orçamento (R$)</Label><Input type="number" min="0" step="0.01" value={form.budget} onChange={set("budget")} /></div>
+          </div>
+          <div className="space-y-1.5"><Label>Foto de capa (opcional)</Label><Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} /></div>
+          <div className="space-y-1.5"><Label>Álbum do Google Fotos (opcional)</Label><Input type="url" placeholder="https://photos.app.goo.gl/..." value={form.photos_url} onChange={set("photos_url")} /></div>
+          <div className="space-y-1.5"><Label>Observações</Label><Textarea rows={2} value={form.description} onChange={set("description")} /></div>
+          <Button type="submit" className="w-full rounded-full" disabled={create.isPending}>{create.isPending ? "Criando…" : "Criar viagem"}</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

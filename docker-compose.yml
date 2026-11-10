@@ -1,0 +1,160 @@
+services:
+  # 1. Aplicação Maluki Viagens (TanStack Start / Node.js)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maluki_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - SUPABASE_URL=${SITE_URL:-http://localhost}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      kong:
+        condition: service_started
+    networks:
+      - maluki-net
+
+  # 2. Banco de Dados PostgreSQL (Imagem oficial Supabase com RLS e Auth)
+  db:
+    image: supabase/postgres:15.8.1.085
+    container_name: maluki_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+      JWT_SECRET: ${JWT_SECRET}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+    networks:
+      - maluki-net
+
+  # 3. Autenticação GoTrue (Supabase Auth)
+  auth:
+    image: supabase/gotrue:v2.164.0
+    container_name: maluki_auth
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_JWT_EXP: 604800
+      GOTRUE_DB_DRIVER: postgres
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_SITE_URL: ${SITE_URL:-http://localhost}
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL:-http://localhost}/*
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_MAILER_AUTOCONFIRM: ${MAILER_AUTOCONFIRM:-true}
+      GOTRUE_EXTERNAL_GOOGLE_ENABLED: ${GOOGLE_ENABLED:-false}
+      GOTRUE_EXTERNAL_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOTRUE_EXTERNAL_GOOGLE_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOTRUE_EXTERNAL_GOOGLE_REDIRECT_URI: ${SITE_URL:-http://localhost}/auth/v1/callback
+    networks:
+      - maluki-net
+
+  # 4. PostgREST (API REST automática e RLS)
+  rest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: maluki_rest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public,storage
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - maluki-net
+
+  # 5. Supabase Storage API (Armazenamento de fotos de capa e comprovantes)
+  storage:
+    image: supabase/storage-api:v1.14.3
+    container_name: maluki_storage
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      rest:
+        condition: service_started
+    environment:
+      ANON_KEY: ${SUPABASE_ANON_KEY}
+      SERVICE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      POSTGREST_URL: http://rest:3000
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
+      FILE_SIZE_LIMIT: 26214400 # 25 MB
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+    volumes:
+      - storage_data:/var/lib/storage
+    networks:
+      - maluki-net
+
+  # 6. Kong API Gateway (Roteamento unificado /auth/v1, /rest/v1, /storage/v1)
+  kong:
+    image: kong:2.8.1
+    container_name: maluki_kong
+    restart: unless-stopped
+    depends_on:
+      - auth
+      - rest
+      - storage
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /var/lib/kong/kong.yml
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_PLUGINS: request-transformer,cors
+    volumes:
+      - ./docker/kong.yml:/var/lib/kong/kong.yml:ro
+    networks:
+      - maluki-net
+
+  # 7. Caddy (Proxy Reverso e SSL Automático Let's Encrypt)
+  caddy:
+    image: caddy:2-alpine
+    container_name: maluki_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+      - kong
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:-localhost}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+    volumes:
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - maluki-net
+
+volumes:
+  pgdata:
+  storage_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  maluki-net:
+    driver: bridge

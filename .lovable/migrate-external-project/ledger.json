@@ -1,0 +1,9 @@
+[
+ {"capability":"code/ui","source":"React+FastAPI","outcome":"migrate","status":"done","next_action":"none"},
+ {"capability":"schema","source":"PostgreSQL/SQLAlchemy","outcome":"migrate","status":"done","next_action":"none"},
+ {"capability":"records","source":"PostgreSQL","outcome":"migrate","status":"pending","next_action":"user exports CSV/JSON"},
+ {"capability":"auth identities","source":"JWT users table","outcome":"migrate","status":"pending","next_action":"user export of users (id,name,email)"},
+ {"capability":"documents files","source":"local uploads dir","outcome":"migrate","status":"pending","next_action":"user re-uploads or supplies files"},
+ {"capability":"AI assistant","source":"OpenAI","outcome":"replaced with Lovable AI","status":"implemented","next_action":"live check"},
+ {"capability":"reports/backups/ICS/push/weather/offline","source":"FastAPI","outcome":"deferred","status":"not built","next_action":"user decides"}
+]

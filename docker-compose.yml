@@ -55,6 +55,9 @@ services:
     environment:
       GOTRUE_JWT_SECRET: ${JWT_SECRET}
       GOTRUE_JWT_EXP: 604800
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
       GOTRUE_DB_DRIVER: postgres
       DATABASE_URL: postgres://supabase_admin:${POSTGRES_PASSWORD}@db:5432/postgres?sslmode=disable
       GOTRUE_API_HOST: 0.0.0.0

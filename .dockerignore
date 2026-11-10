@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.output
+dist
+.vinxi
+.tanstack
+.git
+.env
+.env*.local
+*.local
+.vscode
+.idea
+backups
+

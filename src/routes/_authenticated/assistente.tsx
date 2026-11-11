@@ -53,10 +53,26 @@ function Assistant() {
     setInput("");
     setBusy(true);
     try {
-      const r = await ask({ data: { messages: next, tripId } });
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const r = await ask({
+        data: { messages: next, tripId },
+        headers,
+      });
       setMsgs([...next, { role: "assistant", content: r.reply }]);
-    } catch {
-      setMsgs([...next, { role: "assistant", content: "Não consegui responder agora. Tente novamente." }]);
+    } catch (err: unknown) {
+      console.error("Erro ao chamar assistente:", err);
+      const errMsg = err instanceof Error ? err.message : "";
+      setMsgs([
+        ...next,
+        {
+          role: "assistant",
+          content: errMsg && !errMsg.includes("HTTPError")
+            ? `Não consegui responder: ${errMsg}`
+            : "Não consegui responder agora. Tente novamente em instantes.",
+        },
+      ]);
     } finally {
       setBusy(false);
     }

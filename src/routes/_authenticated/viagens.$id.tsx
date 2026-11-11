@@ -14,10 +14,13 @@ import { CATEGORIES, brl, daysUntil, fmtDate, tripLength, tripPhase } from "@/li
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ItineraryTab } from "@/components/trip/ItineraryTab";
 import { ExpensesTab, ReservationsTab } from "@/components/trip/MoneyTabs";
 import { ChecklistTab, DocumentsTab, EmergencyTab } from "@/components/trip/OrganizeTabs";
-import { TripFlagTitle } from "@/components/trip/LocationFlagBadge";
+import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
+import { useFlagDetector } from "@/lib/flags";
 
 export const Route = createFileRoute("/_authenticated/viagens/$id")({
   head: () => ({
@@ -43,6 +46,19 @@ function TripPage() {
   const [coverOpen, setCoverOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverSaving, setCoverSaving] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    main_destination: "",
+    start_date: "",
+    end_date: "",
+    category: "ferias",
+    budget: "",
+    description: "",
+  });
+
+  const { flag: editFlag, loading: editFlagLoading } = useFlagDetector(editForm.title, editForm.main_destination);
+
   const { data: trip, isLoading } = useQuery({
     queryKey: ["trip", id],
     queryFn: async () => {
@@ -67,6 +83,47 @@ function TripPage() {
   const d = daysUntil(trip.start_date);
   const spent = expenses.reduce((s, e) => s + Number(e.amount), 0) + reservations.reduce((s, r) => s + Number(r.cost), 0);
   const ckDone = checklist.filter((c) => c.done).length;
+
+  function openEdit() {
+    if (!trip) return;
+    setEditForm({
+      title: trip.title,
+      main_destination: trip.main_destination || "",
+      start_date: trip.start_date,
+      end_date: trip.end_date,
+      category: trip.category,
+      budget: trip.budget ? String(trip.budget) : "",
+      description: trip.description || "",
+    });
+    setEditOpen(true);
+  }
+
+  async function saveEdit() {
+    if (editForm.end_date < editForm.start_date) {
+      toast.error("A volta precisa ser depois da ida");
+      return;
+    }
+    const { error } = await supabase
+      .from("trips")
+      .update({
+        title: editForm.title.trim(),
+        main_destination: editForm.main_destination.trim() || null,
+        start_date: editForm.start_date,
+        end_date: editForm.end_date,
+        category: editForm.category,
+        budget: Number(editForm.budget || 0),
+        description: editForm.description.trim() || null,
+      })
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    qc.invalidateQueries({ queryKey: ["trip", id] });
+    qc.invalidateQueries({ queryKey: ["trips"] });
+    setEditOpen(false);
+    toast.success("Viagem atualizada com sucesso!");
+  }
 
   function editPhotos() { setPhotoUrl(trip?.photos_url ?? ""); setPhotoOpen(true); }
 
@@ -154,6 +211,9 @@ function TripPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground" onClick={openEdit}>
+              <Pencil /> Editar viagem
+            </Button>
             <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground" onClick={openCover}>
               {trip.cover_path ? <><Camera /> Trocar capa</> : <><ImagePlus /> Adicionar capa</>}
             </Button>
@@ -220,6 +280,133 @@ function TripPage() {
               ) : null}
               <Button type="button" variant="ghost" onClick={() => setCoverOpen(false)} disabled={coverSaving}>Cancelar</Button>
               <Button type="submit" className="rounded-full" disabled={!coverFile || coverSaving}>{coverSaving ? "Salvando…" : "Salvar capa"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">Editar viagem</DialogTitle>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); saveEdit(); }}>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit-title">Nome da viagem</Label>
+                {editFlag && (
+                  <LocationFlagBadge
+                    flag={editFlag}
+                    loading={editFlagLoading}
+                    titleValue={editForm.title}
+                    onApplyEmoji={(emoji) => {
+                      if (!editForm.title.includes(emoji)) {
+                        setEditForm((f) => ({ ...f, title: `${emoji} ${f.title}` }));
+                      }
+                    }}
+                    onApplyDestination={(dest) => {
+                      if (!editForm.main_destination) {
+                        setEditForm((f) => ({ ...f, main_destination: dest }));
+                      }
+                    }}
+                    hasDestination={Boolean(editForm.main_destination)}
+                  />
+                )}
+              </div>
+              <div className="relative">
+                <Input
+                  id="edit-title"
+                  required
+                  placeholder="Ex: Férias em Santiago, Beto Carrero..."
+                  value={editForm.title}
+                  onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                  className={editFlag ? "pr-10" : ""}
+                />
+                {editFlag && (
+                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                    <InlineFlagIcon flag={editFlag} className="size-5 rounded-sm object-cover shadow-xs" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-dest">Destino principal (cidade ou país)</Label>
+              <Input
+                id="edit-dest"
+                placeholder="Ex: Santiago, Chile ou Florianópolis, SC"
+                value={editForm.main_destination}
+                onChange={(e) => setEditForm((f) => ({ ...f, main_destination: e.target.value }))}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-start">Ida</Label>
+                <Input
+                  id="edit-start"
+                  type="date"
+                  required
+                  value={editForm.start_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, start_date: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-end">Volta</Label>
+                <Input
+                  id="edit-end"
+                  type="date"
+                  required
+                  value={editForm.end_date}
+                  onChange={(e) => setEditForm((f) => ({ ...f, end_date: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-cat">Categoria</Label>
+                <Select
+                  value={editForm.category}
+                  onValueChange={(v) => setEditForm((f) => ({ ...f, category: v }))}
+                >
+                  <SelectTrigger id="edit-cat">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CATEGORIES).map(([k, label]) => (
+                      <SelectItem key={k} value={k}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-budget">Orçamento estimado (R$)</Label>
+                <Input
+                  id="edit-budget"
+                  type="number"
+                  step="0.01"
+                  placeholder="0,00"
+                  value={editForm.budget}
+                  onChange={(e) => setEditForm((f) => ({ ...f, budget: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-desc">Anotações / Descrição</Label>
+              <Textarea
+                id="edit-desc"
+                rows={3}
+                placeholder="Detalhes ou planos gerais..."
+                value={editForm.description}
+                onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+              />
+            </div>
+
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="ghost" onClick={() => setEditOpen(false)}>Cancelar</Button>
+              <Button type="submit" className="rounded-full">Salvar alterações</Button>
             </DialogFooter>
           </form>
         </DialogContent>

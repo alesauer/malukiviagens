@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import {
   Check,
+  CheckCheck,
   Download,
   FileText,
   Phone,
@@ -55,8 +56,34 @@ export function ChecklistTab({ tripId, familyId }: Props) {
   const m = useTripMutations("checklist_items", tripId, familyId);
   const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
+  const [bulkLoadingCat, setBulkLoadingCat] = useState<string | null>(null);
   const [selectedCat, setSelectedCat] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "done">("all");
+
+  async function handleToggleAllCategory(itemsToToggle: typeof data, targetDone: boolean, categoryKey: string) {
+    if (itemsToToggle.length === 0) return;
+    setBulkLoadingCat(categoryKey);
+    try {
+      const ids = itemsToToggle.map((i) => i.id);
+      const { error } = await supabase
+        .from("checklist_items")
+        .update({ done: targetDone } as never)
+        .in("id", ids);
+
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["checklist_items", tripId] });
+      toast.success(
+        targetDone
+          ? `${itemsToToggle.length} ${itemsToToggle.length === 1 ? "item marcado" : "itens marcados"} como concluído!`
+          : `${itemsToToggle.length} ${itemsToToggle.length === 1 ? "item desmarcado" : "itens desmarcados"}!`
+      );
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erro ao atualizar itens";
+      toast.error(msg);
+    } finally {
+      setBulkLoadingCat(null);
+    }
+  }
 
   async function handleAutoChecklist() {
     if (!familyId) return;
@@ -105,17 +132,33 @@ export function ChecklistTab({ tripId, familyId }: Props) {
               Organizado em 8 categorias essenciais com sugestões inteligentes para seu destino.
             </p>
           </div>
-          <Button
-            type="button"
-            variant="default"
-            size="sm"
-            className="rounded-full text-xs font-semibold px-4 shadow-soft"
-            onClick={handleAutoChecklist}
-            disabled={generating}
-          >
-            <Sparkles className="mr-1.5 size-3.5 text-accent" />
-            {generating ? "Gerando itens…" : "Gerar checklist completo"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {data.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full text-xs font-semibold px-3.5 shadow-xs"
+                onClick={() => handleToggleAllCategory(data, totalDone !== data.length, "all_trip")}
+                disabled={bulkLoadingCat !== null}
+                title={totalDone === data.length ? "Desmarcar todos os itens da viagem" : "Marcar todos os itens da viagem como concluídos"}
+              >
+                <CheckCheck className={cn("mr-1.5 size-3.5", totalDone === data.length ? "text-muted-foreground" : "text-primary")} />
+                {totalDone === data.length ? "Desmarcar tudo" : "Marcar tudo"}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="default"
+              size="sm"
+              className="rounded-full text-xs font-semibold px-4 shadow-soft"
+              onClick={handleAutoChecklist}
+              disabled={generating}
+            >
+              <Sparkles className="mr-1.5 size-3.5 text-accent" />
+              {generating ? "Gerando itens…" : "Gerar checklist completo"}
+            </Button>
+          </div>
         </div>
 
         {/* Barra de Conclusão */}
@@ -181,6 +224,7 @@ export function ChecklistTab({ tripId, familyId }: Props) {
           const Icon = CATEGORY_ICONS[cat.id];
           const rawItems = data.filter((i) => normalizeChecklistKind(i.kind) === cat.id);
           const catDone = rawItems.filter((i) => i.done).length;
+          const allDone = rawItems.length > 0 && catDone === rawItems.length;
           const items = filterStatus === "all"
             ? rawItems
             : filterStatus === "pending"
@@ -208,9 +252,28 @@ export function ChecklistTab({ tripId, familyId }: Props) {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs shrink-0 font-medium">
-                    {catDone}/{rawItems.length}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {rawItems.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => handleToggleAllCategory(rawItems, !allDone, cat.id)}
+                        disabled={bulkLoadingCat === cat.id}
+                        className={cn(
+                          "inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-[11px] font-medium transition-colors cursor-pointer disabled:opacity-50",
+                          allDone
+                            ? "border-border/80 bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                            : "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20"
+                        )}
+                        title={allDone ? "Desmarcar todos os itens deste bloco" : "Marcar todos os itens deste bloco como concluídos"}
+                      >
+                        <CheckCheck className="size-3.5" />
+                        <span>{allDone ? "Desmarcar tudo" : "Selecionar tudo"}</span>
+                      </button>
+                    )}
+                    <Badge variant="secondary" className="text-xs shrink-0 font-medium">
+                      {catDone}/{rawItems.length}
+                    </Badge>
+                  </div>
                 </div>
 
                 {/* Lista de Itens */}

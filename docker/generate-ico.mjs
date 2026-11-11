@@ -151,3 +151,4 @@ const andMask = Buffer.alloc(maskSize, 0); // Máscara 1-bit toda zerada
 const icoBuffer = Buffer.concat([iconDir, iconEntry, bmpHeader, pixelData, andMask]);
 fs.writeFileSync('public/favicon.ico', icoBuffer);
 console.log('public/favicon.ico gerado com sucesso! Tamanho:', icoBuffer.length, 'bytes');
+

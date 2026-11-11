@@ -627,6 +627,21 @@ Maps: https://www.google.com/maps/search/?api=1&query=Ventura%20Mall%2C%20Avenid
     VALUES (v_trip_id, v_family_id, 'MasterAssist (Internacional a Cobrar)', '+1-636-722-8882', 'Em emergência médica, acione ANTES de qualquer atendimento. E-mail: bue_operadores_brasil@axa-assistance.com.ar — Site: www.mycardbenefits.com');
   INSERT INTO public.emergency_contacts (trip_id, family_id, name, phone, notes)
     VALUES (v_trip_id, v_family_id, 'SAC AIG Seguros 24h', '0800 726 6130', 'SAC AIG 24h: 0800 726 6130 | Ouvidoria AIG: 0800 724 0219 | SUSEP: 0800 021 8484');
+  INSERT INTO public.checklist_items (trip_id, family_id, kind, title, owner_name, done) VALUES
+    (v_trip_id, v_family_id, 'preparo', 'Confirmar cama extra no Hotel By Armonía', 'maluki', false),
+    (v_trip_id, v_family_id, 'preparo', 'Levar dólares em espécie para pagamento da hospedagem', 'maluki', false),
+    (v_trip_id, v_family_id, 'preparo', 'Verificar funcionamento dos atrativos na Semana Santa', 'Família', false),
+    (v_trip_id, v_family_id, 'preparo', 'Emitir bilhetes e apólices do seguro MasterAssist / AIG', 'maluki', true),
+    (v_trip_id, v_family_id, 'preparo', 'Planejar transfer entre Congonhas e Guarulhos na volta', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Passaportes válidos de todos os viajantes', 'Família', true),
+    (v_trip_id, v_family_id, 'bagagem', 'Repelente e protetor solar (Biocentro Güembé e Samaipata)', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Roupas de banho para áreas de lazer e piscina', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Carregadores de celular e adaptadores de tomada', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Farmacinha básica e receitas médicas', 'Família', false);
+  INSERT INTO public.expenses (trip_id, family_id, description, category, amount, paid, paid_by, spent_on) VALUES
+    (v_trip_id, v_family_id, 'Hospedagem Airport Hotel Gru (Ida)', 'hospedagem', 489.00, false, 'maluki', '2027-03-24'),
+    (v_trip_id, v_family_id, 'Hospedagem Hotel By Armonía (US$ 318,55)', 'hospedagem', 1749.00, false, 'maluki', '2027-03-25'),
+    (v_trip_id, v_family_id, 'Hospedagem Airport Hotel Gru (Volta)', 'hospedagem', 489.00, false, 'maluki', '2027-03-30');
   INSERT INTO public.trips (
     family_id,
     created_by,

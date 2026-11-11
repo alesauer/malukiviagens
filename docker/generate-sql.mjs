@@ -231,6 +231,27 @@ if (data.seguro_viagem?.contatos_emergencia) {
   }
 }
 
+// Checklist de Preparo e Bagagem
+sql += `  INSERT INTO public.checklist_items (trip_id, family_id, kind, title, owner_name, done) VALUES
+    (v_trip_id, v_family_id, 'preparo', 'Confirmar cama extra no Hotel By Armonía', 'maluki', false),
+    (v_trip_id, v_family_id, 'preparo', 'Levar dólares em espécie para pagamento da hospedagem', 'maluki', false),
+    (v_trip_id, v_family_id, 'preparo', 'Verificar funcionamento dos atrativos na Semana Santa', 'Família', false),
+    (v_trip_id, v_family_id, 'preparo', 'Emitir bilhetes e apólices do seguro MasterAssist / AIG', 'maluki', true),
+    (v_trip_id, v_family_id, 'preparo', 'Planejar transfer entre Congonhas e Guarulhos na volta', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Passaportes válidos de todos os viajantes', 'Família', true),
+    (v_trip_id, v_family_id, 'bagagem', 'Repelente e protetor solar (Biocentro Güembé e Samaipata)', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Roupas de banho para áreas de lazer e piscina', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Carregadores de celular e adaptadores de tomada', 'Família', false),
+    (v_trip_id, v_family_id, 'bagagem', 'Farmacinha básica e receitas médicas', 'Família', false);
+`;
+
+// Despesas Iniciais Estimadas / Pagas
+sql += `  INSERT INTO public.expenses (trip_id, family_id, description, category, amount, paid, paid_by, spent_on) VALUES
+    (v_trip_id, v_family_id, 'Hospedagem Airport Hotel Gru (Ida)', 'hospedagem', 489.00, false, 'maluki', '2027-03-24'),
+    (v_trip_id, v_family_id, 'Hospedagem Hotel By Armonía (US$ 318,55)', 'hospedagem', 1749.00, false, 'maluki', '2027-03-25'),
+    (v_trip_id, v_family_id, 'Hospedagem Airport Hotel Gru (Volta)', 'hospedagem', 489.00, false, 'maluki', '2027-03-30');
+`;
+
 // Histórico de Viagens
 if (Array.isArray(data.historico_de_viagens)) {
   for (const t of data.historico_de_viagens) {
@@ -293,3 +314,4 @@ END $$;
 
 fs.writeFileSync('docker/import.sql', sql, 'utf8');
 console.log('Script docker/import.sql gerado com sucesso!');
+

@@ -281,13 +281,13 @@ function GeralPage() {
 
       {/* Sistema de Abas */}
       <Tabs defaultValue="ia" className="w-full">
-        <TabsList className="h-11 w-full justify-start rounded-2xl bg-secondary/80 p-1 md:w-auto">
-          <TabsTrigger value="ia" className="rounded-xl px-5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
-            <Sparkles className="mr-2 size-4 text-accent" />
+        <TabsList className="flex h-11 w-full items-center justify-start gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-secondary/80 p-1 md:w-auto">
+          <TabsTrigger value="ia" className="shrink-0 whitespace-nowrap rounded-xl px-4 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+            <Sparkles className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-accent" />
             IA (Inteligência Artificial)
           </TabsTrigger>
-          <TabsTrigger value="integracoes" className="rounded-xl px-5 text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
-            <Webhook className="mr-2 size-4 text-primary" />
+          <TabsTrigger value="integracoes" className="shrink-0 whitespace-nowrap rounded-xl px-4 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+            <Webhook className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-primary" />
             Integrações & Webhook
           </TabsTrigger>
         </TabsList>
@@ -516,8 +516,8 @@ function GeralPage() {
                   </div>
 
                   {/* Toggle Geral de Ativação */}
-                  <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/70 px-4 py-2">
-                    <Label htmlFor="webhook-switch" className="cursor-pointer text-sm font-semibold">
+                  <div className="flex items-center justify-between sm:justify-start gap-3 rounded-2xl border border-border/70 bg-card/70 px-4 py-2 w-full sm:w-auto">
+                    <Label htmlFor="webhook-switch" className="cursor-pointer text-xs sm:text-sm font-semibold">
                       {webhookEnabled ? (
                         <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                           <Radio className="size-3.5 animate-pulse text-emerald-500" />

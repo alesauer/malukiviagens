@@ -38,3 +38,4 @@ DROP POLICY IF EXISTS "family all" ON trips;
 CREATE POLICY "family all" ON trips FOR ALL TO authenticated
   USING (can_access_trip(id, family_id))
   WITH CHECK (is_family_member(family_id));
+

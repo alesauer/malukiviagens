@@ -57,10 +57,10 @@ function TripsPage() {
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">Olá{firstName ? `, ${firstName}` : ""} 👋</p>
-          <h1 className="text-4xl font-semibold">Suas viagens</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Olá{firstName ? `, ${firstName}` : ""} 👋</p>
+          <h1 className="text-3xl sm:text-4xl font-semibold font-display tracking-tight">Suas viagens</h1>
         </div>
         <NewTripDialog />
       </div>
@@ -145,28 +145,41 @@ function NextTripHero({ trip }: { trip: Trip }) {
   const phase = tripPhase(trip.start_date, trip.end_date);
   const cover = useTripCover(trip.cover_path);
   return (
-    <Link to="/viagens/$id" params={{ id: trip.id }} style={cover ? { backgroundImage: `linear-gradient(to top, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.2)), url("${cover}")`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} className="group block overflow-hidden rounded-3xl bg-sunset p-8 text-primary-foreground shadow-lift transition hover:-translate-y-0.5 md:p-10">
-      <p className="text-sm font-medium uppercase tracking-widest opacity-80">
+    <Link
+      to="/viagens/$id"
+      params={{ id: trip.id }}
+      style={
+        cover
+          ? {
+              backgroundImage: `linear-gradient(to top, rgb(0 0 0 / 0.75), rgb(0 0 0 / 0.25)), url("${cover}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+      className="group block overflow-hidden rounded-3xl bg-sunset p-5 sm:p-8 md:p-10 text-primary-foreground shadow-lift transition hover:-translate-y-0.5"
+    >
+      <p className="text-xs sm:text-sm font-medium uppercase tracking-widest opacity-80">
         {phase === "em_andamento" ? "Acontecendo agora" : "Próxima viagem"}
       </p>
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <h2 className="text-4xl font-semibold md:text-5xl">
+      <div className="mt-3 sm:mt-4 flex flex-wrap items-end justify-between gap-4 sm:gap-6">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-semibold break-words leading-tight">
             <TripFlagTitle title={trip.title} destination={trip.main_destination} />
           </h2>
-          <p className="mt-3 flex items-center gap-2 opacity-90">
-            {trip.main_destination && <><MapPin className="size-4" /> {trip.main_destination} · </>}
+          <p className="mt-2 sm:mt-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-base opacity-90 flex-wrap">
+            {trip.main_destination && <><MapPin className="size-3.5 sm:size-4 shrink-0" /> {trip.main_destination} · </>}
             {fmtDate(trip.start_date)} – {fmtDate(trip.end_date)} · {tripLength(trip.start_date, trip.end_date)} dias
           </p>
         </div>
         {phase === "futura" && (
-          <div className="text-right">
-            <div className="font-display text-6xl font-semibold leading-none">{d}</div>
-            <div className="text-sm opacity-80">{d === 1 ? "dia para ir" : "dias para ir"}</div>
+          <div className="text-left sm:text-right shrink-0">
+            <div className="font-display text-4xl sm:text-6xl font-semibold leading-none">{d}</div>
+            <div className="text-xs sm:text-sm opacity-80">{d === 1 ? "dia para ir" : "dias para ir"}</div>
           </div>
         )}
       </div>
-      <p className="mt-6 text-sm font-medium opacity-90 group-hover:underline">Abrir planejamento →</p>
+      <p className="mt-4 sm:mt-6 text-xs sm:text-sm font-medium opacity-90 group-hover:underline">Abrir planejamento →</p>
     </Link>
   );
 }
@@ -304,9 +317,9 @@ function NewTripDialog() {
           <Plus /> Nova viagem
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88dvh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Nova viagem</DialogTitle>
+          <DialogTitle className="font-display text-xl sm:text-2xl">Nova viagem</DialogTitle>
         </DialogHeader>
         <form
           className="space-y-4"
@@ -377,7 +390,7 @@ function NewTripDialog() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="trip-start-date">Ida</Label>
               <Input id="trip-start-date" type="date" required value={form.start_date} onChange={set("start_date")} />
@@ -394,7 +407,7 @@ function NewTripDialog() {
             endDate={form.end_date}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div className="space-y-1.5">
               <Label>Tipo</Label>
               <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>

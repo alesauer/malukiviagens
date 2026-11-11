@@ -172,13 +172,13 @@ export function ChecklistTab({ tripId, familyId }: Props) {
           <Progress value={pct} className="h-2.5 rounded-full" />
         </div>
 
-        {/* Filtros por Categoria (Pills horizontais) */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/50">
+        {/* Filtros por Categoria (Pills horizontais com rolagem suave em mobile) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 pt-2 border-t border-border/50">
           <button
             type="button"
             onClick={() => setSelectedCat("all")}
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
               selectedCat === "all"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -196,7 +196,7 @@ export function ChecklistTab({ tripId, familyId }: Props) {
                 type="button"
                 onClick={() => setSelectedCat(cat.id)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  "shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   selectedCat === cat.id
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -318,7 +318,7 @@ export function ChecklistTab({ tripId, familyId }: Props) {
                       <button
                         type="button"
                         aria-label="Remover item"
-                        className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                        className="opacity-70 sm:opacity-0 transition-opacity group-hover:opacity-100 sm:group-focus-within:opacity-100 p-1 text-muted-foreground hover:text-destructive shrink-0"
                         onClick={() => m.remove.mutate(i.id)}
                       >
                         <Trash2 className="size-4" />
@@ -432,15 +432,17 @@ export function DocumentsTab({ tripId, familyId }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed bg-card p-5">
-        <Upload className="size-5 text-primary" />
-        <p className="flex-1 text-sm text-muted-foreground">PDF ou foto de passaportes, vouchers e bilhetes. Só sua família vê.</p>
-        <Select value={kind} onValueChange={setKind}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>{Object.entries(DOC_KINDS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
-        </Select>
-        <input ref={fileRef} type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
-        <Button disabled={busy} onClick={() => fileRef.current?.click()}>{busy ? "Enviando…" : "Enviar arquivo"}</Button>
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed bg-card p-4 sm:p-5">
+        <Upload className="size-5 text-primary shrink-0" />
+        <p className="flex-1 text-xs sm:text-sm text-muted-foreground min-w-[200px]">PDF ou foto de passaportes, vouchers e bilhetes. Só sua família vê.</p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <Select value={kind} onValueChange={setKind}>
+            <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>{Object.entries(DOC_KINDS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+          </Select>
+          <input ref={fileRef} type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+          <Button disabled={busy} onClick={() => fileRef.current?.click()} className="w-full sm:w-auto">{busy ? "Enviando…" : "Enviar arquivo"}</Button>
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {data.map((d) => (

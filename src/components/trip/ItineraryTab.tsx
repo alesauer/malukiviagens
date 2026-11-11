@@ -125,8 +125,8 @@ export function ItineraryTab({
                       {Number(a.estimated_cost) > 0 && <span>{brl(a.estimated_cost)}</span>}
                     </p>
                   </div>
-                  <button aria-label="Remover" onClick={() => m.remove.mutate(a.id)} className="opacity-0 transition group-hover:opacity-100">
-                    <Trash2 className="size-4 text-muted-foreground hover:text-destructive" />
+                  <button aria-label="Remover" onClick={() => m.remove.mutate(a.id)} className="opacity-70 sm:opacity-0 transition group-hover:opacity-100 sm:group-focus-within:opacity-100 p-1 text-muted-foreground hover:text-destructive shrink-0">
+                    <Trash2 className="size-4" />
                   </button>
                 </li>
               ))}

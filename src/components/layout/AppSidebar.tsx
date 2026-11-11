@@ -71,7 +71,7 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
 
   return (
     <aside
-      className={`flex h-full flex-col justify-between border-r border-border/70 bg-card/95 p-4 text-card-foreground backdrop-blur-md shadow-xs ${className}`}
+      className={`flex h-full flex-col justify-between border-r border-border/70 bg-card/95 p-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] text-card-foreground backdrop-blur-md shadow-xs ${className}`}
       aria-label="Barra Lateral de Navegação"
     >
       {/* Topo: Logo & Família */}

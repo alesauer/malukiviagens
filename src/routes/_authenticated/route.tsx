@@ -27,7 +27,7 @@ function AppShell() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
+    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
       {/* Sidebar Desktop (fixa na lateral esquerda, substituindo o menu do topo) */}
       <div className="hidden md:block w-64 shrink-0">
         <div className="fixed inset-y-0 left-0 w-64 z-30">
@@ -37,8 +37,8 @@ function AppShell() {
 
       {/* Conteúdo Principal */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Topo Mobile com botão de abrir Sidebar gaveta */}
-        <header className="md:hidden sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/70 bg-card/85 px-4 backdrop-blur-md">
+        {/* Topo Mobile com botão de abrir Sidebar gaveta e suporte a safe area */}
+        <header className="md:hidden sticky top-0 z-20 flex items-center justify-between border-b border-border/70 bg-card/85 px-4 backdrop-blur-md pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))]">
           <div className="flex items-center gap-2">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
@@ -46,13 +46,13 @@ function AppShell() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="rounded-xl text-muted-foreground hover:text-foreground"
+                  className="rounded-xl text-muted-foreground hover:text-foreground size-9"
                   aria-label="Abrir menu de navegação"
                 >
                   <Menu className="size-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72">
+              <SheetContent side="left" className="p-0 w-72 max-w-[85vw]">
                 <AppSidebar onItemClick={() => setMobileOpen(false)} />
               </SheetContent>
             </Sheet>
@@ -68,23 +68,26 @@ function AppShell() {
           </div>
 
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {family?.name && <span className="font-medium truncate max-w-[140px]">{family.name}</span>}
+            {family?.name && <span className="font-medium truncate max-w-[130px] sm:max-w-[180px]">{family.name}</span>}
           </div>
         </header>
 
         {/* Corpo principal das rotas autenticadas */}
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8 w-full max-w-6xl mx-auto">
+        <main className="flex-1 px-3 py-4 sm:px-4 sm:py-6 md:px-8 md:py-8 w-full max-w-6xl mx-auto min-w-0">
           <Outlet />
         </main>
       </div>
 
-      {/* Navegação rápida no rodapé para dispositivos móveis */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden" aria-label="Navegação Rápida Mobile">
+      {/* Navegação rápida no rodapé para dispositivos móveis com safe area */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden pb-[env(safe-area-inset-bottom)]"
+        aria-label="Navegação Rápida Mobile"
+      >
         {MOBILE_NAV.map((n) => (
           <Link
             key={n.to}
             to={n.to}
-            className="flex flex-col items-center gap-1 py-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="flex min-h-[50px] flex-col items-center justify-center gap-0.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             activeProps={{ className: "!text-primary font-semibold" }}
           >
             <n.icon className="size-5" />

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +22,8 @@ import { ExpensesTab, ReservationsTab } from "@/components/trip/MoneyTabs";
 import { ChecklistTab, DocumentsTab, EmergencyTab } from "@/components/trip/OrganizeTabs";
 import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 import { useFlagDetector } from "@/lib/flags";
+import { TripWeatherPreview } from "@/components/trip/TripWeatherPreview";
+import { dispatchTripWebhook } from "@/lib/webhook.functions";
 
 export const Route = createFileRoute("/_authenticated/viagens/$id")({
   head: () => ({
@@ -41,6 +44,7 @@ function TripPage() {
   const { data: family } = useFamily();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const dispatchWebhook = useServerFn(dispatchTripWebhook);
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoUrl, setPhotoUrl] = useState("");
   const [coverOpen, setCoverOpen] = useState(false);
@@ -122,6 +126,18 @@ function TripPage() {
     qc.invalidateQueries({ queryKey: ["trip", id] });
     qc.invalidateQueries({ queryKey: ["trips"] });
     setEditOpen(false);
+
+    // Dispara webhook em background se a família tiver webhook configurado
+    supabase.auth.getSession().then(({ data: sessionData }) => {
+      const token = sessionData.session?.access_token;
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      dispatchWebhook({ data: { tripId: id, event: "trip_updated" }, headers }).catch((err) => {
+        console.warn("Aviso ao disparar webhook de viagem atualizada:", err);
+      });
+    }).catch((err) => {
+      console.warn("Aviso ao obter sessão para webhook:", err);
+    });
+
     toast.success("Viagem atualizada com sucesso!");
   }
 
@@ -192,7 +208,7 @@ function TripPage() {
   return (
     <div className="min-w-0 space-y-5 md:space-y-8">
       <Link to="/viagens" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Viagens</Link>
-      <header className="relative overflow-hidden rounded-3xl bg-sunset p-4 text-primary-foreground shadow-lift md:p-8">
+      <header className="relative overflow-hidden rounded-3xl bg-sunset p-4 text-primary-foreground shadow-lift sm:p-6 md:p-8">
         {currentCover ? (
           <>
             <img src={currentCover} alt="" aria-hidden referrerPolicy="no-referrer" className="absolute inset-0 size-full object-cover" />
@@ -200,38 +216,38 @@ function TripPage() {
           </>
         ) : null}
         <div className="relative flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <span className="rounded-full bg-background/20 px-3 py-1 text-xs font-medium">{CATEGORIES[trip.category] ?? trip.category}</span>
-            <h1 className="mt-3 break-words text-3xl font-semibold md:text-5xl">
+            <h1 className="mt-2.5 sm:mt-3 break-words text-2xl sm:text-4xl md:text-5xl font-semibold leading-tight">
               <TripFlagTitle title={trip.title} destination={trip.main_destination} />
             </h1>
-            <p className="mt-2 text-sm opacity-90 md:text-base">
-              {trip.main_destination && <><MapPin className="mr-1 inline size-4" />{trip.main_destination} · </>}
+            <p className="mt-2 text-xs sm:text-sm opacity-90 md:text-base">
+              {trip.main_destination && <><MapPin className="mr-1 inline size-3.5 sm:size-4" />{trip.main_destination} · </>}
               {fmtDate(trip.start_date)} – {fmtDate(trip.end_date, { day: "2-digit", month: "short", year: "numeric" })} · {tripLength(trip.start_date, trip.end_date)} dias
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground" onClick={openEdit}>
-              <Pencil /> Editar viagem
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground min-h-[36px]" onClick={openEdit}>
+              <Pencil className="size-3.5" /> Editar
             </Button>
-            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground" onClick={openCover}>
-              {trip.cover_path ? <><Camera /> Trocar capa</> : <><ImagePlus /> Adicionar capa</>}
+            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground min-h-[36px]" onClick={openCover}>
+              {trip.cover_path ? <><Camera className="size-3.5" /> Capa</> : <><ImagePlus className="size-3.5" /> Capa</>}
             </Button>
             {trip.photos_url ? (
-              <Button asChild variant="secondary" size="sm" className="rounded-full">
-                <a href={trip.photos_url} target="_blank" rel="noreferrer"><Images /> Fotos</a>
+              <Button asChild variant="secondary" size="sm" className="rounded-full min-h-[36px]">
+                <a href={trip.photos_url} target="_blank" rel="noreferrer"><Images className="size-3.5" /> Fotos</a>
               </Button>
             ) : null}
-            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground" onClick={editPhotos}>
-              {trip.photos_url ? <Pencil /> : <><Images /> Adicionar fotos</>}
+            <Button variant="ghost" size="sm" className="rounded-full text-primary-foreground hover:bg-background/20 hover:text-primary-foreground min-h-[36px]" onClick={editPhotos}>
+              {trip.photos_url ? <Pencil className="size-3.5" /> : <><Images className="size-3.5" /> Fotos</>}
             </Button>
-            <Button asChild variant="secondary" size="sm" className="rounded-full">
-              <Link to="/assistente" search={{ trip: trip.id }}><Sparkles /> Pedir ideias</Link>
+            <Button asChild variant="secondary" size="sm" className="rounded-full min-h-[36px]">
+              <Link to="/assistente" search={{ trip: trip.id }}><Sparkles className="size-3.5" /> Ideias</Link>
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Excluir viagem" onClick={del} className="text-primary-foreground hover:bg-background/20 hover:text-primary-foreground"><Trash2 /></Button>
+            <Button variant="ghost" size="icon" aria-label="Excluir viagem" onClick={del} className="size-9 text-primary-foreground hover:bg-background/20 hover:text-primary-foreground"><Trash2 className="size-4" /></Button>
           </div>
         </div>
-        <dl className="relative mt-4 grid grid-cols-2 gap-2 md:mt-8 md:grid-cols-4 md:gap-4">
+        <dl className="relative mt-4 grid grid-cols-2 gap-2 sm:gap-3 md:mt-8 md:grid-cols-4 md:gap-4">
           <Stat label={phase === "futura" ? "Faltam" : "Status"} value={phase === "futura" ? `${d} dias` : phase === "em_andamento" ? "Em viagem" : "Realizada"} />
           <Stat label="Gasto previsto" value={brl(spent)} />
           <Stat label="Orçamento" value={Number(trip.budget) > 0 ? brl(trip.budget) : "—"} />
@@ -239,9 +255,17 @@ function TripPage() {
         </dl>
       </header>
 
+      {/* Previsão do tempo compacta da viagem */}
+      <TripWeatherPreview
+        destination={trip.main_destination || trip.title}
+        startDate={trip.start_date}
+        endDate={trip.end_date}
+        className="rounded-2xl border-border/70 bg-card/90 shadow-soft"
+      />
+
       <Dialog open={photoOpen} onOpenChange={setPhotoOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="font-display text-2xl">Álbum do Google Fotos</DialogTitle></DialogHeader>
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88dvh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader><DialogTitle className="font-display text-xl sm:text-2xl">Álbum do Google Fotos</DialogTitle></DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); savePhotos(); }}>
             <div className="space-y-1.5">
               <Label htmlFor="photos-url">Link do álbum</Label>
@@ -257,8 +281,8 @@ function TripPage() {
       </Dialog>
 
       <Dialog open={coverOpen} onOpenChange={setCoverOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle className="font-display text-2xl">Foto de capa</DialogTitle></DialogHeader>
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88dvh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader><DialogTitle className="font-display text-xl sm:text-2xl">Foto de capa</DialogTitle></DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); saveCover(); }}>
             <div className="aspect-video overflow-hidden rounded-2xl bg-secondary">
               {coverPreview ? (
@@ -286,9 +310,9 @@ function TripPage() {
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-xl max-h-[88dvh] overflow-y-auto overflow-x-hidden p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl">Editar viagem</DialogTitle>
+            <DialogTitle className="font-display text-xl sm:text-2xl">Editar viagem</DialogTitle>
           </DialogHeader>
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); saveEdit(); }}>
             <div className="space-y-1.5">
@@ -340,7 +364,7 @@ function TripPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-start">Ida</Label>
                 <Input
@@ -363,7 +387,13 @@ function TripPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <TripWeatherPreview
+              destination={editForm.main_destination || editForm.title}
+              startDate={editForm.start_date}
+              endDate={editForm.end_date}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="edit-cat">Categoria</Label>
                 <Select
@@ -413,9 +443,9 @@ function TripPage() {
       </Dialog>
 
       <Tabs defaultValue="roteiro">
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-2xl bg-secondary p-1 md:flex md:flex-wrap md:justify-start">
+        <TabsList className="flex w-full items-center justify-start gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-secondary p-1">
           {([["roteiro", "Roteiro"], ["reservas", "Reservas"], ["gastos", "Gastos"], ["checklist", "Checklist e malas"], ["documentos", "Documentos"], ["emergencia", "Emergência"]] as const).map(([v, l]) => (
-            <TabsTrigger key={v} value={v} className="min-w-0 whitespace-normal rounded-xl px-1 py-2 text-xs md:px-4 md:text-sm">{l}</TabsTrigger>
+            <TabsTrigger key={v} value={v} className="shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs md:px-4 md:text-sm font-medium">{l}</TabsTrigger>
           ))}
         </TabsList>
         <div className="mt-6">
@@ -443,9 +473,9 @@ function TripPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="min-w-0 rounded-2xl bg-background/15 p-3 md:p-4">
-      <dt className="text-xs uppercase tracking-wider opacity-80">{label}</dt>
-      <dd className="mt-1 break-words font-display text-lg font-semibold md:text-2xl">{value}</dd>
+    <div className="min-w-0 rounded-2xl bg-background/15 p-2.5 sm:p-3 md:p-4">
+      <dt className="text-[10px] sm:text-xs uppercase tracking-wider opacity-80">{label}</dt>
+      <dd className="mt-0.5 sm:mt-1 truncate font-display text-base sm:text-xl md:text-2xl font-semibold">{value}</dd>
     </div>
   );
 }

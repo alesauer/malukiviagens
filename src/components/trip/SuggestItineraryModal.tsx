@@ -250,13 +250,13 @@ export function SuggestItineraryModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-3xl overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="w-[calc(100vw-1.5rem)] max-w-3xl max-h-[88dvh] overflow-y-auto overflow-x-hidden p-3.5 sm:p-6">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Compass className="size-4" />
             </div>
-            <DialogTitle className="font-display text-xl sm:text-2xl font-bold">
+            <DialogTitle className="font-display text-lg sm:text-2xl font-bold">
               Sugestões de Roteiro
             </DialogTitle>
           </div>
@@ -293,12 +293,12 @@ export function SuggestItineraryModal({
             </Button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
               className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 selectedCategory === "all"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
@@ -315,7 +315,7 @@ export function SuggestItineraryModal({
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
                   className={cn(
-                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
                     selectedCategory === cat
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
@@ -330,8 +330,8 @@ export function SuggestItineraryModal({
 
         {/* Barra de Seleção em Lote (Quando itens marcados) */}
         {selectedIds.size > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3 text-xs shadow-xs animate-in fade-in-50">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-3 text-xs shadow-xs animate-in fade-in-50">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
               <Badge variant="default" className="rounded-full px-2.5 py-0.5 text-xs font-semibold">
                 {selectedIds.size} selecionada{selectedIds.size > 1 ? "s" : ""}
               </Badge>
@@ -344,10 +344,10 @@ export function SuggestItineraryModal({
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground font-medium">Adicionar ao:</span>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <span className="text-muted-foreground font-medium text-xs hidden sm:inline">Adicionar ao:</span>
               <Select value={bulkDay} onValueChange={setBulkDay}>
-                <SelectTrigger className="h-8 w-44 rounded-lg text-xs bg-background">
+                <SelectTrigger className="h-8 w-full sm:w-44 rounded-lg text-xs bg-background">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="text-xs">
@@ -362,7 +362,7 @@ export function SuggestItineraryModal({
               <Button
                 type="button"
                 size="sm"
-                className="h-8 rounded-lg text-xs font-semibold gap-1"
+                className="h-8 rounded-lg text-xs font-semibold gap-1 w-full sm:w-auto"
                 onClick={handleAddBulk}
                 disabled={bulkAdding}
               >

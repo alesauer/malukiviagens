@@ -163,24 +163,24 @@ export function MemberTripAccessModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-4 border-b border-border/60">
+      <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-xl max-h-[88dvh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/60">
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
               <ShieldCheck className="size-5" />
             </div>
-            <div>
-              <DialogTitle className="text-xl font-display font-bold">
-                Permissões de Viagem — {member.name}
+            <div className="min-w-0">
+              <DialogTitle className="text-lg sm:text-xl font-display font-bold truncate">
+                Permissões — {member.name}
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Escolha se este membro pode acessar todas as viagens da família ou apenas viagens específicas.
+                Escolha se este membro pode acessar todas as viagens ou viagens específicas.
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
           {/* Opção Destacada: Todas as Viagens */}
           <div
             className={`rounded-2xl border p-4 transition-all ${
@@ -339,7 +339,7 @@ export function MemberTripAccessModal({
           )}
         </div>
 
-        <DialogFooter className="p-4 border-t border-border/60 bg-muted/20 flex flex-row items-center justify-end gap-2">
+        <DialogFooter className="p-3 sm:p-4 border-t border-border/60 bg-muted/20 flex flex-row items-center justify-end gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -368,3 +368,4 @@ export function MemberTripAccessModal({
     </Dialog>
   );
 }
+

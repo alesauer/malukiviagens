@@ -69,7 +69,7 @@ function FamilyPage() {
 
       {family.role === "admin" && (
         <form
-          className="flex gap-2"
+          className="flex flex-col sm:flex-row gap-2"
           onSubmit={async (e) => {
             e.preventDefault();
             const { error } = await supabase.from("families").update({ name }).eq("id", family.id);
@@ -82,23 +82,24 @@ function FamilyPage() {
             toast.success("Nome atualizado");
           }}
         >
-          <Input placeholder="Renomear família" value={name} onChange={(e) => setName(e.target.value)} required />
-          <Button type="submit" variant="outline">Salvar</Button>
+          <Input placeholder="Renomear família" value={name} onChange={(e) => setName(e.target.value)} required className="rounded-xl" />
+          <Button type="submit" variant="outline" className="rounded-xl">Salvar</Button>
         </form>
       )}
 
       {/* Convidar Alguém */}
-      <section className="rounded-2xl border bg-card p-6 shadow-soft">
+      <section className="rounded-2xl border bg-card p-4 sm:p-6 shadow-soft">
         <h2 className="text-xl font-semibold">Convidar alguém</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
           Envie este código. A pessoa pode informá-lo ao criar a conta para entrar na sua família.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <span className="max-w-full break-all rounded-xl bg-secondary px-4 py-3 font-display text-2xl font-semibold sm:text-3xl">
+          <span className="max-w-full break-all rounded-xl bg-secondary px-4 py-2.5 sm:py-3 font-display text-xl sm:text-3xl font-semibold">
             {family.invite_code}
           </span>
           <Button
             variant="outline"
+            className="rounded-xl"
             onClick={() => {
               navigator.clipboard.writeText(family.invite_code);
               toast.success("Código copiado");
@@ -110,10 +111,10 @@ function FamilyPage() {
       </section>
 
       {/* Membros e Permissões de Viagem */}
-      <section className="rounded-2xl border bg-card p-6 shadow-soft space-y-4">
+      <section className="rounded-2xl border bg-card p-4 sm:p-6 shadow-soft space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Membros da Família</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">Membros da Família</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               {family.role === "admin"
                 ? "Como administrador, você pode gerenciar o acesso de cada membro às viagens."
@@ -127,7 +128,7 @@ function FamilyPage() {
 
         <ul className="divide-y divide-border/60">
           {members.map((m) => (
-            <li key={m.user_id} className="flex flex-wrap items-center justify-between gap-3 py-3.5">
+            <li key={m.user_id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="flex size-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground shrink-0">
                   {m.name.slice(0, 1).toUpperCase()}
@@ -165,7 +166,7 @@ function FamilyPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-xl text-xs h-8 gap-1.5 hover:bg-primary/5 hover:border-primary/40 shrink-0"
+                  className="rounded-xl text-xs h-8 gap-1.5 hover:bg-primary/5 hover:border-primary/40 w-full sm:w-auto shrink-0 justify-center"
                   onClick={() => {
                     setSelectedMember({
                       userId: m.user_id,
@@ -187,10 +188,10 @@ function FamilyPage() {
       </section>
 
       {/* Entrar em outra família */}
-      <section className="rounded-2xl border border-dashed p-6">
-        <h2 className="text-xl font-semibold">Entrar em outra família</h2>
+      <section className="rounded-2xl border border-dashed p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold">Entrar em outra família</h2>
         <form
-          className="mt-3 flex gap-2"
+          className="mt-3 flex flex-col sm:flex-row gap-2"
           onSubmit={async (e) => {
             e.preventDefault();
             const { error } = await supabase.rpc("join_family", { _code: code });

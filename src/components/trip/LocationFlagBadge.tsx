@@ -81,7 +81,7 @@ export function LocationFlagBadge({
       </div>
 
       {/* Ações Rápidas */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0 w-full justify-end sm:w-auto pt-1 sm:pt-0">
         {onApplyEmoji && (
           <Button
             type="button"

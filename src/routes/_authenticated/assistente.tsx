@@ -81,9 +81,9 @@ function Assistant() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col" style={{ minHeight: "calc(100vh - 12rem)" }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="flex items-center gap-2 text-3xl font-semibold"><Sparkles className="size-6 text-accent" /> Assistente</h1>
+        <h1 className="flex items-center gap-2 text-2xl sm:text-3xl font-semibold"><Sparkles className="size-6 text-accent" /> Assistente</h1>
         <Select value={tripId ?? "none"} onValueChange={(v) => setTripId(v === "none" ? undefined : v)}>
-          <SelectTrigger className="w-60"><SelectValue placeholder="Sobre qual viagem?" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-60"><SelectValue placeholder="Sobre qual viagem?" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Sem viagem específica</SelectItem>
             {trips.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
@@ -93,32 +93,32 @@ function Assistant() {
 
       <div className="mt-6 flex-1 space-y-4">
         {msgs.length === 0 && (
-          <div className="rounded-3xl border bg-card p-8 text-center shadow-soft">
-            <p className="font-display text-2xl">Como posso ajudar na viagem?</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <div className="rounded-3xl border bg-card p-5 sm:p-8 text-center shadow-soft">
+            <p className="font-display text-xl sm:text-2xl">Como posso ajudar na viagem?</p>
+            <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2">
               {PROMPTS.map((p) => (
-                <button key={p} onClick={() => send(p)} className="rounded-full border px-4 py-2 text-sm hover:border-primary hover:text-primary">{p}</button>
+                <button key={p} onClick={() => send(p)} className="rounded-full border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm hover:border-primary hover:text-primary transition-colors">{p}</button>
               ))}
             </div>
           </div>
         )}
         {msgs.map((m, i) => (
-          <div key={i} className={cn("max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed", m.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "border bg-card shadow-soft")}>
+          <div key={i} className={cn("max-w-[88%] sm:max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed", m.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "border bg-card shadow-soft")}>
             {m.content}
           </div>
         ))}
-        {busy && <div className="w-fit animate-pulse rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground">Pensando…</div>}
+        {busy && <div className="w-fit animate-pulse rounded-2xl border bg-card px-4 py-3 text-xs sm:text-sm text-muted-foreground">Pensando…</div>}
         <div ref={endRef} />
       </div>
 
-      <form className="sticky bottom-20 mt-6 flex items-end gap-2 rounded-3xl border bg-card p-2 shadow-soft md:bottom-4" onSubmit={(e) => { e.preventDefault(); send(input); }}>
+      <form className="sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] mt-6 flex items-end gap-2 rounded-3xl border bg-card p-2 shadow-soft md:bottom-4" onSubmit={(e) => { e.preventDefault(); send(input); }}>
         <Textarea
           rows={1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
           placeholder="Pergunte qualquer coisa sobre a viagem…"
-          className="min-h-10 resize-none border-0 shadow-none focus-visible:ring-0"
+          className="min-h-10 resize-none border-0 shadow-none focus-visible:ring-0 text-xs sm:text-sm"
         />
         <Button type="submit" size="icon" className="shrink-0 rounded-full" disabled={busy || !input.trim()} aria-label="Enviar"><ArrowUp /></Button>
       </form>

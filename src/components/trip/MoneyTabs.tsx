@@ -74,8 +74,8 @@ export function ReservationsTab({ tripId, familyId }: Props) {
       <div className="flex justify-end">
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button className="rounded-full"><Plus /> Nova reserva</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle className="font-display text-2xl">Nova reserva</DialogTitle></DialogHeader>
+          <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88dvh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader><DialogTitle className="font-display text-xl sm:text-2xl">Nova reserva</DialogTitle></DialogHeader>
             <form
               className="space-y-3"
               onSubmit={(e) => {
@@ -115,39 +115,44 @@ export function ReservationsTab({ tripId, familyId }: Props) {
       {sorted.map((r) => {
         const Icon = kindIcon[r.kind] ?? Ticket;
         return (
-          <div key={r.id} className="flex items-center gap-4 rounded-2xl border bg-card p-4 shadow-soft">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary"><Icon className="size-5" /></div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold">{r.title}</p>
-              <p className="text-xs text-muted-foreground">
-                {RESERVATION_KINDS[r.kind]}{r.provider ? ` · ${r.provider}` : ""}
-                {r.starts_at ? ` · ${fmtDate(r.starts_at)}` : ""}{r.ends_at ? ` – ${fmtDate(r.ends_at)}` : ""}
-                {r.confirmation_code ? ` · Cód. ${r.confirmation_code}` : ""}
-              </p>
-              {(r.address || r.maps_url) && (
-                <a target="_blank" rel="noreferrer" href={mapsHref(r)} className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
-                  <MapPin className="size-3" />{r.address || "Ver no Google Maps"}
-                </a>
-              )}
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                {docs.filter((d) => d.reservation_id === r.id).map((d) => (
-                  <button key={d.id} onClick={() => openDoc(d.file_path)} className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs hover:bg-muted">
-                    <Paperclip className="size-3" />{d.file_name}
-                  </button>
-                ))}
-                <label className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-primary">
-                  <Paperclip className="size-3" /> Anexar
-                  <input type="file" multiple accept=".pdf,image/*" className="hidden" onChange={async (e) => { const l = Array.from(e.target.files ?? []); e.target.value = ""; if (l.length) { await attach(r.id, l); toast.success("Anexo guardado"); } }} />
-                </label>
+          <div key={r.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border bg-card p-4 shadow-soft">
+            <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1 w-full sm:w-auto">
+              <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary"><Icon className="size-5" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm sm:text-base leading-snug">{r.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {RESERVATION_KINDS[r.kind]}{r.provider ? ` · ${r.provider}` : ""}
+                  {r.starts_at ? ` · ${fmtDate(r.starts_at)}` : ""}{r.ends_at ? ` – ${fmtDate(r.ends_at)}` : ""}
+                  {r.confirmation_code ? ` · Cód. ${r.confirmation_code}` : ""}
+                </p>
+                {(r.address || r.maps_url) && (
+                  <a target="_blank" rel="noreferrer" href={mapsHref(r)} className="mt-1 flex items-center gap-1 text-xs text-primary hover:underline">
+                    <MapPin className="size-3 shrink-0" /><span className="truncate">{r.address || "Ver no Google Maps"}</span>
+                  </a>
+                )}
+                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                  {docs.filter((d) => d.reservation_id === r.id).map((d) => (
+                    <button key={d.id} onClick={() => openDoc(d.file_path)} className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs hover:bg-muted">
+                      <Paperclip className="size-3" />{d.file_name}
+                    </button>
+                  ))}
+                  <label className="flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+                    <Paperclip className="size-3" /> Anexar
+                    <input type="file" multiple accept=".pdf,image/*" className="hidden" onChange={async (e) => { const l = Array.from(e.target.files ?? []); e.target.value = ""; if (l.length) { await attach(r.id, l); toast.success("Anexo guardado"); } }} />
+                  </label>
+                </div>
               </div>
             </div>
-            <div className="text-right">
-              <p className="font-semibold">{brl(r.cost)}</p>
-              <button onClick={() => m.update.mutate({ id: r.id, paid: !r.paid })}>
-                <Badge variant={r.paid ? "default" : "outline"}>{r.paid ? "Pago" : "A pagar"}</Badge>
-              </button>
+
+            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 shrink-0">
+              <div className="text-left sm:text-right">
+                <p className="font-semibold text-sm sm:text-base">{brl(r.cost)}</p>
+                <button onClick={() => m.update.mutate({ id: r.id, paid: !r.paid })}>
+                  <Badge variant={r.paid ? "default" : "outline"} className="cursor-pointer text-[10px]">{r.paid ? "Pago" : "A pagar"}</Badge>
+                </button>
+              </div>
+              <button aria-label="Remover" onClick={() => m.remove.mutate(r.id)} className="p-1.5 text-muted-foreground hover:text-destructive shrink-0"><Trash2 className="size-4" /></button>
             </div>
-            <button aria-label="Remover" onClick={() => m.remove.mutate(r.id)}><Trash2 className="size-4 text-muted-foreground hover:text-destructive" /></button>
           </div>
         );
       })}

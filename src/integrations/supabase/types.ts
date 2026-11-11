@@ -81,6 +81,11 @@ export type Database = {
           owner_name: string | null
           title: string
           trip_id: string
+          responsible_type: string | null
+          priority: string | null
+          source: string | null
+          is_optional: boolean | null
+          due_date: string | null
         }
         Insert: {
           created_at?: string
@@ -91,6 +96,11 @@ export type Database = {
           owner_name?: string | null
           title: string
           trip_id: string
+          responsible_type?: string | null
+          priority?: string | null
+          source?: string | null
+          is_optional?: boolean | null
+          due_date?: string | null
         }
         Update: {
           created_at?: string
@@ -101,6 +111,11 @@ export type Database = {
           owner_name?: string | null
           title?: string
           trip_id?: string
+          responsible_type?: string | null
+          priority?: string | null
+          source?: string | null
+          is_optional?: boolean | null
+          due_date?: string | null
         }
         Relationships: [
           {

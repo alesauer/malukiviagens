@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSmartChecklist } from "./checklist-template";
+import { buildSmartChecklist, CHECKLIST_CATEGORIES } from "./checklist-template";
 
 describe("checklist-template.ts", () => {
   it("builds international checklist with passport and currency for Chile", () => {
@@ -8,13 +8,16 @@ describe("checklist-template.ts", () => {
       destination: "Santiago, Chile",
     });
 
-    const preparoTitles = items.filter((i) => i.kind === "preparo").map((i) => i.title);
-    const bagagemTitles = items.filter((i) => i.kind === "bagagem").map((i) => i.title);
+    const docTitles = items.filter((i) => i.kind === "documentos_dinheiro").map((i) => i.title);
+    const antesTitles = items.filter((i) => i.kind === "antes_viagem").map((i) => i.title);
+    const eletroTitles = items.filter((i) => i.kind === "eletronicos").map((i) => i.title);
+    const saudeTitles = items.filter((i) => i.kind === "saude").map((i) => i.title);
 
-    expect(preparoTitles.some((t) => t.includes("Passaporte"))).toBe(true);
-    expect(preparoTitles.some((t) => t.includes("Seguro Viagem"))).toBe(true);
-    expect(bagagemTitles.some((t) => t.includes("Adaptador"))).toBe(true);
-    expect(bagagemTitles.some((t) => t.includes("Farmacinha"))).toBe(true);
+    expect(docTitles.some((t) => t.includes("passaporte"))).toBe(true);
+    expect(docTitles.some((t) => t.includes("moeda estrangeira"))).toBe(true);
+    expect(antesTitles.some((t) => t.includes("seguro-viagem"))).toBe(true);
+    expect(eletroTitles.some((t) => t.includes("Chile"))).toBe(true);
+    expect(saudeTitles.some((t) => t.includes("medicamentos"))).toBe(true);
   });
 
   it("builds USA checklist with US Visa and US adapter", () => {
@@ -23,11 +26,11 @@ describe("checklist-template.ts", () => {
       destination: "EUA",
     });
 
-    const preparoTitles = items.filter((i) => i.kind === "preparo").map((i) => i.title);
-    const bagagemTitles = items.filter((i) => i.kind === "bagagem").map((i) => i.title);
+    const docTitles = items.filter((i) => i.kind === "documentos_dinheiro").map((i) => i.title);
+    const eletroTitles = items.filter((i) => i.kind === "eletronicos").map((i) => i.title);
 
-    expect(preparoTitles.some((t) => t.includes("Visto Americano"))).toBe(true);
-    expect(bagagemTitles.some((t) => t.includes("dois pinos chatos"))).toBe(true);
+    expect(docTitles.some((t) => t.includes("Visto Americano"))).toBe(true);
+    expect(eletroTitles.some((t) => t.includes("dois pinos chatos"))).toBe(true);
   });
 
   it("builds national checklist for Brazilian trip", () => {
@@ -36,17 +39,28 @@ describe("checklist-template.ts", () => {
       destination: "Florianópolis, SC",
     });
 
-    const preparoTitles = items.filter((i) => i.kind === "preparo").map((i) => i.title);
-    const bagagemTitles = items.filter((i) => i.kind === "bagagem").map((i) => i.title);
+    const docTitles = items.filter((i) => i.kind === "documentos_dinheiro").map((i) => i.title);
+    const malaTitles = items.filter((i) => i.kind === "mala_roupas").map((i) => i.title);
 
-    expect(preparoTitles.some((t) => t.includes("Documentos com foto"))).toBe(true);
-    expect(bagagemTitles.some((t) => t.includes("Roupas de banho"))).toBe(true);
+    expect(docTitles.some((t) => t.includes("RG, CNH"))).toBe(true);
+    expect(malaTitles.some((t) => t.includes("roupas de banho"))).toBe(true);
+  });
+
+  it("covers all 8 standard categories in the template", () => {
+    const items = buildSmartChecklist({
+      title: "Viagem Padrão",
+      destination: "Belo Horizonte, MG",
+    });
+
+    for (const cat of CHECKLIST_CATEGORIES) {
+      expect(items.some((i) => i.kind === cat.id)).toBe(true);
+    }
   });
 
   it("incorporates historical items without duplication", () => {
     const history = [
-      { kind: "bagagem", title: "Câmera GoPro e cartões de memória", owner_name: "maluki" },
-      { kind: "preparo", title: "Passaportes válidos por no mínimo 6 meses", owner_name: "Família" },
+      { kind: "eletronicos", title: "Câmera GoPro e cartões de memória", owner_name: "maluki" },
+      { kind: "documentos_dinheiro", title: "Passaportes válidos por no mínimo 6 meses", owner_name: "Família" },
     ];
 
     const items = buildSmartChecklist({
@@ -59,4 +73,3 @@ describe("checklist-template.ts", () => {
     expect(titles).toContain("Câmera GoPro e cartões de memória");
   });
 });
-

@@ -1,5 +1,24 @@
 import { useRef, useState } from "react";
-import { Check, Download, FileText, Phone, Plus, Sparkles, Trash2, Upload } from "lucide-react";
+import {
+  Check,
+  Download,
+  FileText,
+  Phone,
+  Plus,
+  Sparkles,
+  Trash2,
+  Upload,
+  CalendarClock,
+  CreditCard,
+  Smartphone,
+  Luggage,
+  HeartPulse,
+  Home,
+  PlaneTakeoff,
+  CheckCircle2,
+  Circle,
+  Tag,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,18 +27,36 @@ import { DOC_KINDS, fmtDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { createDefaultTripChecklist } from "@/lib/checklist-template";
+import {
+  CHECKLIST_CATEGORIES,
+  ChecklistCategoryId,
+  createDefaultTripChecklist,
+  normalizeChecklistKind,
+} from "@/lib/checklist-template";
 
 type Props = { tripId: string; familyId?: string | undefined };
 
-const SUGGESTED = ["Documentos com foto", "Seguro-viagem", "Carregadores", "Remédios", "Protetor solar", "Avisar o banco"];
+const CATEGORY_ICONS: Record<ChecklistCategoryId, React.ComponentType<{ className?: string }>> = {
+  antes_viagem: CalendarClock,
+  documentos_dinheiro: CreditCard,
+  eletronicos: Smartphone,
+  mala_roupas: Luggage,
+  higiene: Sparkles,
+  saude: HeartPulse,
+  casa: Home,
+  dia_viagem: PlaneTakeoff,
+};
 
 export function ChecklistTab({ tripId, familyId }: Props) {
   const { data = [] } = useTripRows("checklist_items", tripId);
   const m = useTripMutations("checklist_items", tripId, familyId);
   const qc = useQueryClient();
   const [generating, setGenerating] = useState(false);
+  const [selectedCat, setSelectedCat] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<"all" | "pending" | "done">("all");
 
   async function handleAutoChecklist() {
     if (!familyId) return;
@@ -38,7 +75,7 @@ export function ChecklistTab({ tripId, familyId }: Props) {
       });
 
       qc.invalidateQueries({ queryKey: ["checklist_items", tripId] });
-      toast.success(`${count} itens de checklist e malas adicionados!`);
+      toast.success(`${count} itens de checklist e malas organizados com sucesso!`);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Erro ao gerar";
       toast.error(`Não foi possível gerar: ${msg}`);
@@ -47,71 +84,200 @@ export function ChecklistTab({ tripId, familyId }: Props) {
     }
   }
 
-  const groups: { kind: "preparo" | "bagagem"; title: string; hint: string }[] = [
-    { kind: "preparo", title: "Antes de viajar", hint: "Tarefas e preparativos" },
-    { kind: "bagagem", title: "Malas", hint: "Informe de quem é cada item" },
-  ];
+  const totalDone = data.filter((i) => i.done).length;
+  const pct = data.length > 0 ? Math.round((totalDone / data.length) * 100) : 0;
+
+  // Filtragem de categorias para visualização
+  const categoriesToShow = selectedCat === "all"
+    ? CHECKLIST_CATEGORIES
+    : CHECKLIST_CATEGORIES.filter((c) => c.id === selectedCat);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="text-sm text-muted-foreground">
-          {data.length > 0 ? (
-            <span>
-              Total: {data.filter((i) => i.done).length} de {data.length} itens concluídos
-            </span>
-          ) : (
-            <span>Nenhum item cadastrado ainda.</span>
-          )}
+    <div className="space-y-6">
+      {/* Barra de Progresso e Ação de Gerar */}
+      <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-soft md:p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+              Checklist & Malas da Viagem
+            </h2>
+            <p className="text-xs text-muted-foreground md:text-sm mt-0.5">
+              Organizado em 8 categorias essenciais com sugestões inteligentes para seu destino.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
+            className="rounded-full text-xs font-semibold px-4 shadow-soft"
+            onClick={handleAutoChecklist}
+            disabled={generating}
+          >
+            <Sparkles className="mr-1.5 size-3.5 text-accent" />
+            {generating ? "Gerando itens…" : "Gerar checklist completo"}
+          </Button>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="rounded-full text-xs font-medium"
-          onClick={handleAutoChecklist}
-          disabled={generating}
-        >
-          <Sparkles className="mr-1.5 size-3.5 text-primary" />
-          {generating ? "Gerando itens…" : "Gerar checklist automático"}
-        </Button>
+
+        {/* Barra de Conclusão */}
+        <div className="space-y-2 pt-1">
+          <div className="flex items-center justify-between text-xs md:text-sm">
+            <span className="font-medium text-foreground">Progresso Geral</span>
+            <span className="font-semibold text-primary">
+              {totalDone} de {data.length} concluídos ({pct}%)
+            </span>
+          </div>
+          <Progress value={pct} className="h-2.5 rounded-full" />
+        </div>
+
+        {/* Filtros por Categoria (Pills horizontais) */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/50">
+          <button
+            type="button"
+            onClick={() => setSelectedCat("all")}
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              selectedCat === "all"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            )}
+          >
+            Todas ({data.length})
+          </button>
+          {CHECKLIST_CATEGORIES.map((cat) => {
+            const count = data.filter((i) => normalizeChecklistKind(i.kind) === cat.id).length;
+            const done = data.filter((i) => normalizeChecklistKind(i.kind) === cat.id && i.done).length;
+            const Icon = CATEGORY_ICONS[cat.id];
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedCat(cat.id)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  selectedCat === cat.id
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+              >
+                <Icon className="size-3.5" />
+                <span>{cat.name}</span>
+                {count > 0 && (
+                  <span className={cn(
+                    "text-[10px] px-1.5 py-0.2 rounded-full",
+                    selectedCat === cat.id ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+                  )}>
+                    {done}/{count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {groups.map((g) => {
-          const items = data.filter((i) => i.kind === g.kind);
-          const done = items.filter((i) => i.done).length;
+      {/* Grid de Categorias do Modelo */}
+      <div className="grid gap-5 md:grid-cols-2">
+        {categoriesToShow.map((cat) => {
+          const Icon = CATEGORY_ICONS[cat.id];
+          const rawItems = data.filter((i) => normalizeChecklistKind(i.kind) === cat.id);
+          const catDone = rawItems.filter((i) => i.done).length;
+          const items = filterStatus === "all"
+            ? rawItems
+            : filterStatus === "pending"
+            ? rawItems.filter((i) => !i.done)
+            : rawItems.filter((i) => i.done);
+
           return (
-            <section key={g.kind} className="rounded-2xl border bg-card p-5 shadow-soft">
-              <div className="flex items-baseline justify-between">
-                <h3 className="text-xl font-semibold">{g.title}</h3>
-                <span className="text-sm text-muted-foreground">{done}/{items.length}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">{g.hint}</p>
-              <ul className="mt-3 space-y-1">
-                {items.map((i) => (
-                  <li key={i.id} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted">
-                    <button
-                      aria-label="Alternar"
-                      onClick={() => m.update.mutate({ id: i.id, done: !i.done })}
-                      className={cn("flex size-5 items-center justify-center rounded-md border-2", i.done ? "border-success bg-success text-primary-foreground" : "border-input")}
-                    >
-                      {i.done && <Check className="size-3" />}
-                    </button>
-                    <span className={cn("flex-1", i.done && "text-muted-foreground line-through")}>{i.title}</span>
-                    {i.owner_name && <span className="rounded-full bg-secondary px-2 text-xs">{i.owner_name}</span>}
-                    <button aria-label="Remover" className="opacity-0 group-hover:opacity-100" onClick={() => m.remove.mutate(i.id)}><Trash2 className="size-4 text-muted-foreground" /></button>
-                  </li>
-                ))}
-              </ul>
-              <AddItem withOwner={g.kind === "bagagem"} onAdd={(title, owner) => m.add.mutate({ kind: g.kind, title, owner_name: owner || null })} />
-              {g.kind === "preparo" && items.length === 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {SUGGESTED.map((s) => (
-                    <button key={s} onClick={() => m.add.mutate({ kind: "preparo", title: s })} className="rounded-full border border-dashed px-3 py-1 text-xs hover:border-primary hover:text-primary">+ {s}</button>
-                  ))}
+            <section
+              key={cat.id}
+              className="flex flex-col justify-between rounded-3xl border border-border/70 bg-card p-5 shadow-soft transition-all hover:border-primary/30"
+            >
+              <div>
+                {/* Header da Categoria */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="size-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-base text-foreground leading-tight">
+                        {cat.name}
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {cat.description}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="text-xs shrink-0 font-medium">
+                    {catDone}/{rawItems.length}
+                  </Badge>
                 </div>
-              )}
+
+                {/* Lista de Itens */}
+                <ul className="mt-4 space-y-1.5">
+                  {items.length === 0 && (
+                    <li className="py-3 text-center text-xs text-muted-foreground italic">
+                      {rawItems.length === 0 ? "Nenhum item nesta categoria ainda." : "Nenhum item com este filtro."}
+                    </li>
+                  )}
+                  {items.map((i) => (
+                    <li
+                      key={i.id}
+                      className={cn(
+                        "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm transition-colors",
+                        i.done ? "bg-muted/40 text-muted-foreground" : "hover:bg-secondary/60"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        aria-label={i.done ? "Marcar como pendente" : "Marcar como concluído"}
+                        onClick={() => m.update.mutate({ id: i.id, done: !i.done })}
+                        className={cn(
+                          "flex size-5 shrink-0 items-center justify-center rounded-md border transition-colors",
+                          i.done
+                            ? "border-emerald-500 bg-emerald-500 text-white"
+                            : "border-input hover:border-primary"
+                        )}
+                      >
+                        {i.done && <Check className="size-3.5" />}
+                      </button>
+
+                      <span className={cn("flex-1 text-xs md:text-sm leading-snug", i.done && "line-through opacity-70")}>
+                        {i.title}
+                      </span>
+
+                      {i.owner_name && (
+                        <span className="shrink-0 rounded-full bg-secondary/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          {i.owner_name}
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        aria-label="Remover item"
+                        className="opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                        onClick={() => m.remove.mutate(i.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Formulário para Adicionar Item nesta Categoria */}
+              <div className="pt-3 mt-3 border-t border-border/40">
+                <AddItem
+                  placeholder={`Adicionar em ${cat.name}…`}
+                  onAdd={(title, owner) =>
+                    m.add.mutate({
+                      kind: cat.id,
+                      title,
+                      owner_name: owner || null,
+                    })
+                  }
+                />
+              </div>
             </section>
           );
         })}
@@ -120,14 +286,43 @@ export function ChecklistTab({ tripId, familyId }: Props) {
   );
 }
 
-function AddItem({ withOwner, onAdd }: { withOwner: boolean; onAdd: (t: string, o: string) => void }) {
+function AddItem({
+  placeholder = "Novo item…",
+  onAdd,
+}: {
+  placeholder?: string;
+  onAdd: (title: string, owner: string) => void;
+}) {
   const [t, setT] = useState("");
   const [o, setO] = useState("");
   return (
-    <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (t.trim()) { onAdd(t.trim(), o.trim()); setT(""); } }}>
-      <Input placeholder="Novo item" value={t} onChange={(e) => setT(e.target.value)} />
-      {withOwner && <Input className="w-28" placeholder="De quem" value={o} onChange={(e) => setO(e.target.value)} />}
-      <Button type="submit" size="icon" aria-label="Adicionar"><Plus /></Button>
+    <form
+      className="flex gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (t.trim()) {
+          onAdd(t.trim(), o.trim());
+          setT("");
+          setO("");
+        }
+      }}
+    >
+      <Input
+        placeholder={placeholder}
+        value={t}
+        onChange={(e) => setT(e.target.value)}
+        className="h-8 text-xs rounded-lg"
+      />
+      <Input
+        className="w-24 h-8 text-xs rounded-lg shrink-0"
+        placeholder="Resp."
+        value={o}
+        onChange={(e) => setO(e.target.value)}
+        title="Responsável pelo item (opcional)"
+      />
+      <Button type="submit" size="sm" className="h-8 px-2.5 rounded-lg shrink-0" aria-label="Adicionar">
+        <Plus className="size-3.5" />
+      </Button>
     </form>
   );
 }

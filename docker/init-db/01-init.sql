@@ -207,9 +207,14 @@ create table if not exists public.checklist_items (
   id uuid primary key default gen_random_uuid(),
   trip_id uuid not null references public.trips(id) on delete cascade,
   family_id uuid not null references public.families(id) on delete cascade,
-  kind text not null default 'preparo' check (kind in ('preparo','bagagem')),
+  kind text not null default 'antes_viagem' check (kind in ('antes_viagem','documentos_dinheiro','eletronicos','mala_roupas','higiene','saude','casa','dia_viagem','preparo','bagagem')),
   title text not null,
   owner_name text,
+  responsible_type text default 'family',
+  priority text default 'normal',
+  source text default 'template',
+  is_optional boolean default false,
+  due_date text,
   done boolean not null default false,
   created_at timestamptz not null default now()
 );

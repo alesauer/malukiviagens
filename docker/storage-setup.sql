@@ -20,3 +20,4 @@ CREATE POLICY "family docs update" ON storage.objects FOR UPDATE TO authenticate
 DROP POLICY IF EXISTS "family docs delete" ON storage.objects;
 CREATE POLICY "family docs delete" ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'documents' AND public.is_family_member(((storage.foldername(name))[1])::uuid));
+

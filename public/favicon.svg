@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Fundo Gradiente Verde Oceano / Teal da marca Maluki -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="50%" stop-color="#115e59"/>
+      <stop offset="100%" stop-color="#134e4a"/>
+    </linearGradient>
+
+    <!-- Rota de voo com brilho pôr do sol -->
+    <linearGradient id="trailGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f97316" stop-opacity="0.3"/>
+      <stop offset="50%" stop-color="#fb923c" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#fde047" stop-opacity="1"/>
+    </linearGradient>
+
+    <!-- Sombra para destaque do avião -->
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="1.5" dy="3.5" stdDeviation="3" flood-color="#042f2e" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+
+  <!-- Fundo arredondado moderno -->
+  <rect width="128" height="128" rx="34" fill="url(#bgGrad)"/>
+  
+  <!-- Linhas sutis do globo terrestre -->
+  <circle cx="64" cy="64" r="48" fill="none" stroke="#5eead4" stroke-width="1.8" stroke-opacity="0.25"/>
+  <ellipse cx="64" cy="64" rx="48" ry="18" fill="none" stroke="#5eead4" stroke-width="1.8" stroke-opacity="0.2"/>
+  <ellipse cx="64" cy="64" rx="18" ry="48" fill="none" stroke="#5eead4" stroke-width="1.8" stroke-opacity="0.2"/>
+
+  <!-- Trilha pontilhada de voo -->
+  <path d="M 26 98 C 34 74, 52 46, 76 34" fill="none" stroke="url(#trailGrad)" stroke-width="4.5" stroke-dasharray="6 4" stroke-linecap="round"/>
+
+  <!-- Ponto de origem da viagem -->
+  <circle cx="26" cy="98" r="4.5" fill="#f97316"/>
+
+  <!-- Avião comercial moderno decolando em direção ao destino -->
+  <g transform="translate(48, 16) scale(2.8)" filter="url(#shadow)">
+    <path fill="#ffffff" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" transform="rotate(45, 11.5, 11.5)"/>
+  </g>
+</svg>

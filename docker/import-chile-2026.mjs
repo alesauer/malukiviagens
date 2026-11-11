@@ -178,3 +178,4 @@ END $$;
 
 fs.writeFileSync('docker/chile-2026.sql', sql, 'utf8');
 console.log('Script docker/chile-2026.sql gerado com sucesso!');
+

@@ -289,7 +289,7 @@ function NewTripDialog() {
           <Plus /> Nova viagem
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="font-display text-2xl">Nova viagem</DialogTitle>
         </DialogHeader>

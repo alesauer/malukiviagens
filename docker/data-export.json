@@ -1,0 +1,1958 @@
+{
+  "exportado_em": "2026-11-09T15:04:57.407Z",
+  "viagem_atual": {
+    "slug": "bolivia-2027",
+    "titulo": "Santa Cruz de la Sierra",
+    "pais": "Bolívia",
+    "inicio": "2027-03-24",
+    "fim": "2027-03-31",
+    "periodoCurto": "março de 2027",
+    "duracaoDestino": "6 dias e 5 noites em Santa Cruz",
+    "viajantes": "2 adultos e 1 adolescente (15 anos)",
+    "hospedagemPreferencial": "Equipetrol",
+    "estilo": [
+      "Turismo",
+      "Compras",
+      "Gastronomia",
+      "Cultura",
+      "Natureza"
+    ],
+    "passeiosExcluidos": [
+      "Dunas de Lomas de Arena",
+      "Salar de Uyuni"
+    ]
+  },
+  "hospedagens": [
+    {
+      "destino": "Airport Hotel Gru",
+      "cidade": "Guarulhos",
+      "plataforma": "Booking.com",
+      "endereco": "Av. Otávio Braga de Mesquita, 3055, Guarulhos, 07191-000, Brasil",
+      "periodo_estadia": {
+        "checkin": "2027-03-24",
+        "checkout": "2027-03-25"
+      },
+      "horarios": {
+        "checkin": "13:30",
+        "checkout": "11:30"
+      },
+      "telefone": "+55 11 93280 8454",
+      "codigo_reserva": "6950.868.242",
+      "pin": "6109",
+      "quarto": "Quarto Família Standard",
+      "hospedes": "3 adultos",
+      "refeicao": "Café da manhã incluso",
+      "valor": "R$ 489,00 (R$ 470,19 + R$ 18,81 de ISS) — pagamento no hotel",
+      "cancelamento": "Grátis até 21/03/2027 às 23:59. Depois disso, R$ 489,00.",
+      "observacoes": [
+        "Janela de check-in: 13:30 às 14:00. Janela de check-out: 11:30 às 12:00.",
+        "Estadia para dormir antes do voo das 09:00 de GRU para Santa Cruz.",
+        "Estacionamento próximo ao hotel: R$ 35,00 por dia (sob reserva)."
+      ],
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Airport+Hotel+Gru,+Av.+Ot%C3%A1vio+Braga+de+Mesquita+3055,+Guarulhos"
+    },
+    {
+      "destino": "Hotel By Armonía",
+      "cidade": "Santa Cruz de la Sierra",
+      "plataforma": "Booking.com",
+      "endereco": "Avenida Guapay, Calle Armonía #96, Santa Cruz de la Sierra, Bolívia",
+      "periodo_estadia": {
+        "checkin": "2027-03-25",
+        "checkout": "2027-03-30"
+      },
+      "horarios": {
+        "checkin": "14:00",
+        "checkout": "12:30"
+      },
+      "telefone": "+591 3 3464699",
+      "codigo_reserva": "5354.777.647",
+      "pin": "0783",
+      "quarto": "Quarto com 2 camas de solteiro",
+      "hospedes": "2 adultos e 1 criança (15 anos)",
+      "refeicao": "Café da manhã incluso",
+      "valor": "US$ 318,55 (aprox. R$ 1.749) — inclui ISS e taxa de resort de US$ 10. Pagamento no hotel, em dólares.",
+      "cancelamento": "Grátis até 22/03/2027 às 23:59. A partir de 23/03, US$ 54,61.",
+      "observacoes": [
+        "Wi-Fi e estacionamento gratuitos.",
+        "O quarto tem 2 camas de solteiro para 3 hóspedes: confirme com o hotel a cama extra, que não está incluída no valor.",
+        "O voo de volta sai às 12:05, antes do horário limite de check-out: faça o check-out cedo.",
+        "Coordenadas: 17°46,651' S, 63°9,379' O."
+      ],
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Hotel+By+Armon%C3%ADa,+Santa+Cruz+de+la+Sierra,+Bolivia"
+    },
+    {
+      "destino": "Airport Hotel Gru",
+      "cidade": "Guarulhos",
+      "plataforma": "Booking.com",
+      "endereco": "Av. Otávio Braga de Mesquita, 3055, Guarulhos, 07191-000, Brasil",
+      "periodo_estadia": {
+        "checkin": "2027-03-30",
+        "checkout": "2027-03-31"
+      },
+      "horarios": {
+        "checkin": "13:30",
+        "checkout": "11:30"
+      },
+      "telefone": "+55 11 93280 8454",
+      "codigo_reserva": "5123.871.526",
+      "pin": "9268",
+      "quarto": "Quarto Família Standard",
+      "hospedes": "3 adultos",
+      "refeicao": "Café da manhã incluso",
+      "valor": "R$ 489,00 (R$ 470,19 + R$ 18,81 de ISS) — pagamento no hotel",
+      "cancelamento": "Grátis até 27/03/2027 às 23:59. Depois disso, R$ 489,00.",
+      "observacoes": [
+        "Janela de check-in: 13:30 às 14:00. Janela de check-out: 11:30 às 12:00.",
+        "O voo de Santa Cruz chega em GRU às 15:55; no dia seguinte o voo para BH sai de Congonhas (CGH) às 14:00."
+      ],
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Airport+Hotel+Gru,+Av.+Ot%C3%A1vio+Braga+de+Mesquita+3055,+Guarulhos"
+    }
+  ],
+  "voos_ida": [
+    {
+      "codigo_viagem": "EMBZQH",
+      "companhia": "LATAM Airlines",
+      "data": "2027-03-24",
+      "origem": "CNF",
+      "origem_cidade": "Belo Horizonte (Confins)",
+      "destino": "CGH",
+      "destino_cidade": "São Paulo (Congonhas)",
+      "horario_saida": "20:25:00",
+      "horario_chegada": "21:40:00",
+      "voo": "LA 3047",
+      "tarifa": "Economy Light",
+      "bagagem": "1 item pessoal (até 10 kg) e 1 bagagem de mão (até 12 kg). Sem bagagem despachada.",
+      "bilhete": "957 2309538502 / 03 / 04",
+      "observacao": "Pago com milhas LATAM Pass (27.938 por passageiro) e taxas no cartão. Remarcação com multa de R$ 196,90."
+    },
+    {
+      "codigo_viagem": "ATMTZO",
+      "companhia": "GOL",
+      "data": "2027-03-25",
+      "origem": "GRU",
+      "origem_cidade": "São Paulo (Guarulhos)",
+      "destino": "VVI",
+      "destino_cidade": "Santa Cruz (Viru Viru)",
+      "horario_saida": "09:00:00",
+      "horario_chegada": "11:05:00",
+      "voo": "G3 7638",
+      "duracao": "Direto — 3h05",
+      "tarifa": "Light",
+      "bilhete": "127 2315244407",
+      "observacao": "O horário de chegada em Santa Cruz é local (1h a menos que Brasília). Voo internacional: chegue com antecedência."
+    }
+  ],
+  "voos_volta": [
+    {
+      "codigo_viagem": "ATMTZO",
+      "companhia": "GOL",
+      "data": "2027-03-30",
+      "origem": "VVI",
+      "origem_cidade": "Santa Cruz (Viru Viru)",
+      "destino": "GRU",
+      "destino_cidade": "São Paulo (Guarulhos)",
+      "horario_saida": "12:05:00",
+      "horario_chegada": "15:55:00",
+      "voo": "G3 7639",
+      "duracao": "Direto — 2h50",
+      "tarifa": "Light",
+      "bilhete": "127 2315244407",
+      "observacao": "O horário de saída de Santa Cruz é local (1h a menos que Brasília)."
+    },
+    {
+      "codigo_viagem": "EMBZQH",
+      "companhia": "LATAM Airlines",
+      "data": "2027-03-31",
+      "origem": "CGH",
+      "origem_cidade": "São Paulo (Congonhas)",
+      "destino": "CNF",
+      "destino_cidade": "Belo Horizonte (Confins)",
+      "horario_saida": "14:00:00",
+      "horario_chegada": "15:05:00",
+      "voo": "LA 4642",
+      "tarifa": "Economy Light",
+      "bagagem": "1 item pessoal (até 10 kg) e 1 bagagem de mão (até 12 kg). Sem bagagem despachada.",
+      "bilhete": "957 2309538502 / 03 / 04",
+      "observacao": "O voo anterior chega em Guarulhos (GRU) e este sai de Congonhas (CGH): o transporte entre aeroportos é por conta do passageiro."
+    }
+  ],
+  "roteiro": [
+    {
+      "data": "2027-03-24",
+      "dia_semana": "Quarta-feira",
+      "titulo": "Rumo a Guarulhos",
+      "locais": [
+        {
+          "nome": "Voo LA 3047 — Confins → Congonhas",
+          "descricao": "Saída às 20:25 e chegada às 21:40. Tarifa Economy Light, somente bagagem de mão.",
+          "dica": "Congonhas e Guarulhos são aeroportos diferentes: planeje o transporte até o hotel."
+        },
+        {
+          "nome": "Airport Hotel Gru",
+          "descricao": "Check-in a partir das 13:30 (reserva 6950.868.242, PIN 6109). Noite em Guarulhos antes do voo das 09:00."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-25",
+      "dia_semana": "Quinta-feira",
+      "titulo": "Chegada e Centro Histórico",
+      "periodo": "Tarde e noite",
+      "observacoes": "Primeiro dia com atividades leves. Ajustar os passeios ao horário de chegada.",
+      "locais": [
+        {
+          "nome": "Voo G3 7638 — Guarulhos → Viru Viru",
+          "horario": "09:00",
+          "descricao": "Saída às 09:00 e chegada às 11:05 (horário local). Voo direto de 3h05.",
+          "dica": "Chegue ao aeroporto com antecedência: é voo internacional."
+        },
+        {
+          "nome": "Check-in — Hotel By Armonía",
+          "horario": "14:00",
+          "descricao": "Deslocamento do aeroporto, check-in e acomodação (reserva 5354.777.647, PIN 0783). Café da manhã incluso.",
+          "dica": "O pagamento é feito no hotel, em dólares. Confirme a cama extra para o terceiro hóspede."
+        },
+        {
+          "nome": "Plaza 24 de Septiembre",
+          "horario": "Tarde",
+          "descricao": "Conhecer a principal praça da cidade, observar a arquitetura, os cafés e o movimento local.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Plaza%2024%20de%20Septiembre%2C%20Centro%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Catedral Metropolitana de San Lorenzo",
+          "horario": "Tarde",
+          "descricao": "Visitar a principal catedral de Santa Cruz e conhecer sua arquitetura e importância histórica.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Catedral%20Metropolitana%20de%20San%20Lorenzo%2C%20Plaza%2024%20de%20Septiembre%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Centro Histórico",
+          "horario": "Noite",
+          "descricao": "Caminhada pelas ruas centrais e jantar em restaurante de gastronomia boliviana.",
+          "restaurantes": "Perto da Catedral: Resto-Bar Punto Mágico (temático) e El Bosque de las Hadas."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-26",
+      "dia_semana": "Sexta-feira",
+      "titulo": "Turismo Urbano e Gastronomia",
+      "periodo": "Manhã, tarde e noite",
+      "observacoes": "Sexta-feira Santa. Confirmar previamente o funcionamento das atrações e restaurantes.",
+      "locais": [
+        {
+          "nome": "Cristo Redentor",
+          "horario": "Manhã",
+          "descricao": "Conhecer um dos monumentos mais conhecidos de Santa Cruz e aproveitar para fotografar a região.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Cristo%20Redentor%2C%20Avenida%20Monse%C3%B1or%20Rivero%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Centro de Santa Cruz",
+          "horario": "Final da manhã",
+          "descricao": "Explorar ruas, praças e pontos de interesse cultural da cidade.",
+          "arredores": "Casa Cultural Melchor Pinto, Manzana Uno e Parque El Arenal."
+        },
+        {
+          "nome": "Restaurante de gastronomia regional",
+          "horario": "Almoço",
+          "descricao": "Experimentar pratos típicos da região de Santa Cruz, como majadito, locro e sonso.",
+          "restaurantes": "La Casa del Camba — majadito, pacumutu e parrilla."
+        },
+        {
+          "nome": "Equipetrol",
+          "horario": "Tarde",
+          "descricao": "Conhecer a região moderna da cidade, suas avenidas, cafés e estabelecimentos comerciais."
+        },
+        {
+          "nome": "Jantar em Equipetrol",
+          "horario": "Noite",
+          "descricao": "Jantar em restaurante temático ou especializado em carnes.",
+          "restaurantes": "El Arriero (parrilla, Av. San Martín) ou Aviator Wings & Beer (temático de aviação)."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-27",
+      "dia_semana": "Sábado",
+      "titulo": "Excursão a Samaipata",
+      "periodo": "Dia inteiro",
+      "observacoes": "Passeio de dia inteiro. Recomenda-se transporte contratado, guia e confirmação dos horários de funcionamento do sítio arqueológico.",
+      "locais": [
+        {
+          "nome": "Saída de Santa Cruz de la Sierra",
+          "horario": "07:00",
+          "descricao": "Saída para a excursão em direção a Samaipata."
+        },
+        {
+          "nome": "El Fuerte de Samaipata",
+          "horario": "Manhã",
+          "descricao": "Visitar o sítio arqueológico pré-colombiano reconhecido como Patrimônio Mundial da UNESCO. Conhecer as estruturas arqueológicas e as enormes esculturas e gravuras na rocha.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=El+Fuerte+de+Samaipata,+Bolivia"
+        },
+        {
+          "nome": "Centro de Samaipata",
+          "horario": "Almoço",
+          "descricao": "Experimentar a gastronomia local e conhecer o pequeno povoado."
+        },
+        {
+          "nome": "Centro histórico de Samaipata",
+          "horario": "Tarde",
+          "descricao": "Caminhar pelas ruas, conhecer as construções locais, lojas de artesanato e aproveitar as paisagens da região."
+        },
+        {
+          "nome": "Retorno a Santa Cruz",
+          "horario": "Final da tarde",
+          "descricao": "Deslocamento de volta para a hospedagem."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-28",
+      "dia_semana": "Domingo",
+      "titulo": "Biocentro Güembé",
+      "periodo": "Dia inteiro",
+      "observacoes": "Domingo de Páscoa. Confirmar funcionamento, ingressos e disponibilidade das atividades.",
+      "locais": [
+        {
+          "nome": "Biocentro Güembé",
+          "horario": "09:00",
+          "descricao": "Visitar um complexo de natureza e lazer com jardins tropicais, borboletário, orquidário, aves e áreas verdes.",
+          "dica": "Levar repelente, protetor solar e roupa de banho.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Biocentro%20Guembe%2C%20Camino%20a%20Porongo%20Km%205%2C%20Urubo%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Borboletário e Orquidário",
+          "horario": "Manhã",
+          "descricao": "Conhecer os ambientes naturais e observar espécies de borboletas, aves e plantas."
+        },
+        {
+          "nome": "Restaurante do complexo",
+          "horario": "Almoço",
+          "descricao": "Fazer uma refeição no próprio complexo ou em estabelecimento próximo."
+        },
+        {
+          "nome": "Áreas de lazer do Biocentro Güembé",
+          "horario": "Tarde",
+          "descricao": "Aproveitar piscinas, jardins, trilhas e demais atividades disponíveis."
+        },
+        {
+          "nome": "Equipetrol",
+          "horario": "Final da tarde",
+          "descricao": "Retorno à hospedagem e jantar tranquilo."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-29",
+      "dia_semana": "Segunda-feira",
+      "titulo": "Compras, Restaurantes e Passeios Urbanos",
+      "periodo": "Manhã, tarde e noite",
+      "observacoes": "Dia reservado para compras e gastronomia. Os mercados podem ter horários diferentes.",
+      "locais": [
+        {
+          "nome": "Mercado Mutualista",
+          "horario": "Manhã",
+          "descricao": "Conhecer um mercado popular, observar produtos locais, artesanato e o cotidiano da cidade.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Mercado%20Mutualista%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Mercado Los Pozos",
+          "horario": "Final da manhã",
+          "descricao": "Explorar o comércio popular e conhecer produtos e artigos regionais.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Mercado%20Los%20Pozos%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Restaurante escolhido pela família",
+          "horario": "Almoço",
+          "descricao": "Almoço em restaurante de carnes, pizzaria ou gastronomia internacional.",
+          "restaurantes": "Vaca Morena, Noi Pizzeria ou Brasargent Churrasquería."
+        },
+        {
+          "nome": "Ventura Mall",
+          "horario": "Tarde",
+          "descricao": "Passear pelo shopping, conhecer lojas, comprar lembranças e aproveitar as opções de entretenimento.",
+          "link_trajeto": "https://www.google.com/maps/search/?api=1&query=Ventura%20Mall%2C%20Avenida%20San%20Mart%C3%ADn%2C%20Equipetrol%20Norte%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Jantar de despedida",
+          "horario": "Noite",
+          "descricao": "Jantar especial de despedida em restaurante temático ou italiano em Equipetrol.",
+          "restaurantes": "Jardín de Asia (Green Tower), In Piazza ou Michelangelo Ristorante."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-30",
+      "dia_semana": "Terça-feira",
+      "titulo": "Despedida e Retorno",
+      "periodo": "Manhã",
+      "observacoes": "Ajustar o horário de saída conforme o voo, que parte às 12:05 (horário local).",
+      "locais": [
+        {
+          "nome": "Café da manhã e check-out — Hotel By Armonía",
+          "horario": "Cedo",
+          "descricao": "Café da manhã, organização das malas e check-out. O limite é 12:30, mas o voo sai antes."
+        },
+        {
+          "nome": "Compras de última hora",
+          "horario": "Se houver tempo",
+          "descricao": "Caso exista tempo disponível, fazer compras de última hora ou tomar um café.",
+          "dica": "O tempo é curto: para um voo internacional às 12:05, o ideal é estar em Viru Viru por volta das 09:30."
+        },
+        {
+          "nome": "Aeroporto Internacional Viru Viru",
+          "horario": "Manhã",
+          "descricao": "Deslocamento para o aeroporto e embarque de retorno."
+        },
+        {
+          "nome": "Voo G3 7639 — Viru Viru → Guarulhos",
+          "horario": "12:05",
+          "descricao": "Saída às 12:05 (horário local) e chegada às 15:55. Voo direto de 2h50."
+        },
+        {
+          "nome": "Airport Hotel Gru",
+          "descricao": "Check-in a partir das 13:30 (reserva 5123.871.526, PIN 9268). Noite em Guarulhos."
+        }
+      ]
+    },
+    {
+      "data": "2027-03-31",
+      "dia_semana": "Quarta-feira",
+      "titulo": "Volta para Casa",
+      "locais": [
+        {
+          "nome": "Voo LA 4642 — Congonhas → Confins",
+          "descricao": "Saída às 14:00 e chegada às 15:05.",
+          "dica": "O voo sai de Congonhas (CGH), não de Guarulhos: reserve o deslocamento entre aeroportos com folga."
+        }
+      ]
+    }
+  ],
+  "grupos_de_restaurantes": [
+    "Temáticos e experiências",
+    "Carnes e churrascarias",
+    "Pizzarias",
+    "Massas e italianos"
+  ],
+  "restaurantes": [
+    {
+      "grupo": "Temáticos e experiências",
+      "nome": "Resto-Bar Punto Mágico",
+      "especialidade": "Temático",
+      "endereco": "René Moreno 30, em frente à porta lateral da Catedral",
+      "telefone": "+591 74261929",
+      "descricao": "Restaurante com ambientação inspirada em fantasia, magia e mundos encantados. Possui pratos e bebidas com nomes temáticos.",
+      "destaque": "Experiência divertida e ambiente diferente.",
+      "indicado_para": "Famílias e adolescentes",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Resto-Bar%20Punto%20M%C3%A1gico%2C%20Ren%C3%A9%20Moreno%2030%2C%20em%20frente%20%C3%A0%20porta%20lateral%20da%20Catedral%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Temáticos e experiências",
+      "nome": "El Bosque de las Hadas",
+      "especialidade": "Temático",
+      "endereco": "Calle Cochabamba 675, entre Moldes e General Saavedra",
+      "telefone": "+591 78364647",
+      "descricao": "Café, bar e restaurante com decoração inspirada em florestas encantadas, fadas e duendes.",
+      "destaque": "Decoração cenográfica e ambiente de fantasia.",
+      "indicado_para": "Famílias, casais e fotografias",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=El%20Bosque%20de%20las%20Hadas%2C%20Calle%20Cochabamba%20675%2C%20entre%20Moldes%20e%20General%20Saavedra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Temáticos e experiências",
+      "nome": "Aviator Wings & Beer",
+      "especialidade": "Temático e esportivo",
+      "endereco": "Calle Dr. Leonardo Nava, Santa Cruz",
+      "telefone": "+591 75552233",
+      "descricao": "Restaurante com ambientação inspirada no universo da aviação, aviões e pilotos. Estilo americano, com hambúrgueres e porções.",
+      "destaque": "Tema de aviação e ambiente descontraído.",
+      "indicado_para": "Famílias e adolescentes",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Aviator%20Wings%20%26%20Beer%2C%20Calle%20Dr.%20Leonardo%20Nava%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Temáticos e experiências",
+      "nome": "Jardín de Asia",
+      "especialidade": "Gastronomia e experiência",
+      "endereco": "Green Tower, Avenida San Martín, Equipetrol",
+      "descricao": "Restaurante de gastronomia asiática e fusion, em ambiente sofisticado e com vista da cidade.",
+      "destaque": "Experiência gastronômica e ambiente diferenciado.",
+      "indicado_para": "Jantar especial",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn%20de%20Asia%2C%20Green%20Tower%2C%20Avenida%20San%20Mart%C3%ADn%2C%20Equipetrol%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Carnes e churrascarias",
+      "nome": "El Arriero",
+      "especialidade": "Steakhouse e churrasco",
+      "endereco": "Avenida San Martín, esquina com 4 Este, Equipetrol",
+      "telefone": "+591 78159300",
+      "avaliacao": 4.5,
+      "descricao": "Especializado em carnes grelhadas e cortes bovinos, com proposta de churrasco argentino.",
+      "destaque": "Bife de chorizo e cortes na parrilla.",
+      "faixa_preco": "Média a alta",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=El%20Arriero%2C%20Avenida%20San%20Mart%C3%ADn%2C%20esquina%20com%204%20Este%2C%20Equipetrol%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Carnes e churrascarias",
+      "nome": "Brasargent Churrasquería",
+      "especialidade": "Rodízio e churrascaria",
+      "endereco": "Avenida Beni, Santa Cruz",
+      "telefone": "+591 78007700",
+      "avaliacao": 4.3,
+      "descricao": "Churrascaria com variedade de cortes de carne e preparações na brasa.",
+      "destaque": "Experiência de churrasco e variedade de carnes.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Brasargent%20Churrasquer%C3%ADa%2C%20Avenida%20Beni%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Carnes e churrascarias",
+      "nome": "Vaca Morena",
+      "especialidade": "Steakhouse",
+      "endereco": "Ventura Mall, Santa Cruz",
+      "telefone": "+591 69051538",
+      "avaliacao": 4.6,
+      "descricao": "Especializado em carnes grelhadas e cortes selecionados.",
+      "destaque": "Ojo de bife, bife de chorizo e entraña.",
+      "faixa_preco": "Média a alta",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Vaca%20Morena%2C%20Ventura%20Mall%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Carnes e churrascarias",
+      "nome": "La Casa del Camba",
+      "especialidade": "Gastronomia regional e carnes",
+      "endereco": "Avenida Cristóbal de Mendoza 1365",
+      "telefone": "+591 76003877",
+      "avaliacao": 4.1,
+      "descricao": "Restaurante tradicional de Santa Cruz, com pratos típicos da cultura camba, carnes e churrasco.",
+      "destaque": "Majadito, pacumutu e parrilla.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=La%20Casa%20del%20Camba%2C%20Avenida%20Crist%C3%B3bal%20de%20Mendoza%201365%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Pizzarias",
+      "nome": "Noi Pizzeria",
+      "especialidade": "Pizzaria italiana",
+      "endereco": "Sucre 50, Santa Cruz",
+      "telefone": "+591 62000233",
+      "avaliacao": 4.5,
+      "descricao": "Pizzaria contemporânea com ambiente de pátio e proposta italiana.",
+      "destaque": "Pizzas com massa de fermentação natural.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Noi%20Pizzeria%2C%20Sucre%2050%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Pizzarias",
+      "nome": "La Bella Napoli",
+      "especialidade": "Pizzaria italiana",
+      "endereco": "Avenida Beni 160, esquina Tacuarembó",
+      "telefone": "+591 78490489",
+      "descricao": "Pizzaria de estilo italiano com opções de pizzas e pratos de massas.",
+      "destaque": "Pizza e gastronomia italiana.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=La%20Bella%20Napoli%2C%20Avenida%20Beni%20160%2C%20esquina%20Tacuaremb%C3%B3%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Pizzarias",
+      "nome": "Bravissimo",
+      "especialidade": "Pizzaria e restaurante italiano",
+      "endereco": "Cañada Strongest 46, Santa Cruz",
+      "telefone": "+591 3 3345013",
+      "avaliacao": 4.4,
+      "descricao": "Restaurante italiano com pizzas e diferentes tipos de massas, molhos e pratos tradicionais.",
+      "destaque": "Variedade de pizzas e massas, incluindo opções especiais.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Bravissimo%2C%20Ca%C3%B1ada%20Strongest%2046%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Pizzarias",
+      "nome": "Circus Pizzeria",
+      "especialidade": "Pizzaria",
+      "endereco": "Avenida Los Cusis, Santa Cruz",
+      "telefone": "+591 62245245",
+      "descricao": "Pizzaria com proposta descontraída e opções para compartilhar.",
+      "destaque": "Pizzas para refeições em família.",
+      "faixa_preco": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Circus%20Pizzeria%2C%20Avenida%20Los%20Cusis%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Massas e italianos",
+      "nome": "Michelangelo Ristorante",
+      "especialidade": "Restaurante italiano",
+      "endereco": "Avenida Busch, Santa Cruz",
+      "telefone": "+591 77399801",
+      "avaliacao": 4,
+      "descricao": "Restaurante italiano tradicional, com massas, pratos europeus e carta de vinhos.",
+      "destaque": "Jantar italiano em ambiente tradicional.",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Michelangelo%20Ristorante%2C%20Avenida%20Busch%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Massas e italianos",
+      "nome": "Matoni Pizza & Pasta",
+      "especialidade": "Italiano e massas artesanais",
+      "endereco": "Murillo 185, Santa Cruz",
+      "telefone": "+591 73667652",
+      "avaliacao": 5,
+      "descricao": "Restaurante italiano com massas preparadas na casa e pizzas artesanais.",
+      "destaque": "Massas frescas e pizzas.",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Matoni%20Pizza%20%26%20Pasta%2C%20Murillo%20185%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Massas e italianos",
+      "nome": "La Spaghetteria",
+      "especialidade": "Restaurante italiano",
+      "endereco": "Região de Sirari, Santa Cruz",
+      "descricao": "Especializado em culinária italiana, com massas artesanais e molhos tradicionais.",
+      "destaque": "Massas frescas feitas à mão.",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=La%20Spaghetteria%2C%20Regi%C3%A3o%20de%20Sirari%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "grupo": "Massas e italianos",
+      "nome": "In Piazza",
+      "especialidade": "Restaurante italiano",
+      "endereco": "Equipetrol, Santa Cruz",
+      "descricao": "Restaurante italiano com proposta de massas frescas e pratos tradicionais do norte da Itália.",
+      "destaque": "Pasta fresca e vinhos.",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=In%20Piazza%2C%20Equipetrol%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    }
+  ],
+  "lojas": [
+    {
+      "nome": "Ventura Mall",
+      "categoria": "Shopping",
+      "endereco": "Avenida San Martín, Equipetrol Norte",
+      "especialidade": "Um dos principais centros comerciais da cidade, com lojas, restaurantes, cinema, entretenimento e boulevard gastronômico.",
+      "destaques": [
+        "Lojas de roupas",
+        "Restaurantes",
+        "Cinema",
+        "Entretenimento",
+        "Praça de alimentação"
+      ],
+      "duracao_sugerida": "2 a 4 horas",
+      "prioridade": "Muito alta",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Ventura%20Mall%2C%20Avenida%20San%20Mart%C3%ADn%2C%20Equipetrol%20Norte%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Las Brisas Mall",
+      "categoria": "Shopping",
+      "endereco": "Avenida Cuarto Anillo, Santa Cruz",
+      "especialidade": "Centro comercial moderno com lojas, serviços, restaurantes e estacionamento.",
+      "destaques": [
+        "Compras",
+        "Moda",
+        "Alimentação",
+        "Serviços"
+      ],
+      "duracao_sugerida": "2 a 3 horas",
+      "prioridade": "Alta",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Las%20Brisas%20Mall%2C%20Avenida%20Cuarto%20Anillo%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Patio Design Lifestyle Center",
+      "categoria": "Shopping",
+      "endereco": "Avenida Noel Kempff Mercado, Santa Cruz",
+      "especialidade": "Centro comercial com proposta sofisticada, lojas de decoração, design, gastronomia e cafés.",
+      "destaques": [
+        "Decoração",
+        "Design",
+        "Restaurantes",
+        "Cafés"
+      ],
+      "duracao_sugerida": "1 a 2 horas",
+      "prioridade": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Patio%20Design%20Lifestyle%20Center%2C%20Avenida%20Noel%20Kempff%20Mercado%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Mega Centro Comercial Avenida Brasil",
+      "categoria": "Shopping",
+      "endereco": "Cecilio Chávez 2195, Santa Cruz",
+      "especialidade": "Centro comercial com lojas de diversos segmentos, alimentação, estacionamento e entretenimento.",
+      "destaques": [
+        "Lojas",
+        "Tecnologia",
+        "Moda",
+        "Praça de alimentação"
+      ],
+      "duracao_sugerida": "2 horas",
+      "prioridade": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Mega%20Centro%20Comercial%20Avenida%20Brasil%2C%20Cecilio%20Ch%C3%A1vez%202195%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Mercado Barrio Lindo",
+      "categoria": "Mercado popular",
+      "endereco": "Zona de Barrio Lindo, Santa Cruz",
+      "especialidade": "Grande polo de comércio popular, conhecido pela variedade de roupas, calçados, acessórios, tecidos e produtos diversos.",
+      "destaques": [
+        "Roupas",
+        "Calçados",
+        "Acessórios",
+        "Produtos populares"
+      ],
+      "duracao_sugerida": "2 a 3 horas",
+      "prioridade": "Alta",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Mercado%20Barrio%20Lindo%2C%20Zona%20de%20Barrio%20Lindo%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Mercado La Ramada",
+      "categoria": "Mercado popular",
+      "endereco": "Região central de Santa Cruz",
+      "especialidade": "Mercado popular tradicional com produtos regionais, alimentos, artesanato e comércio diversificado.",
+      "destaques": [
+        "Artesanato",
+        "Produtos regionais",
+        "Alimentos"
+      ],
+      "duracao_sugerida": "1 a 2 horas",
+      "prioridade": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Mercado%20La%20Ramada%2C%20Regi%C3%A3o%20central%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    },
+    {
+      "nome": "Centro Comercial 7 Calles",
+      "categoria": "Mercado popular",
+      "endereco": "Região central, Santa Cruz",
+      "especialidade": "Área comercial tradicional com lojas de roupas, acessórios e produtos diversos.",
+      "destaques": [
+        "Moda",
+        "Acessórios",
+        "Compras populares"
+      ],
+      "duracao_sugerida": "1 a 2 horas",
+      "prioridade": "Média",
+      "maps_url": "https://www.google.com/maps/search/?api=1&query=Centro%20Comercial%207%20Calles%2C%20Regi%C3%A3o%20central%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+    }
+  ],
+  "atracoes": [
+    {
+      "titulo": "Zoológicos e parques ecológicos",
+      "itens": [
+        {
+          "nome": "Zoológico Municipal Noel Kempff Mercado",
+          "endereco": "Avenida Marcelo Terceros Banzer, entre o 2º e o 3º anel",
+          "descricao": "Zoológico dedicado principalmente à fauna sul-americana. Possui aves, felinos, macacos, répteis, aquário, serpentário e áreas educativas.",
+          "destaques": [
+            "Onças e outros felinos",
+            "Aviário amazônico",
+            "Aquário",
+            "Ilha dos macacos",
+            "Capivaras e tartarugas"
+          ],
+          "horario_referencia": "Terça a domingo, 09:00 às 17:00",
+          "preco_referencia": "Bs 25 para visitantes estrangeiros",
+          "duracao_sugerida": "2 a 3 horas",
+          "perfil": [
+            "Família",
+            "Adolescentes",
+            "Natureza"
+          ],
+          "prioridade": "Alta",
+          "site": "https://zoologico.gmsantacruz.gob.bo/",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Zool%C3%B3gico%20Municipal%20Noel%20Kempff%20Mercado%2C%20Avenida%20Marcelo%20Terceros%20Banzer%2C%20entre%20o%202%C2%BA%20e%20o%203%C2%BA%20anel%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Biocentro Güembé",
+          "endereco": "Camino a Porongo, Km 5, Urubó",
+          "descricao": "Complexo ecológico e recreativo com borboletário, orquidário, piscinas, lagoas, jardins tropicais e atividades de lazer.",
+          "destaques": [
+            "Borboletário",
+            "Orquidário",
+            "Piscinas",
+            "Lagoas",
+            "Jardins tropicais",
+            "Caiaque, quando disponível"
+          ],
+          "duracao_sugerida": "5 a 7 horas",
+          "perfil": [
+            "Família",
+            "Adolescentes",
+            "Natureza",
+            "Lazer"
+          ],
+          "prioridade": "Muito alta",
+          "site": "https://www.biocentroguembe.com/",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Biocentro%20G%C3%BCemb%C3%A9%2C%20Camino%20a%20Porongo%2C%20Km%205%2C%20Urub%C3%B3%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Jardín Botánico Municipal",
+          "endereco": "Km 8,5 da estrada para Cotoca, região de Guapilo",
+          "descricao": "Grande área de conservação ambiental com vegetação nativa, trilhas, lagoas, coleções botânicas e espaços educativos.",
+          "destaques": [
+            "Coleção de orquídeas",
+            "Cactário",
+            "Estufa tropical",
+            "Lagoas naturais",
+            "Trilhas e passarelas",
+            "Casa tradicional"
+          ],
+          "duracao_sugerida": "2 a 3 horas",
+          "perfil": [
+            "Natureza",
+            "Fotografia",
+            "Família"
+          ],
+          "prioridade": "Média",
+          "site": "https://jardinbotanico.gmsantacruz.gob.bo/",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Jard%C3%ADn%20Bot%C3%A1nico%20Municipal%2C%20Km%208%2C5%20da%20estrada%20para%20Cotoca%2C%20regi%C3%A3o%20de%20Guapilo%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Yvaga Guazú",
+          "endereco": "Região de Porongo, aproximadamente 12 km de Santa Cruz",
+          "descricao": "Parque ecológico com coleções de plantas tropicais, orquídeas e áreas de preservação ambiental.",
+          "destaques": [
+            "Vegetação tropical",
+            "Orquídeas",
+            "Jardins",
+            "Contato com a natureza"
+          ],
+          "duracao_sugerida": "2 a 3 horas",
+          "perfil": [
+            "Natureza",
+            "Fotografia",
+            "Família"
+          ],
+          "prioridade": "Média",
+          "observacao": "Confirmar funcionamento e acesso antes da visita.",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Yvaga%20Guaz%C3%BA%2C%20Regi%C3%A3o%20de%20Porongo%2C%20aproximadamente%2012%20km%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "La Rinconada Ecoparque",
+          "endereco": "Km 7, Camino a Porongo, zona Buen Retiro",
+          "descricao": "Espaço de lazer com jardins tropicais, lagos, trilhas, piscinas e restaurante.",
+          "destaques": [
+            "Jardins",
+            "Lagos",
+            "Áreas de lazer",
+            "Restaurante",
+            "Piscinas"
+          ],
+          "duracao_sugerida": "3 a 4 horas",
+          "perfil": [
+            "Família",
+            "Natureza",
+            "Gastronomia"
+          ],
+          "prioridade": "Alta",
+          "telefone": "+591 67898907",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=La%20Rinconada%20Ecoparque%2C%20Km%207%2C%20Camino%20a%20Porongo%2C%20zona%20Buen%20Retiro%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Parque Urbano Central",
+          "endereco": "Avenida Argentina, Santa Cruz de la Sierra",
+          "descricao": "Parque urbano com áreas verdes, pistas para caminhada, espaços esportivos e locais de descanso.",
+          "destaques": [
+            "Caminhadas",
+            "Áreas verdes",
+            "Espaços esportivos",
+            "Fontes e lazer"
+          ],
+          "duracao_sugerida": "1 a 2 horas",
+          "perfil": [
+            "Família",
+            "Caminhada",
+            "Lazer"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Parque%20Urbano%20Central%2C%20Avenida%20Argentina%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Curichi La Madre",
+          "endereco": "Zona oeste de Santa Cruz de la Sierra",
+          "descricao": "Área de preservação ecológica urbana com áreas úmidas, vegetação, lagoas e observação de aves.",
+          "destaques": [
+            "Observação de aves",
+            "Vegetação nativa",
+            "Lagoas",
+            "Fotografia da natureza"
+          ],
+          "duracao_sugerida": "1 a 2 horas",
+          "perfil": [
+            "Natureza",
+            "Fotografia"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Curichi%20La%20Madre%2C%20Zona%20oeste%20de%20Santa%20Cruz%20de%20la%20Sierra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        }
+      ]
+    },
+    {
+      "titulo": "Parques aquáticos e entretenimento",
+      "itens": [
+        {
+          "nome": "AquaLand",
+          "endereco": "Região norte de Santa Cruz de la Sierra",
+          "descricao": "Parque aquático com piscinas e atrações recreativas para diferentes idades.",
+          "destaques": [
+            "Piscinas",
+            "Toboáguas",
+            "Atrações aquáticas",
+            "Lazer familiar"
+          ],
+          "duracao_sugerida": "4 a 6 horas",
+          "perfil": [
+            "Família",
+            "Adolescentes",
+            "Aventura"
+          ],
+          "prioridade": "Opcional",
+          "observacao": "Verificar funcionamento sazonal, disponibilidade e condições climáticas em março.",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=AquaLand%2C%20Regi%C3%A3o%20norte%20de%20Santa%20Cruz%20de%20la%20Sierra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Cine Center / MegaCenter",
+          "endereco": "Avenida El Trompillo, Santa Cruz de la Sierra",
+          "descricao": "Complexo de entretenimento com cinema, restaurantes, lojas e atividades de lazer.",
+          "destaques": [
+            "Cinema",
+            "Restaurantes",
+            "Sorveterias",
+            "Entretenimento"
+          ],
+          "duracao_sugerida": "2 a 4 horas",
+          "perfil": [
+            "Família",
+            "Adolescentes",
+            "Entretenimento"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Cine%20Center%20%2F%20MegaCenter%2C%20Avenida%20El%20Trompillo%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        }
+      ]
+    },
+    {
+      "titulo": "Museus e cultura",
+      "itens": [
+        {
+          "nome": "Museo de Historia Natural Noel Kempff Mercado",
+          "endereco": "Avenida Irala, Santa Cruz de la Sierra",
+          "descricao": "Museu dedicado à biodiversidade, história natural, fauna, flora e patrimônio ambiental da região.",
+          "destaques": [
+            "Biodiversidade boliviana",
+            "Coleções científicas",
+            "História natural"
+          ],
+          "duracao_sugerida": "1 a 2 horas",
+          "perfil": [
+            "Cultura",
+            "Ciência",
+            "Família"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Museo%20de%20Historia%20Natural%20Noel%20Kempff%20Mercado%2C%20Avenida%20Irala%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Casa Cultural Melchor Pinto",
+          "endereco": "Centro histórico de Santa Cruz",
+          "descricao": "Casa histórica restaurada que abriga exposições, atividades culturais e memória da história local.",
+          "destaques": [
+            "Arquitetura histórica",
+            "Exposições",
+            "Cultura local",
+            "Fotografia"
+          ],
+          "duracao_sugerida": "1 hora",
+          "perfil": [
+            "Cultura",
+            "História"
+          ],
+          "prioridade": "Alta",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Casa%20Cultural%20Melchor%20Pinto%2C%20Centro%20hist%C3%B3rico%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Manzana Uno",
+          "endereco": "Plaza 24 de Septiembre, centro de Santa Cruz",
+          "descricao": "Espaço cultural dedicado a exposições de arte contemporânea, fotografia e produção artística boliviana.",
+          "destaques": [
+            "Arte contemporânea",
+            "Fotografia",
+            "Exposições temporárias"
+          ],
+          "duracao_sugerida": "1 hora",
+          "perfil": [
+            "Cultura",
+            "Arte"
+          ],
+          "prioridade": "Alta",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Manzana%20Uno%2C%20Plaza%2024%20de%20Septiembre%2C%20centro%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Casa de la Cultura Raúl Otero Reiche",
+          "endereco": "Centro de Santa Cruz",
+          "descricao": "Espaço cultural que recebe exposições, apresentações artísticas, eventos e atividades culturais.",
+          "destaques": [
+            "Exposições",
+            "Teatro",
+            "Música",
+            "Eventos culturais"
+          ],
+          "duracao_sugerida": "1 a 2 horas",
+          "perfil": [
+            "Cultura",
+            "Arte"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Casa%20de%20la%20Cultura%20Ra%C3%BAl%20Otero%20Reiche%2C%20Centro%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        }
+      ]
+    },
+    {
+      "titulo": "Praças e monumentos",
+      "itens": [
+        {
+          "nome": "Plaza 24 de Septiembre",
+          "endereco": "Centro histórico de Santa Cruz",
+          "descricao": "Principal praça da cidade e ponto de encontro, cercada por edifícios históricos, restaurantes, cafés e pela Catedral de San Lorenzo.",
+          "destaques": [
+            "Arquitetura histórica",
+            "Catedral",
+            "Cafés",
+            "Fotografia"
+          ],
+          "duracao_sugerida": "1 a 2 horas",
+          "perfil": [
+            "História",
+            "Turismo",
+            "Família"
+          ],
+          "prioridade": "Muito alta",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Plaza%2024%20de%20Septiembre%2C%20Centro%20hist%C3%B3rico%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Cristo Redentor",
+          "endereco": "Avenida Monseñor Rivero, Santa Cruz",
+          "descricao": "Monumento religioso e ponto de referência da cidade, com espaço público ao redor.",
+          "destaques": [
+            "Monumento",
+            "Fotografia",
+            "Passeio urbano"
+          ],
+          "duracao_sugerida": "30 a 45 minutos",
+          "perfil": [
+            "Turismo",
+            "Fotografia"
+          ],
+          "prioridade": "Alta",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Cristo%20Redentor%2C%20Avenida%20Monse%C3%B1or%20Rivero%2C%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Parque El Arenal",
+          "endereco": "Centro de Santa Cruz",
+          "descricao": "Parque urbano histórico com lagoa, vegetação e espaços para descanso.",
+          "destaques": [
+            "Lagoa",
+            "Áreas verdes",
+            "Caminhadas",
+            "Monumento cultural"
+          ],
+          "duracao_sugerida": "45 minutos a 1 hora",
+          "perfil": [
+            "Família",
+            "Passeio",
+            "Fotografia"
+          ],
+          "prioridade": "Média",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Parque%20El%20Arenal%2C%20Centro%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        }
+      ]
+    },
+    {
+      "titulo": "Passeios nos arredores",
+      "itens": [
+        {
+          "nome": "El Fuerte de Samaipata",
+          "endereco": "Samaipata, Departamento de Santa Cruz",
+          "descricao": "Sítio arqueológico pré-colombiano declarado Patrimônio Mundial pela UNESCO, famoso pelas gravuras e esculturas em uma enorme rocha.",
+          "destaques": [
+            "Patrimônio Mundial da UNESCO",
+            "Arqueologia",
+            "Paisagens montanhosas",
+            "História pré-colombiana"
+          ],
+          "duracao_sugerida": "Dia inteiro com deslocamento",
+          "perfil": [
+            "História",
+            "Cultura",
+            "Fotografia"
+          ],
+          "prioridade": "Muito alta",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=El%20Fuerte%20de%20Samaipata%2C%20Samaipata%2C%20Departamento%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Cascadas de Espejillos",
+          "endereco": "Região de El Torno, Departamento de Santa Cruz",
+          "descricao": "Área natural com cachoeiras, piscinas naturais e vegetação tropical.",
+          "destaques": [
+            "Cachoeiras",
+            "Piscinas naturais",
+            "Trilhas",
+            "Fotografia"
+          ],
+          "duracao_sugerida": "Dia inteiro",
+          "perfil": [
+            "Natureza",
+            "Aventura"
+          ],
+          "prioridade": "Opcional",
+          "observacao": "Exige verificação das condições de acesso e das chuvas.",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Cascadas%20de%20Espejillos%2C%20Regi%C3%A3o%20de%20El%20Torno%2C%20Departamento%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        },
+        {
+          "nome": "Misiones Jesuíticas de Chiquitos",
+          "endereco": "Região de Chiquitos, Departamento de Santa Cruz",
+          "descricao": "Conjunto de antigas missões jesuíticas com igrejas históricas, arquitetura barroca e patrimônio cultural reconhecido pela UNESCO.",
+          "destaques": [
+            "Arquitetura barroca",
+            "Igrejas históricas",
+            "Música barroca",
+            "História colonial"
+          ],
+          "duracao_sugerida": "Mais de um dia",
+          "perfil": [
+            "História",
+            "Cultura",
+            "Arquitetura"
+          ],
+          "prioridade": "Opcional",
+          "observacao": "Não recomendado como passeio de um dia a partir de Santa Cruz.",
+          "maps_url": "https://www.google.com/maps/search/?api=1&query=Misiones%20Jesu%C3%ADticas%20de%20Chiquitos%2C%20Regi%C3%A3o%20de%20Chiquitos%2C%20Departamento%20de%20Santa%20Cruz%2C%20Santa%20Cruz%20de%20la%20Sierra%2C%20Bolivia"
+        }
+      ]
+    }
+  ],
+  "recomendacoes_de_atracoes": {
+    "prioridade_maxima": [
+      "Ventura Mall",
+      "Zoológico Municipal Noel Kempff Mercado",
+      "Biocentro Güembé",
+      "Plaza 24 de Septiembre",
+      "El Fuerte de Samaipata"
+    ],
+    "para_compras": [
+      "Ventura Mall",
+      "Las Brisas Mall",
+      "Mercado Barrio Lindo",
+      "Mercado La Ramada"
+    ],
+    "para_familia": [
+      "Zoológico Municipal",
+      "Biocentro Güembé",
+      "AquaLand",
+      "La Rinconada Ecoparque",
+      "Cine Center"
+    ],
+    "observacoes": [
+      "Confirmar horários e preços antes da viagem.",
+      "Verificar o funcionamento durante a Semana Santa (25 a 28/03).",
+      "Evitar atividades ao ar livre nos horários de calor intenso.",
+      "Levar repelente e protetor solar para parques ecológicos.",
+      "Consultar condições climáticas e de acesso aos passeios externos."
+    ]
+  },
+  "seguro_viagem": {
+    "plano": "MasterAssist™ Travel Insurance + Bilhete AIG Seguros — Mastercard Black (NU PAGAMENTOS SA)",
+    "destino": [
+      "Bolívia",
+      "Santa Cruz de la Sierra"
+    ],
+    "periodo": {
+      "inicio": "2026-07-06",
+      "fim": "2027-07-06",
+      "duracao_dias": 60
+    },
+    "contatos_emergencia": {
+      "internacional_collect_call": "+1-636-722-8882",
+      "brasil": "0800-891-3294",
+      "whatsapp": "",
+      "usa_fixo": "+1-636-722-8881",
+      "observacao": "Em emergência médica, acione ANTES de qualquer atendimento. E-mail: bue_operadores_brasil@axa-assistance.com.ar — Site: www.mycardbenefits.com"
+    },
+    "seguradora": {
+      "nome": "AIG Seguros Brasil S.A.",
+      "cnpj": "33.040.981/0001-50",
+      "processo_susep": "15414.900762/2015-16",
+      "codigo_susep": "08737",
+      "assistencia": "SAC AIG 24h: 0800 726 6130 | Ouvidoria AIG: 0800 724 0219 | SUSEP: 0800 021 8484"
+    },
+    "coberturas_principais": {
+      "despesas_medicas_hospitalares": {
+        "limite": 175000,
+        "moeda": "USD",
+        "descricao": "Inclui COVID-19, SARS-CoV-2 e variantes. Cobertura válida por 60 dias a partir do embarque."
+      },
+      "doencas_preexistentes": false,
+      "odontologico": true,
+      "farmaceutico": {
+        "limite": 0,
+        "moeda": "USD"
+      },
+      "traslado_medico": {
+        "limite": 100000,
+        "moeda": "USD"
+      },
+      "regresso_sanitario": {
+        "limite": 100000,
+        "moeda": "USD"
+      },
+      "traslado_corpo": {
+        "limite": 25000,
+        "moeda": "USD"
+      },
+      "cancelamento_viagem": {
+        "limite": 3000,
+        "moeda": "USD"
+      },
+      "extravio_bagagem": {
+        "limite": 600,
+        "moeda": "USD"
+      },
+      "morte_acidental": {
+        "limite": 0,
+        "moeda": "USD"
+      },
+      "invalidez_acidente": {
+        "limite": 0,
+        "moeda": "USD"
+      },
+      "assistencia_juridica": {
+        "limite": 0,
+        "moeda": "USD"
+      },
+      "telemedicina": false,
+      "esportes": false,
+      "gestantes": ""
+    },
+    "nao_coberto": [
+      "Doenças preexistentes",
+      "Atos ilícitos dolosos ou culpa grave",
+      "Guerra, invasão ou perturbações da ordem pública",
+      "Material nuclear, radioatividade ou radiação ionizante",
+      "Furacões, terremotos, erupções vulcânicas e catástrofes naturais (exceto cobertura específica)",
+      "Atos praticados fora do período de vigência"
+    ],
+    "segurados": [
+      {
+        "nome": "Alexandre Sauer Pais Lemes",
+        "cpf": "030.402.226-86",
+        "voucher": "16023-0002-69-260483595",
+        "numero_bilhete": "16023-0002-69-260483595"
+      },
+      {
+        "nome": "Cristiane Maria de Araújo Pais Lemes",
+        "cpf": "038.540.796-30",
+        "voucher": "16023-0002-69-260483597",
+        "numero_bilhete": "16023-0002-69-260483597"
+      },
+      {
+        "nome": "Matheus Sauer Araújo Paes Leme",
+        "cpf": "132.330.956-00",
+        "voucher": "16023-0002-69-260483598",
+        "numero_bilhete": "16023-0002-69-260483598"
+      }
+    ],
+    "observacoes_importantes": [
+      "Seguro gratuito vinculado ao cartão Mastercard Black (Nubank) — a passagem deve ter sido paga integral ou parcialmente com o cartão.",
+      "Vigência geral do bilhete: 06/07/2026 a 06/07/2027. Cada viagem tem cobertura de até 60 dias consecutivos a partir do embarque.",
+      "Odontológico: tratamento de dentes saudáveis/naturais com limite de USD 100 por dente.",
+      "Atraso de bagagem: USD 600 (exterior) — acionável entre 4h e 4 dias após chegada.",
+      "Atraso de embarque: USD 3.000 — após 4 horas de atraso.",
+      "Cancelamento de viagem: USD 3.000 — da emissão do bilhete até a data do embarque.",
+      "Prorrogação de estadia: até 5 diárias + passagem de ida e volta em caso de hospitalização por mais de 3 dias.",
+      "Acompanhante em hospitalização prolongada: USD 500.",
+      "Benefício para paciente internado: USD 150/diária (1 diária após mais de 3 dias internado).",
+      "Retorno em classe executiva: USD 7.500.",
+      "Os benefícios do cartão Platinum e Black NÃO são acumuláveis em um mesmo sinistro.",
+      "ATENÇÃO: Este seguro NÃO é seguro saúde. Leia atentamente as condições contratuais."
+    ],
+    "link_apolice": "https://www.mycardbenefits.com"
+  },
+  "viajantes": [
+    {
+      "nome": "Alexandre Sauer Paes Lemes",
+      "dados_pessoais": {
+        "data_nascimento": "1977-08-02",
+        "naturalidade": "Belo Horizonte - MG",
+        "nacionalidade": "Brasileiro",
+        "sexo": "Masculino",
+        "estado_civil": "Casado",
+        "regime_bens": "Comunhao Parcial",
+        "filiacao": {
+          "pai": "Jorge Sauer Paes Lemes",
+          "mae": "Heliana Mara Ferreira Paes Lemes"
+        }
+      },
+      "documentos": {
+        "cpf": "030.402.226-86",
+        "rg": "MG-6.485.658",
+        "passaporte": {
+          "numero": "GB073760",
+          "emissao": "2019-12-19",
+          "validade": "2029-12-18"
+        },
+        "cnh": {
+          "numero": "01387942650",
+          "categoria": "AB",
+          "validade": "2033-08-22"
+        },
+        "reservista": {
+          "numero": "258131"
+        }
+      },
+      "profissional": {
+        "cargo_atual": "Dirigente do Servico Publico Estadual",
+        "orgao": "Assembleia Legislativa de Minas Gerais",
+        "outras_funcoes": [
+          "Professor de Ensino Superior",
+          "Analista de Sistemas"
+        ]
+      },
+      "formacao": {
+        "mestrado": {
+          "curso": "Sistemas de Informacao e Gestao do Conhecimento",
+          "instituicao": "Universidade FUMEC",
+          "conclusao": "2017-06-27"
+        },
+        "especializacao": {
+          "curso": "Redes de Telecomunicacoes",
+          "instituicao": "UFMG"
+        },
+        "graduacao": {
+          "curso": "Sistemas de Informacao",
+          "instituicao": "Centro Universitario Newton Paiva",
+          "conclusao": "2012-12-30"
+        },
+        "tecnologo": {
+          "curso": "Informatica",
+          "instituicao": "Newton Paiva",
+          "conclusao": "2003-09-25"
+        }
+      },
+      "endereco": {
+        "logradouro": "Rua Zenite",
+        "numero": "670",
+        "complemento": "Apto 101",
+        "bairro": "Caicara-Adelaide",
+        "cidade": "Belo Horizonte",
+        "estado": "MG",
+        "cep": "30720-530"
+      }
+    },
+    {
+      "nome": "Cristiane Maria de Araujo Paes Lemes",
+      "dados_pessoais": {
+        "data_nascimento": "1980-05-19",
+        "naturalidade": "Itabirito - MG",
+        "nacionalidade": "Brasileira",
+        "sexo": "Feminino",
+        "filiacao": {
+          "pai": "Eraldo Araujo",
+          "mae": "Maura dos Santos Araujo"
+        }
+      },
+      "documentos": {
+        "cpf": "038.540.796-30",
+        "rg": "MG-10.080.902",
+        "passaporte": {
+          "numero": "GB073759",
+          "emissao": "2019-12-19",
+          "validade": "2029-12-18"
+        },
+        "cnh": {
+          "numero": "03803014145",
+          "categoria": "B"
+        },
+        "ctps": {
+          "numero": "31390",
+          "serie": "0098",
+          "estado": "MG"
+        }
+      }
+    },
+    {
+      "nome": "Matheus Sauer Araujo Paes Lemes",
+      "dados_pessoais": {
+        "data_nascimento": "2011-09-26",
+        "naturalidade": "Belo Horizonte - MG",
+        "nacionalidade": "Brasileiro",
+        "sexo": "Masculino",
+        "tipo_sanguineo": "O+",
+        "filiacao": {
+          "pai": "Alexandre Sauer Paes Lemes",
+          "mae": "Cristiane Maria de Araujo Paes Lemes"
+        }
+      },
+      "documentos": {
+        "cpf": "132.330.956-00",
+        "rg": "MG-21.259.839",
+        "passaporte": {
+          "numero": "GF879970",
+          "emissao": "2023-01-04",
+          "validade": "2028-01-03"
+        },
+        "ciptea": {
+          "numero": "12396",
+          "validade": "2028-07-11"
+        }
+      }
+    }
+  ],
+  "historico_de_viagens": [
+    {
+      "id": 1,
+      "slug": "beto-carrero-b-camboriu",
+      "title": "Beto Carrero / B. Camboriú",
+      "status": "booked",
+      "date": {
+        "display": "16 de julho de 2018 → 24 de julho de 2021",
+        "start": "2018-07-16",
+        "end": "2021-07-24"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/2rNm76juMA4a9uVh9",
+      "planning": "https://bit.ly/3YDQJRk",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Camboriú",
+        "Blumenau",
+        "Penha",
+        "Beto Carrero"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 2,
+      "slug": "rio-de-janeiro-2023",
+      "title": "Rio de Janeiro",
+      "status": "booked",
+      "date": {
+        "display": "10 de janeiro de 2023 → 16 de janeiro de 2023",
+        "start": "2023-01-10",
+        "end": "2023-01-16"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/TetUSMJuHYiCiW527",
+      "planning": "",
+      "people": [
+        "Maluki + Jojoca e Lilica"
+      ],
+      "places": [
+        "Rio de Janeiro / Hospedagem na Barra"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 3,
+      "slug": "foz-do-iguacu-londrina",
+      "title": "Foz do Iguaçu / Londrina",
+      "status": "booked",
+      "date": {
+        "display": "20 de janeiro de 2020 → 26 de janeiro de 2020",
+        "start": "2020-01-20",
+        "end": "2020-01-26"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/fVHipzNiMF4cfsRf9",
+      "planning": "",
+      "people": [
+        "Maluki + Jojoca e Lilica"
+      ],
+      "places": [
+        "Foz do Iguaçu",
+        "Londrina"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 4,
+      "slug": "orlando-2019",
+      "title": "Orlando",
+      "status": "booked",
+      "date": {
+        "display": "11 de janeiro de 2019 → 31 de janeiro de 2019",
+        "start": "2019-01-11",
+        "end": "2019-01-31"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/XTdwd13Asb2B1uez6",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Orlando",
+        "Miami"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 5,
+      "slug": "sao-paulo-consulado",
+      "title": "São Paulo / Consulado",
+      "status": "booked",
+      "date": {
+        "display": "12 de abril de 2018 → 15 de abril de 2018",
+        "start": "2018-04-12",
+        "end": "2018-04-15"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/ctPIKQPDZozHAvFo1",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "São Paulo"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 6,
+      "slug": "americana",
+      "title": "Americana",
+      "status": "booked",
+      "date": {
+        "display": "2 de novembro de 2017 → 5 de novembro de 2017",
+        "start": "2017-11-02",
+        "end": "2017-11-05"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/T5aDp6mXwRv76MZP2",
+      "planning": "",
+      "people": [
+        "Maluki + Jojoca e Lilica"
+      ],
+      "places": [
+        "Americana (West'n Wild)"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 7,
+      "slug": "chile-2017",
+      "title": "Chile",
+      "status": "booked",
+      "date": {
+        "display": "17 de julho de 2017 → 24 de julho de 2017",
+        "start": "2017-07-17",
+        "end": "2017-07-24"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/xw3TGlcS2bipja8R2",
+      "planning": "https://bit.ly/3s8EG21",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Santiago",
+        "Vale Nevado",
+        "Valparaíso",
+        "Andes"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 8,
+      "slug": "gramado",
+      "title": "Gramado",
+      "status": "booked",
+      "date": {
+        "display": "18 de setembro de 2016 → 24 de setembro de 2016",
+        "start": "2016-09-18",
+        "end": "2016-09-24"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/ZfxsSUvhMjBttCU27",
+      "planning": "https://bit.ly/45nFmyM",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Gramado",
+        "Canela"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 9,
+      "slug": "porto-alegre",
+      "title": "Porto Alegre",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 10,
+      "slug": "beto-carrero-curitiba",
+      "title": "Beto Carrero / Curitiba",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 11,
+      "slug": "orlando-disney",
+      "title": "Orlando / Disney",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 12,
+      "slug": "argentina",
+      "title": "Argentina",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/BtN1nZivJv29wqrJ6",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 13,
+      "slug": "rio-janeiro-2020",
+      "title": "Rio de Janeiro",
+      "status": "booked",
+      "date": {
+        "display": "30 de outubro de 2020 → 2 de novembro de 2020",
+        "start": "2020-10-30",
+        "end": "2020-11-02"
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/P9DxXwnaGmXuyFDS9",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Rio de Janeiro / Barra / Hotel Windsor"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 14,
+      "slug": "maceio-maragogi",
+      "title": "Maceió / Maragogi",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 15,
+      "slug": "cabo-frio",
+      "title": "Cabo Frio",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 16,
+      "slug": "aparecida-paraty",
+      "title": "Aparecida / Paraty",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 17,
+      "slug": "campos-do-jordao",
+      "title": "Campos do Jordão",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 18,
+      "slug": "porto-alegre-fisl",
+      "title": "Porto Alegre / Fisl",
+      "status": "booked",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 19,
+      "slug": "porto-seguro",
+      "title": "Porto Seguro",
+      "status": "",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 20,
+      "slug": "taua",
+      "title": "Tauá",
+      "status": "",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 21,
+      "slug": "monte-verde",
+      "title": "Monte Verde",
+      "status": "",
+      "date": {
+        "display": "",
+        "start": "",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "",
+      "planning": "",
+      "people": [],
+      "places": [],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 22,
+      "slug": "nova-york-2023",
+      "title": "Nova York",
+      "status": "booked",
+      "date": {
+        "display": "10 de outubro de 2023",
+        "start": "2023-10-10",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/L5v3kD98kxCK3GQ6A",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Nova York"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 23,
+      "slug": "sao-paulo-fev-24",
+      "title": "São Paulo — Fev/24",
+      "status": "booked",
+      "date": {
+        "display": "11 de fevereiro de 2024",
+        "start": "2024-02-11",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/6pc9x9MhcFHGrvoF6",
+      "planning": "",
+      "people": [
+        "Maluki + Jojoca e Lilica"
+      ],
+      "places": [
+        "São Paulo"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 25,
+      "slug": "europa-2025",
+      "title": "Europa",
+      "status": "booked",
+      "date": {
+        "display": "10 de outubro de 2025",
+        "start": "2025-10-10",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/cWdCnHS6REDcm85m9",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Amsterdã",
+        "Paris",
+        "Londres"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 26,
+      "slug": "espirito-santo",
+      "title": "Espírito Santo",
+      "status": "booked",
+      "date": {
+        "display": "10 de outubro de 2023",
+        "start": "2023-10-10",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/VQ31UZQ7cVnyvhPx5",
+      "planning": "",
+      "people": [
+        "Maluki e Pais"
+      ],
+      "places": [
+        "Guarapari"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    },
+    {
+      "id": 27,
+      "slug": "nova-york-toronto-2026",
+      "title": "Nova York e Toronto",
+      "status": "booked",
+      "date": {
+        "display": "26 de março de 2026",
+        "start": "2026-03-26",
+        "end": ""
+      },
+      "cover": "",
+      "gallery": "https://photos.app.goo.gl/L5v3kD98kxCK3GQ6A",
+      "planning": "",
+      "people": [
+        "Maluki"
+      ],
+      "places": [
+        "Nova York",
+        "Toronto",
+        "Niágara"
+      ],
+      "description": "",
+      "tags": [],
+      "favorite": false
+    }
+  ]
+}

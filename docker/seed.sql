@@ -111,3 +111,4 @@ BEGIN
 
   RAISE NOTICE 'Seed concluído com sucesso para a viagem ID: %', v_trip_id;
 END $$;
+

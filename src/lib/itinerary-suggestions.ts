@@ -11,10 +11,10 @@ export interface ItinerarySuggestion {
   title: string;
   category: SuggestionCategory;
   categoryLabel: string;
-  location?: string;
-  time?: string;
-  estimated_cost?: number;
-  notes?: string;
+  location?: string | undefined;
+  time?: string | undefined;
+  estimated_cost?: number | undefined;
+  notes?: string | undefined;
   suggestedDayOffset: number; // 0 = Dia 1, 1 = Dia 2, etc.
 }
 

@@ -50,47 +50,51 @@ export const testAiConnection = createServerFn({ method: "POST" })
     }
   });
 
+async function getActiveAiConfig(context: { userId: string; supabase: any }) {
+  let familyAi: { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | null = null;
+  try {
+    const { data: mems } = await context.supabase
+      .from("family_members")
+      .select("family_id, families(deepseek_api_key, openai_api_key, ai_provider)")
+      .eq("user_id", context.userId)
+      .order("joined_at", { ascending: false })
+      .limit(1);
+    const fam = mems?.[0]?.families as { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | undefined;
+    if (fam) familyAi = fam;
+  } catch {
+    // Ignora se não encontrar
+  }
+
+  const preferredProvider = familyAi?.ai_provider || "deepseek";
+  const familyDeepseek = familyAi?.deepseek_api_key?.trim() || undefined;
+  const familyOpenai = familyAi?.openai_api_key?.trim() || undefined;
+  const envDeepseek = process.env["DEEPSEEK_API_KEY"]?.trim() || undefined;
+  const envOpenai = process.env["OPENAI_API_KEY"]?.trim() || undefined;
+  const gatewayKey = process.env["LOVABLE_API_KEY"]?.trim() || undefined;
+  const connectionKey = process.env["UDC_DEEPSEEK_API_KEY"]?.trim() || undefined;
+
+  let activeKey: string | undefined;
+  let activeProvider: "deepseek" | "openai" = "deepseek";
+
+  if (preferredProvider === "openai" && (familyOpenai || envOpenai)) {
+    activeKey = familyOpenai || envOpenai;
+    activeProvider = "openai";
+  } else if (familyDeepseek || envDeepseek) {
+    activeKey = familyDeepseek || envDeepseek;
+    activeProvider = "deepseek";
+  } else if (familyOpenai || envOpenai) {
+    activeKey = familyOpenai || envOpenai;
+    activeProvider = "openai";
+  }
+
+  return { activeKey, activeProvider, gatewayKey, connectionKey };
+}
+
 export const askAssistant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    // 1. Busca configurações de IA da família se existirem no banco
-    let familyAi: { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | null = null;
-    try {
-      const { data: mems } = await context.supabase
-        .from("family_members")
-        .select("family_id, families(deepseek_api_key, openai_api_key, ai_provider)")
-        .eq("user_id", context.userId)
-        .order("joined_at", { ascending: false })
-        .limit(1);
-      const fam = mems?.[0]?.families as { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | undefined;
-      if (fam) familyAi = fam;
-    } catch {
-      // Ignora se não encontrar
-    }
-
-    const preferredProvider = familyAi?.ai_provider || "deepseek";
-    const familyDeepseek = familyAi?.deepseek_api_key?.trim() || undefined;
-    const familyOpenai = familyAi?.openai_api_key?.trim() || undefined;
-    const envDeepseek = process.env["DEEPSEEK_API_KEY"]?.trim() || undefined;
-    const envOpenai = process.env["OPENAI_API_KEY"]?.trim() || undefined;
-    const gatewayKey = process.env["LOVABLE_API_KEY"]?.trim() || undefined;
-    const connectionKey = process.env["UDC_DEEPSEEK_API_KEY"]?.trim() || undefined;
-
-    // Determina chave e provedor ativo com base na preferência da família ou fallback
-    let activeKey: string | undefined;
-    let activeProvider: "deepseek" | "openai" = "deepseek";
-
-    if (preferredProvider === "openai" && (familyOpenai || envOpenai)) {
-      activeKey = familyOpenai || envOpenai;
-      activeProvider = "openai";
-    } else if (familyDeepseek || envDeepseek) {
-      activeKey = familyDeepseek || envDeepseek;
-      activeProvider = "deepseek";
-    } else if (familyOpenai || envOpenai) {
-      activeKey = familyOpenai || envOpenai;
-      activeProvider = "openai";
-    }
+    const { activeKey, activeProvider, gatewayKey, connectionKey } = await getActiveAiConfig(context);
 
     let tripInfo: { title: string; main_destination: string | null; start_date: string; end_date: string; budget: number | null; description: string | null } | null = null;
     let tripContext = "Nenhuma viagem selecionada.";
@@ -173,5 +177,124 @@ export const askAssistant = createServerFn({ method: "POST" })
     } catch (err: unknown) {
       console.error("AI assistant request error:", err);
       return { reply: "O assistente está indisponível no momento. Tente novamente em instantes." };
+    }
+  });
+
+const SuggestAiInput = z.object({
+  tripId: z.string().uuid(),
+  customTheme: z.string().max(200).optional(),
+});
+
+export const generateItinerarySuggestionsAi = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => SuggestAiInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { activeKey, activeProvider, gatewayKey, connectionKey } = await getActiveAiConfig(context);
+
+    if (!activeKey && (!gatewayKey || !connectionKey)) {
+      return {
+        ok: false as const,
+        error: "NO_KEY" as const,
+        message: "Para gerar sugestões com IA, adicione sua chave de API (DeepSeek ou OpenAI) em Outros > Geral > IA.",
+      };
+    }
+
+    const { data: trip } = await context.supabase
+      .from("trips")
+      .select("title, main_destination, start_date, end_date, budget, description, category")
+      .eq("id", data.tripId)
+      .maybeSingle();
+
+    if (!trip) {
+      return { ok: false as const, error: "NOT_FOUND" as const, message: "Viagem não encontrada." };
+    }
+
+    const prompt = `Gere entre 6 e 8 atividades recomendadas e passeios para a viagem:
+Destino: ${trip.main_destination || trip.title}
+Título: ${trip.title}
+Categoria: ${trip.category || "férias"}
+Datas: ${trip.start_date} a ${trip.end_date}
+${data.customTheme ? `Foco solicitado pelo usuário: ${data.customTheme}` : ""}
+
+Responda ESTRITAMENTE em formato JSON (um array de objetos válido), sem blocos de texto antes ou depois, seguindo este formato:
+[
+  {
+    "title": "Nome da Atração ou Passeio",
+    "category": "passeio",
+    "location": "Bairro ou Endereço com Cidade",
+    "time": "09:30",
+    "estimated_cost": 50,
+    "notes": "Dica prática e breve descrição do que fazer.",
+    "dayOffset": 0
+  }
+]
+Categorias permitidas para "category": "imperdivel", "passeio", "gastronomia", "cultura", "natureza", "criancas".
+"dayOffset" deve ser um número inteiro (0 = primeiro dia, 1 = segundo dia, etc.).`;
+
+    let endpoint = "https://api.deepseek.com/chat/completions";
+    let model = "deepseek-chat";
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+
+    if (activeKey) {
+      if (activeProvider === "openai") {
+        endpoint = "https://api.openai.com/v1/chat/completions";
+        model = "gpt-4o-mini";
+        headers["Authorization"] = `Bearer ${activeKey}`;
+      } else {
+        endpoint = "https://api.deepseek.com/chat/completions";
+        model = "deepseek-chat";
+        headers["Authorization"] = `Bearer ${activeKey}`;
+      }
+    } else {
+      endpoint = "https://connector-gateway.lovable.dev/udc_deepseek/chat/completions";
+      model = "deepseek-flash";
+      headers["Authorization"] = `Bearer ${gatewayKey}`;
+      headers["X-Connection-Api-Key"] = connectionKey!;
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content: "Você é um assistente especialista em viagens da família Maluki. Responda apenas com o JSON puro solicitado.",
+            },
+            { role: "user", content: prompt },
+          ],
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+
+      if (!response.ok) {
+        return { ok: false as const, error: "API_ERROR" as const, message: `Erro no provedor de IA (código ${response.status}).` };
+      }
+
+      const res = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+      const rawText = res.choices?.[0]?.message?.content?.trim() || "";
+
+      // Extrai JSON mesmo se envolto com markdown
+      const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        return { ok: false as const, error: "PARSE_ERROR" as const, message: "A IA não retornou o formato esperado." };
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]) as Array<{
+        title: string;
+        category?: string;
+        location?: string;
+        time?: string;
+        estimated_cost?: number;
+        notes?: string;
+        dayOffset?: number;
+      }>;
+
+      return { ok: true as const, suggestions: parsed };
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Tempo limite esgotado";
+      return { ok: false as const, error: "TIMEOUT" as const, message: `Falha ao consultar IA: ${msg}` };
     }
   });

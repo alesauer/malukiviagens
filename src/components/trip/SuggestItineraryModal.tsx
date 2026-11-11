@@ -37,6 +37,7 @@ import {
   SUGGESTION_CATEGORY_LABELS,
   SuggestionCategory,
 } from "@/lib/itinerary-suggestions";
+import { generateItinerarySuggestionsAi } from "@/lib/ai.functions";
 
 export interface ActivityPayload {
   title: string;
@@ -97,6 +98,47 @@ export function SuggestItineraryModal({
   });
   const [addingId, setAddingId] = useState<string | null>(null);
   const [bulkAdding, setBulkAdding] = useState(false);
+  const [loadingAi, setLoadingAi] = useState(false);
+
+  async function handleGenerateAi() {
+    setLoadingAi(true);
+    try {
+      const res = await generateItinerarySuggestionsAi({ data: { tripId } });
+      if (!res.ok) {
+        toast.info(res.message);
+        return;
+      }
+      if (res.suggestions && res.suggestions.length > 0) {
+        const newItems: ItinerarySuggestion[] = res.suggestions.map((item, idx) => ({
+          id: `ai-${Date.now()}-${idx}`,
+          title: item.title,
+          category: (item.category as SuggestionCategory) || "passeio",
+          categoryLabel: SUGGESTION_CATEGORY_LABELS[item.category as SuggestionCategory] || "Passeio",
+          location: item.location,
+          time: item.time,
+          estimated_cost: Number(item.estimated_cost || 0),
+          notes: item.notes,
+          suggestedDayOffset: (item.dayOffset ?? idx) % Math.max(1, days.length),
+        }));
+
+        setSuggestions((prev) => [...newItems, ...prev]);
+        setItemDays((prev) => {
+          const next = { ...prev };
+          for (const s of newItems) {
+            next[s.id] = days[s.suggestedDayOffset] || days[0] || "none";
+          }
+          return next;
+        });
+
+        toast.success(`✨ ${newItems.length} novas sugestões personalizadas geradas pela IA!`);
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erro ao consultar IA";
+      toast.error(msg);
+    } finally {
+      setLoadingAi(false);
+    }
+  }
 
   // Filtragem
   const filtered = suggestions.filter((s) => {
@@ -223,17 +265,32 @@ export function SuggestItineraryModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Barra de Pesquisa e Filtros */}
+        {/* Barra de Pesquisa, Botão IA e Filtros */}
         <div className="space-y-3 pt-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Buscar por atração, parque, restaurante, museu..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 rounded-xl text-xs sm:text-sm"
-            />
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar por atração, parque, restaurante, museu..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 rounded-xl text-xs sm:text-sm"
+              />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateAi}
+              disabled={loadingAi}
+              className="rounded-xl text-xs font-semibold gap-1.5 shrink-0 border-primary/30 hover:border-primary hover:bg-primary/5 transition-all"
+              title="Consultar DeepSeek ou OpenAI para gerar ideias exclusivas para esta viagem"
+            >
+              <Sparkles className={cn("size-3.5 text-primary", loadingAi && "animate-spin")} />
+              {loadingAi ? "Consultando IA…" : "Gerar com IA"}
+            </Button>
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">

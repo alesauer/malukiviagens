@@ -59,3 +59,4 @@ describe("checklist-template.ts", () => {
     expect(titles).toContain("Câmera GoPro e cartões de memória");
   });
 });
+

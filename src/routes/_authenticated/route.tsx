@@ -1,7 +1,11 @@
-import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { Compass, Sparkles, Users, LogOut } from "lucide-react";
+import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
+import { useState } from "react";
+import { Menu, Plane } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
+import { AppSidebar, NAV_ITEMS } from "@/components/layout/AppSidebar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -12,62 +16,73 @@ export const Route = createFileRoute("/_authenticated")({
   component: AppShell,
 });
 
-const nav = [
-  { to: "/viagens", label: "Viagens", icon: Compass },
-  { to: "/assistente", label: "Assistente", icon: Sparkles },
-  { to: "/familia", label: "Família", icon: Users },
-] as const;
-
 function AppShell() {
   const { data: family } = useFamily();
-  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
-      <header className="sticky top-0 z-30 border-b bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
-          <Link to="/viagens" className="font-display text-xl font-semibold text-primary">
-            Maluki<span className="text-accent">.</span>
-          </Link>
-          <nav className="hidden gap-1 md:flex">
-            {nav.map((n) => (
-              <Link
-                key={n.to}
-                to={n.to}
-                className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary"
-                activeProps={{ className: "bg-secondary !text-foreground" }}
-              >
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm">
-            <span className="hidden text-muted-foreground sm:inline">{family?.name}</span>
-            <button
-              aria-label="Sair"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate({ to: "/auth" });
-              }}
-              className="rounded-full p-2 text-muted-foreground hover:bg-secondary"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
+    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row pb-16 md:pb-0">
+      {/* Sidebar Desktop (fixa na lateral esquerda, substituindo o menu do topo) */}
+      <div className="hidden md:block w-64 shrink-0">
+        <div className="fixed inset-y-0 left-0 w-64 z-30">
+          <AppSidebar />
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 md:py-10">
-        <Outlet />
-      </main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t bg-card/95 backdrop-blur md:hidden">
-        {nav.map((n) => (
+      </div>
+
+      {/* Conteúdo Principal */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Topo Mobile com botão de abrir Sidebar gaveta */}
+        <header className="md:hidden sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/70 bg-card/85 px-4 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl text-muted-foreground hover:text-foreground"
+                  aria-label="Abrir menu de navegação"
+                >
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72">
+                <AppSidebar onItemClick={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+
+            <Link to="/viagens" className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-xs">
+                <Plane className="size-4" />
+              </div>
+              <span>
+                Maluki<span className="text-accent">.</span>
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {family?.name && <span className="font-medium truncate max-w-[140px]">{family.name}</span>}
+          </div>
+        </header>
+
+        {/* Corpo principal das rotas autenticadas */}
+        <main className="flex-1 px-4 py-6 md:px-8 md:py-8 w-full max-w-6xl mx-auto">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* Navegação rápida no rodapé para dispositivos móveis */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden" aria-label="Navegação Rápida Mobile">
+        {NAV_ITEMS.map((n) => (
           <Link
             key={n.to}
             to={n.to}
-            className="flex flex-col items-center gap-1 py-3 text-xs text-muted-foreground"
+            className="flex flex-col items-center gap-1 py-2.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             activeProps={{ className: "!text-primary font-semibold" }}
           >
             <n.icon className="size-5" />
-            {n.label}
+            <span>{n.label}</span>
           </Link>
         ))}
       </nav>

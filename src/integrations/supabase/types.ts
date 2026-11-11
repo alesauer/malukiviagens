@@ -304,6 +304,10 @@ export type Database = {
           deepseek_api_key: string | null
           openai_api_key: string | null
           ai_provider: string | null
+          webhook_url: string | null
+          webhook_enabled: boolean | null
+          webhook_secret: string | null
+          webhook_events: string[] | null
         }
         Insert: {
           created_at?: string
@@ -314,6 +318,10 @@ export type Database = {
           deepseek_api_key?: string | null
           openai_api_key?: string | null
           ai_provider?: string | null
+          webhook_url?: string | null
+          webhook_enabled?: boolean | null
+          webhook_secret?: string | null
+          webhook_events?: string[] | null
         }
         Update: {
           created_at?: string
@@ -324,6 +332,10 @@ export type Database = {
           deepseek_api_key?: string | null
           openai_api_key?: string | null
           ai_provider?: string | null
+          webhook_url?: string | null
+          webhook_enabled?: boolean | null
+          webhook_secret?: string | null
+          webhook_events?: string[] | null
         }
         Relationships: []
       }

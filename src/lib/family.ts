@@ -11,6 +11,10 @@ export type Family = {
   deepseek_api_key?: string | null;
   openai_api_key?: string | null;
   ai_provider?: string | null;
+  webhook_url?: string | null;
+  webhook_enabled?: boolean | null;
+  webhook_secret?: string | null;
+  webhook_events?: string[] | null;
 };
 
 /** The signed-in user's current family (first one joined, or the most recent if they joined another). */
@@ -22,7 +26,7 @@ export function useFamily() {
       if (!u.user) throw new Error("Sem sessão");
       const { data: rows, error } = await supabase
         .from("family_members")
-        .select("role, joined_at, families(id, name, invite_code, deepseek_api_key, openai_api_key, ai_provider)")
+        .select("role, joined_at, families(id, name, invite_code, deepseek_api_key, openai_api_key, ai_provider, webhook_url, webhook_enabled, webhook_secret, webhook_events)")
         .eq("user_id", u.user.id)
         .order("joined_at", { ascending: false });
       if (error) throw error;

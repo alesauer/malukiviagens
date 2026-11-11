@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Images, MapPin, Plus, Plane, Sparkles } from "lucide-react";
@@ -19,6 +20,7 @@ import { useFlagDetector } from "@/lib/flags";
 import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 import { createDefaultTripChecklist } from "@/lib/checklist-template";
 import { TripWeatherPreview } from "@/components/trip/TripWeatherPreview";
+import { dispatchTripWebhook } from "@/lib/webhook.functions";
 
 export const Route = createFileRoute("/_authenticated/viagens/")({
   head: () => ({
@@ -204,6 +206,7 @@ function NewTripDialog() {
   const { data: family } = useFamily();
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const dispatchWebhook = useServerFn(dispatchTripWebhook);
   const [open, setOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [autoChecklist, setAutoChecklist] = useState(true);
@@ -276,6 +279,18 @@ function NewTripDialog() {
         description: "",
         photos_url: "",
       });
+
+      // Dispara webhook em background se a família tiver webhook configurado
+      supabase.auth.getSession().then(({ data: sessionData }) => {
+        const token = sessionData.session?.access_token;
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+        dispatchWebhook({ data: { tripId: id, event: "trip_created" }, headers }).catch((err) => {
+          console.warn("Aviso ao disparar webhook de nova viagem:", err);
+        });
+      }).catch((err) => {
+        console.warn("Aviso ao obter sessão para webhook:", err);
+      });
+
       toast.success(autoChecklist ? "Viagem criada com checklist e malas!" : "Viagem criada!");
       navigate({ to: "/viagens/$id", params: { id } });
     },

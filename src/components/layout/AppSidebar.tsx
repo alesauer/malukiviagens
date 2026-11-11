@@ -1,13 +1,35 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Compass, Sparkles, Users, LogOut, Plane, HeartHandshake } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import {
+  Compass,
+  Sparkles,
+  Users,
+  LogOut,
+  Plane,
+  HeartHandshake,
+  ChevronDown,
+  FolderKanban,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-export const NAV_ITEMS = [
+// Itens principais de navegação
+export const PRIMARY_NAV = [
   { to: "/viagens", label: "Viagens", icon: Compass, description: "Roteiros e memórias" },
   { to: "/assistente", label: "Assistente IA", icon: Sparkles, description: "Dicas e ideias de passeios" },
+] as const;
+
+// Itens dentro do menu Outros
+export const OUTROS_NAV = [
   { to: "/familia", label: "Família", icon: Users, description: "Membros e convites" },
+] as const;
+
+// Todos os itens combinados para compatibilidade e rotas móveis
+export const ALL_NAV_ITEMS = [
+  ...PRIMARY_NAV,
+  { to: "/familia", label: "Outros (Família)", icon: Users, description: "Membros e convites" },
 ] as const;
 
 interface AppSidebarProps {
@@ -18,6 +40,19 @@ interface AppSidebarProps {
 export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
   const { data: family } = useFamily();
   const navigate = useNavigate();
+
+  // Detecta se a rota atual está dentro do menu Outros (/familia)
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isOutrosActive = pathname.startsWith("/familia");
+
+  // Estado do menu Outros (expandido por padrão ou se a rota atual for filha)
+  const [outrosOpen, setOutrosOpen] = useState(true);
+
+  useEffect(() => {
+    if (isOutrosActive) {
+      setOutrosOpen(true);
+    }
+  }, [isOutrosActive]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -77,7 +112,9 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
           <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Menu
           </p>
-          {NAV_ITEMS.map((item) => (
+
+          {/* Menus Principais (Viagens e Assistente IA) */}
+          {PRIMARY_NAV.map((item) => (
             <Link
               key={item.to}
               to={item.to}
@@ -94,6 +131,54 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
               </div>
             </Link>
           ))}
+
+          {/* Menu "Outros" retrátil contendo o submenu "Família" */}
+          <Collapsible open={outrosOpen} onOpenChange={setOutrosOpen} className="space-y-1">
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className={`group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:bg-secondary hover:text-foreground active:scale-98 ${
+                  isOutrosActive
+                    ? "text-primary font-semibold bg-primary/10"
+                    : "text-muted-foreground"
+                }`}
+                aria-label="Menu Outros"
+              >
+                <div className="flex items-center gap-3">
+                  <FolderKanban className="size-4.5 shrink-0" />
+                  <div className="flex flex-col text-left leading-tight">
+                    <span>Outros</span>
+                    <span className="text-[10px] opacity-75">Configurações e gestão</span>
+                  </div>
+                </div>
+                <ChevronDown
+                  className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground ${
+                    outrosOpen ? "rotate-180 text-foreground" : ""
+                  }`}
+                />
+              </button>
+            </CollapsibleTrigger>
+
+            <CollapsibleContent className="space-y-1 pl-3 pt-1 border-l-2 border-border/70 ml-4 animate-in slide-in-from-top-1 fade-in-50 duration-150">
+              {OUTROS_NAV.map((sub) => (
+                <Link
+                  key={sub.to}
+                  to={sub.to}
+                  onClick={onItemClick}
+                  className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
+                  activeProps={{
+                    className: "bg-primary/15 !text-primary font-semibold",
+                  }}
+                >
+                  <sub.icon className="size-4 shrink-0" />
+                  <div className="flex flex-col leading-tight">
+                    <span>{sub.label}</span>
+                    <span className="text-[9px] opacity-75">{sub.description}</span>
+                  </div>
+                </Link>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         </nav>
       </div>
 

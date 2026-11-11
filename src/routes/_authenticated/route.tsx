@@ -1,9 +1,9 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Menu, Plane } from "lucide-react";
+import { Compass, Menu, Plane, Sparkles, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
-import { AppSidebar, NAV_ITEMS } from "@/components/layout/AppSidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +15,12 @@ export const Route = createFileRoute("/_authenticated")({
   },
   component: AppShell,
 });
+
+const MOBILE_NAV = [
+  { to: "/viagens", label: "Viagens", icon: Compass },
+  { to: "/assistente", label: "Assistente", icon: Sparkles },
+  { to: "/familia", label: "Outros", icon: Users },
+] as const;
 
 function AppShell() {
   const { data: family } = useFamily();
@@ -74,7 +80,7 @@ function AppShell() {
 
       {/* Navegação rápida no rodapé para dispositivos móveis */}
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden" aria-label="Navegação Rápida Mobile">
-        {NAV_ITEMS.map((n) => (
+        {MOBILE_NAV.map((n) => (
           <Link
             key={n.to}
             to={n.to}

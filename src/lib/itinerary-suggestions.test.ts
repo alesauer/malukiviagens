@@ -37,3 +37,4 @@ describe("itinerary-suggestions.ts", () => {
     expect(list.some((i) => i.title.includes("City Tour"))).toBe(true);
   });
 });
+

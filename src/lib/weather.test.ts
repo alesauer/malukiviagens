@@ -16,6 +16,10 @@ describe("weather.ts", () => {
       expect(cleanLocationQuery("Gramado, RS, Brasil")).toBe("Gramado");
       expect(cleanLocationQuery("Foz do Iguaçu / PR")).toBe("Foz do Iguaçu");
       expect(cleanLocationQuery("Curitiba - PR")).toBe("Curitiba");
+      expect(cleanLocationQuery("Férias em Gramado")).toBe("Gramado");
+      expect(cleanLocationQuery("Viagem para Paris")).toBe("Paris");
+      expect(cleanLocationQuery("Santiago Chile")).toBe("Santiago");
+      expect(cleanLocationQuery("Florianópolis SC")).toBe("Florianópolis");
     });
 
     it("returns empty string for empty inputs", () => {

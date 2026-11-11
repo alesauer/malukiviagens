@@ -12,6 +12,7 @@ import {
   Thermometer,
   ChevronDown,
   ChevronUp,
+  MapPinOff,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { fetchTripWeather, type TripWeatherForecast, type WeatherDay } from "@/lib/weather";
@@ -73,18 +74,21 @@ export function TripWeatherPreview({
   const [weather, setWeather] = useState<TripWeatherForecast | null>(null);
   const [loading, setLoading] = useState(false);
   const [showDays, setShowDays] = useState(false);
+  const [searchedAttempt, setSearchedAttempt] = useState<string | null>(null);
 
   useEffect(() => {
     const trimmedDest = destination?.trim();
     if (!trimmedDest || !startDate || !endDate) {
       setWeather(null);
       setLoading(false);
+      setSearchedAttempt(null);
       return;
     }
 
     if (startDate > endDate) {
       setWeather(null);
       setLoading(false);
+      setSearchedAttempt(null);
       return;
     }
 
@@ -100,14 +104,18 @@ export function TripWeatherPreview({
         });
         if (!isCancelled) {
           setWeather(data);
+          setSearchedAttempt(trimmedDest);
         }
       } catch (err) {
         console.error("Erro ao carregar clima:", err);
-        if (!isCancelled) setWeather(null);
+        if (!isCancelled) {
+          setWeather(null);
+          setSearchedAttempt(trimmedDest);
+        }
       } finally {
         if (!isCancelled) setLoading(false);
       }
-    }, 450);
+    }, 400);
 
     return () => {
       isCancelled = true;
@@ -119,7 +127,19 @@ export function TripWeatherPreview({
     return (
       <div className="rounded-lg border border-sky-200/70 bg-sky-50/40 dark:border-sky-900/40 dark:bg-sky-950/20 px-2.5 py-1.5 text-xs text-sky-800 dark:text-sky-300 flex items-center gap-2 animate-pulse">
         <CloudSun className="w-3.5 h-3.5 text-sky-500 animate-spin flex-shrink-0" />
-        <span className="text-[11px] truncate">Consultando previsão do tempo pública...</span>
+        <span className="text-[11px] truncate">Consultando previsão do tempo para {destination}...</span>
+      </div>
+    );
+  }
+
+  // Se pesquisou e não encontrou a cidade na API
+  if (searchedAttempt && !weather && destination?.trim()) {
+    return (
+      <div className="rounded-lg border border-amber-200/80 bg-amber-50/50 dark:border-amber-900/40 dark:bg-amber-950/20 px-2.5 py-1.5 text-xs text-amber-800 dark:text-amber-300 flex items-center gap-2">
+        <MapPinOff className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+        <span className="text-[11px] leading-tight">
+          Não localizamos a previsão para "{destination}". Informe uma cidade no destino principal (ex.: Florianópolis, Gramado, Paris).
+        </span>
       </div>
     );
   }

@@ -18,6 +18,7 @@ import { useTripCover } from "@/lib/album-cover";
 import { useFlagDetector } from "@/lib/flags";
 import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 import { createDefaultTripChecklist } from "@/lib/checklist-template";
+import { TripWeatherPreview } from "@/components/trip/TripWeatherPreview";
 
 export const Route = createFileRoute("/_authenticated/viagens/")({
   head: () => ({
@@ -371,6 +372,12 @@ function NewTripDialog() {
               <Input id="trip-end-date" type="date" required value={form.end_date} onChange={set("end_date")} />
             </div>
           </div>
+
+          <TripWeatherPreview
+            destination={form.main_destination || form.title}
+            startDate={form.start_date}
+            endDate={form.end_date}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">

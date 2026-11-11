@@ -345,18 +345,24 @@ export type Database = {
           joined_at: string
           role: string
           user_id: string
+          all_trips_access: boolean | null
+          allowed_trip_ids: string[] | null
         }
         Insert: {
           family_id: string
           joined_at?: string
           role?: string
           user_id: string
+          all_trips_access?: boolean | null
+          allowed_trip_ids?: string[] | null
         }
         Update: {
           family_id?: string
           joined_at?: string
           role?: string
           user_id?: string
+          all_trips_access?: boolean | null
+          allowed_trip_ids?: string[] | null
         }
         Relationships: [
           {

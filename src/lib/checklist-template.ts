@@ -341,25 +341,33 @@ export async function createDefaultTripChecklist(
   familyId: string,
   options: { destination?: string | undefined; title?: string | undefined; category?: string | undefined } = {}
 ): Promise<{ count: number; items: ChecklistSeedItem[] }> {
-  // 1. Buscar itens existentes em outras viagens da família para enriquecer o modelo
-  const { data: history } = await supabase
+  // 1. Verificar itens já existentes nesta viagem específica para não duplicar
+  const { data: existingTripItems } = await supabase
     .from("checklist_items")
-    .select("kind, title, owner_name")
-    .eq("family_id", familyId)
-    .limit(100);
+    .select("title")
+    .eq("trip_id", tripId);
 
-  // 2. Gerar lista inteligente com o modelo remodelado
-  const items = buildSmartChecklist({
+  const existingTitles = new Set(
+    (existingTripItems || []).map((it) => it.title.trim().toLowerCase())
+  );
+
+  // 2. Gerar lista inteligente baseada puramente no template padrão e tipo da viagem
+  // (não importa itens específicos ou checagens de outras viagens anteriores)
+  const allSuggestedItems = buildSmartChecklist({
     destination: options.destination,
     title: options.title,
     category: options.category,
-    previousItems: history || [],
   });
 
-  if (items.length === 0) return { count: 0, items: [] };
+  // Filtrar apenas itens que ainda não foram inseridos nesta viagem
+  const newItems = allSuggestedItems.filter(
+    (i) => !existingTitles.has(i.title.trim().toLowerCase())
+  );
 
-  // 3. Inserir no Supabase para a viagem
-  const rows = items.map((i) => ({
+  if (newItems.length === 0) return { count: 0, items: [] };
+
+  // 3. Inserir no Supabase com status pendente (done: false)
+  const rows = newItems.map((i) => ({
     trip_id: tripId,
     family_id: familyId,
     kind: i.kind,
@@ -375,5 +383,5 @@ export async function createDefaultTripChecklist(
   const { error } = await supabase.from("checklist_items").insert(rows);
   if (error) throw error;
 
-  return { count: rows.length, items };
+  return { count: rows.length, items: newItems };
 }

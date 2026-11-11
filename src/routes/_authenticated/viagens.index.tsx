@@ -440,7 +440,7 @@ function NewTripDialog() {
                   Criar checklist de viagem e malas automaticamente
                 </Label>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Gera tarefas essenciais (passaportes/documentos, seguro, cartões, mapas) e lista de bagagens inspirados nas suas outras viagens.
+                  Gera o checklist completo em 8 categorias (documentos, saúde, mala, casa, eletrônicos) com sugestões inteligentes para o destino.
                 </p>
               </div>
               <Switch

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Clock, MapPin, Plus, Ticket, Trash2 } from "lucide-react";
+import { Check, Clock, Compass, MapPin, Plus, Sparkles, Ticket, Trash2 } from "lucide-react";
 import { mapsHref } from "@/components/trip/MoneyTabs";
 import { useTripMutations, useTripRows } from "@/lib/trip-data";
 import { RESERVATION_KINDS, brl, fmtLongDay, tripDays } from "@/lib/format";
@@ -7,20 +7,79 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { itineraryReservations } from "@/lib/reservation-fields";
+import { SuggestItineraryModal } from "@/components/trip/SuggestItineraryModal";
 
-type Props = { tripId: string; familyId?: string | undefined; start: string; end: string };
+type Props = {
+  tripId: string;
+  familyId?: string | undefined;
+  start: string;
+  end: string;
+  tripTitle?: string | undefined;
+  destination?: string | null | undefined;
+  category?: string | null | undefined;
+};
 
-export function ItineraryTab({ tripId, familyId, start, end }: Props) {
+export function ItineraryTab({
+  tripId,
+  familyId,
+  start,
+  end,
+  tripTitle = "",
+  destination = "",
+  category = "ferias",
+}: Props) {
   const { data = [] } = useTripRows("activities", tripId);
   const m = useTripMutations("activities", tripId, familyId);
   const { data: res = [] } = useTripRows("reservations", tripId);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+
   const days = tripDays(start, end);
-  const localDay = (iso: string) => { const d = new Date(iso); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-  const localTime = (iso: string | null) => iso ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
+  const localDay = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const localTime = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "";
   const undated = data.filter((a) => !a.date || !days.includes(a.date));
 
   return (
     <div className="space-y-6">
+      {/* Barra Superior do Roteiro com Opção de Sugerir Roteiro */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-soft">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-foreground md:text-xl">
+            Roteiro da Viagem
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {days.length} {days.length === 1 ? "dia planejado" : "dias planejados"} · {data.length}{" "}
+            {data.length === 1 ? "atividade no total" : "atividades no total"}
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          onClick={() => setSuggestOpen(true)}
+          className="rounded-full font-semibold text-xs gap-1.5 shadow-soft"
+        >
+          <Sparkles className="size-3.5 text-accent" />
+          Sugerir roteiro
+        </Button>
+      </div>
+
+      <SuggestItineraryModal
+        open={suggestOpen}
+        onOpenChange={setSuggestOpen}
+        tripId={tripId}
+        tripTitle={tripTitle}
+        destination={destination}
+        category={category}
+        start={start}
+        end={end}
+        existingActivities={data.map((a) => ({ id: a.id, title: a.title, date: a.date }))}
+        onAddActivity={async (payload) => {
+          await m.add.mutateAsync(payload);
+        }}
+      />
       {days.map((day, i) => {
         const items = data.filter((a) => a.date === day).sort((a, b) => (a.time ?? "99").localeCompare(b.time ?? "99"));
         return (

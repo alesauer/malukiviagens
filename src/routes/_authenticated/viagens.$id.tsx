@@ -419,7 +419,17 @@ function TripPage() {
           ))}
         </TabsList>
         <div className="mt-6">
-          <TabsContent value="roteiro"><ItineraryTab tripId={id} familyId={fid} start={trip.start_date} end={trip.end_date} /></TabsContent>
+          <TabsContent value="roteiro">
+            <ItineraryTab
+              tripId={id}
+              familyId={fid}
+              start={trip.start_date}
+              end={trip.end_date}
+              tripTitle={trip.title}
+              destination={trip.main_destination}
+              category={trip.category}
+            />
+          </TabsContent>
           <TabsContent value="reservas"><ReservationsTab tripId={id} familyId={fid} /></TabsContent>
           <TabsContent value="gastos"><ExpensesTab tripId={id} familyId={fid} budget={Number(trip.budget)} /></TabsContent>
           <TabsContent value="checklist"><ChecklistTab tripId={id} familyId={fid} /></TabsContent>

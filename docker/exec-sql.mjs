@@ -13,3 +13,4 @@ execSync(`docker cp "${file}" maluki_db:/tmp/${baseName}`);
 console.log(`Executando ${baseName} com encoding UTF-8 no PostgreSQL...`);
 execSync(`docker compose exec -T db psql -U postgres -d postgres -f /tmp/${baseName}`, { stdio: 'inherit' });
 console.log(`Sucesso: ${file} aplicado sem distorção de caracteres.`);
+

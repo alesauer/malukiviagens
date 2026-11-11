@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTripCover } from "@/lib/album-cover";
+import { useFlagDetector } from "@/lib/flags";
+import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 
 export const Route = createFileRoute("/_authenticated/viagens/")({
   head: () => ({
@@ -118,7 +120,9 @@ function TimelineItem({ t }: { t: Trip }) {
                       {fmtDate(t.start_date, { day: "2-digit", month: "short" })}
                       {t.end_date !== t.start_date && ` – ${fmtDate(t.end_date, { day: "2-digit", month: "short" })}`}
                     </p>
-                    <h3 className="text-lg font-semibold hover:text-primary">{t.title}</h3>
+                    <h3 className="text-lg font-semibold hover:text-primary">
+                      <TripFlagTitle title={t.title} destination={t.main_destination} />
+                    </h3>
                     {t.main_destination && <p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-3.5" />{t.main_destination}</p>}
                   </Link>
                   {t.photos_url && (
@@ -142,7 +146,9 @@ function NextTripHero({ trip }: { trip: Trip }) {
       </p>
       <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
         <div>
-          <h2 className="text-4xl font-semibold md:text-5xl">{trip.title}</h2>
+          <h2 className="text-4xl font-semibold md:text-5xl">
+            <TripFlagTitle title={trip.title} destination={trip.main_destination} />
+          </h2>
           <p className="mt-3 flex items-center gap-2 opacity-90">
             {trip.main_destination && <><MapPin className="size-4" /> {trip.main_destination} · </>}
             {fmtDate(trip.start_date)} – {fmtDate(trip.end_date)} · {tripLength(trip.start_date, trip.end_date)} dias
@@ -167,7 +173,9 @@ function TripCard({ trip }: { trip: Trip }) {
       {cover && <img src={cover} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-40 w-full object-cover" />}
       <div className="p-5">
       <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium">{CATEGORIES[trip.category] ?? trip.category}</span>
-      <h3 className="mt-3 text-xl font-semibold">{trip.title}</h3>
+      <h3 className="mt-3 text-xl font-semibold">
+        <TripFlagTitle title={trip.title} destination={trip.main_destination} />
+      </h3>
       <p className="mt-1 text-sm text-muted-foreground">
         {trip.main_destination ? `${trip.main_destination} · ` : ""}
         {fmtDate(trip.start_date, { day: "2-digit", month: "short", year: "numeric" })}
@@ -195,8 +203,21 @@ function NewTripDialog() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [form, setForm] = useState({ title: "", main_destination: "", start_date: "", end_date: "", category: "ferias", budget: "", description: "", photos_url: "" });
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setForm({ ...form, [k]: e.target.value });
+  const [form, setForm] = useState({
+    title: "",
+    main_destination: "",
+    start_date: "",
+    end_date: "",
+    category: "ferias",
+    budget: "",
+    description: "",
+    photos_url: "",
+  });
+
+  const { flag, loading: flagLoading } = useFlagDetector(form.title, form.main_destination);
+
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm({ ...form, [k]: e.target.value });
 
   const create = useMutation({
     mutationFn: async () => {
@@ -210,7 +231,14 @@ function NewTripDialog() {
       }
       const { data, error } = await supabase
         .from("trips")
-        .insert({ ...form, budget: Number(form.budget || 0), photos_url: form.photos_url.trim() || null, cover_path, family_id: family.id, created_by: family.userId })
+        .insert({
+          ...form,
+          budget: Number(form.budget || 0),
+          photos_url: form.photos_url.trim() || null,
+          cover_path,
+          family_id: family.id,
+          created_by: family.userId,
+        })
         .select("id")
         .single();
       if (error) throw error;
@@ -220,6 +248,16 @@ function NewTripDialog() {
       qc.invalidateQueries({ queryKey: ["trips"] });
       setOpen(false);
       setCoverFile(null);
+      setForm({
+        title: "",
+        main_destination: "",
+        start_date: "",
+        end_date: "",
+        category: "ferias",
+        budget: "",
+        description: "",
+        photos_url: "",
+      });
       toast.success("Viagem criada!");
       navigate({ to: "/viagens/$id", params: { id } });
     },
@@ -229,31 +267,153 @@ function NewTripDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="hero" size="lg"><Plus /> Nova viagem</Button>
+        <Button variant="hero" size="lg">
+          <Plus /> Nova viagem
+        </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader><DialogTitle className="font-display text-2xl">Nova viagem</DialogTitle></DialogHeader>
-        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
-          <div className="space-y-1.5"><Label>Nome da viagem</Label><Input required placeholder="Ex.: Férias em Floripa" value={form.title} onChange={set("title")} /></div>
-          <div className="space-y-1.5"><Label>Destino principal</Label><Input placeholder="Florianópolis, SC" value={form.main_destination} onChange={set("main_destination")} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><Label>Ida</Label><Input type="date" required value={form.start_date} onChange={set("start_date")} /></div>
-            <div className="space-y-1.5"><Label>Volta</Label><Input type="date" required value={form.end_date} onChange={set("end_date")} /></div>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-display text-2xl">Nova viagem</DialogTitle>
+        </DialogHeader>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            create.mutate();
+          }}
+        >
+          {/* Nome da viagem com detecção dinâmica de bandeira (cidade BR ou país/cidade exterior) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="trip-title">Nome da viagem</Label>
+              {flag && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground animate-in fade-in">
+                  <InlineFlagIcon flag={flag} />
+                  <span className="font-medium text-foreground">{flag.label}</span>
+                </span>
+              )}
+            </div>
+
+            <div className="relative flex items-center">
+              <Input
+                id="trip-title"
+                required
+                placeholder="Ex.: Férias em Floripa, Paris, Santiago ou Chile"
+                value={form.title}
+                onChange={set("title")}
+                className={flag ? "pr-14" : ""}
+                autoFocus
+              />
+              {flag && (
+                <div className="absolute right-3 flex items-center gap-1 pointer-events-none">
+                  <InlineFlagIcon flag={flag} />
+                </div>
+              )}
+            </div>
+
+            {/* Painel/Badge informativo da bandeira encontrada */}
+            <LocationFlagBadge
+              flag={flag}
+              loading={flagLoading}
+              titleValue={form.title}
+              hasDestination={Boolean(form.main_destination.trim())}
+              onApplyEmoji={(emoji) => {
+                if (!form.title.includes(emoji)) {
+                  setForm((prev) => ({
+                    ...prev,
+                    title: `${emoji} ${prev.title}`.trim(),
+                  }));
+                }
+              }}
+              onApplyDestination={(dest) => {
+                setForm((prev) => ({
+                  ...prev,
+                  main_destination: dest,
+                }));
+              }}
+            />
           </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="trip-destination">Destino principal</Label>
+            <Input
+              id="trip-destination"
+              placeholder="Florianópolis, SC ou Paris, França"
+              value={form.main_destination}
+              onChange={set("main_destination")}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="trip-start-date">Ida</Label>
+              <Input id="trip-start-date" type="date" required value={form.start_date} onChange={set("start_date")} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="trip-end-date">Volta</Label>
+              <Input id="trip-end-date" type="date" required value={form.end_date} onChange={set("end_date")} />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Tipo</Label>
               <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{Object.entries(CATEGORIES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORIES).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5"><Label>Orçamento (R$)</Label><Input type="number" min="0" step="0.01" value={form.budget} onChange={set("budget")} /></div>
+            <div className="space-y-1.5">
+              <Label htmlFor="trip-budget">Orçamento (R$)</Label>
+              <Input
+                id="trip-budget"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0,00"
+                value={form.budget}
+                onChange={set("budget")}
+              />
+            </div>
           </div>
-          <div className="space-y-1.5"><Label>Foto de capa (opcional)</Label><Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)} /></div>
-          <div className="space-y-1.5"><Label>Álbum do Google Fotos (opcional)</Label><Input type="url" placeholder="https://photos.app.goo.gl/..." value={form.photos_url} onChange={set("photos_url")} /></div>
-          <div className="space-y-1.5"><Label>Observações</Label><Textarea rows={2} value={form.description} onChange={set("description")} /></div>
-          <Button type="submit" className="w-full rounded-full" disabled={create.isPending}>{create.isPending ? "Criando…" : "Criar viagem"}</Button>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="trip-cover">Foto de capa (opcional)</Label>
+            <Input
+              id="trip-cover"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="trip-photos-url">Álbum do Google Fotos (opcional)</Label>
+            <Input
+              id="trip-photos-url"
+              type="url"
+              placeholder="https://photos.app.goo.gl/..."
+              value={form.photos_url}
+              onChange={set("photos_url")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="trip-desc">Observações</Label>
+            <Textarea id="trip-desc" rows={2} value={form.description} onChange={set("description")} />
+          </div>
+
+          <Button type="submit" className="w-full rounded-full" disabled={create.isPending}>
+            {create.isPending ? "Criando…" : "Criar viagem"}
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -50,10 +50,10 @@ function createSupabaseClient() {
   // Use window.__ENV__ if injected at runtime by RootShell (SSR in Docker/VPS),
   // falling back to import.meta.env for Vite build-time and process.env for SSR
   const envObj = typeof window !== 'undefined' ? (window as unknown as { __ENV__?: Record<string, string> }).__ENV__ : undefined;
-  const rawUrl = envObj?.SUPABASE_URL || import.meta.env['VITE_SUPABASE_URL'] || (typeof process !== 'undefined' ? process.env['SUPABASE_URL'] : undefined);
+  const rawUrl = envObj?.["SUPABASE_URL"] || import.meta.env['VITE_SUPABASE_URL'] || (typeof process !== 'undefined' ? process.env['SUPABASE_URL'] : undefined);
   const SUPABASE_URL = rawUrl || (typeof window !== 'undefined' ? window.location.origin : undefined);
   const SUPABASE_PUBLISHABLE_KEY =
-    envObj?.SUPABASE_PUBLISHABLE_KEY ||
+    envObj?.["SUPABASE_PUBLISHABLE_KEY"] ||
     import.meta.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
     (typeof process !== 'undefined' ? process.env['SUPABASE_PUBLISHABLE_KEY'] : undefined);
 

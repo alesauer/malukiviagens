@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ItineraryTab } from "@/components/trip/ItineraryTab";
 import { ExpensesTab, ReservationsTab } from "@/components/trip/MoneyTabs";
 import { ChecklistTab, DocumentsTab, EmergencyTab } from "@/components/trip/OrganizeTabs";
+import { TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 
 export const Route = createFileRoute("/_authenticated/viagens/$id")({
   head: () => ({
@@ -144,7 +145,9 @@ function TripPage() {
         <div className="relative flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <span className="rounded-full bg-background/20 px-3 py-1 text-xs font-medium">{CATEGORIES[trip.category] ?? trip.category}</span>
-            <h1 className="mt-3 break-words text-3xl font-semibold md:text-5xl">{trip.title}</h1>
+            <h1 className="mt-3 break-words text-3xl font-semibold md:text-5xl">
+              <TripFlagTitle title={trip.title} destination={trip.main_destination} />
+            </h1>
             <p className="mt-2 text-sm opacity-90 md:text-base">
               {trip.main_destination && <><MapPin className="mr-1 inline size-4" />{trip.main_destination} · </>}
               {fmtDate(trip.start_date)} – {fmtDate(trip.end_date, { day: "2-digit", month: "short", year: "numeric" })} · {tripLength(trip.start_date, trip.end_date)} dias

@@ -140,11 +140,10 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className={`group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:bg-secondary hover:text-foreground active:scale-98 ${
-                  isOutrosActive
+                className={`group flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all hover:bg-secondary hover:text-foreground active:scale-98 ${isOutrosActive
                     ? "text-primary font-semibold bg-primary/10"
                     : "text-muted-foreground"
-                }`}
+                  }`}
                 aria-label="Menu Outros"
               >
                 <div className="flex items-center gap-3">
@@ -155,9 +154,8 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
                   </div>
                 </div>
                 <ChevronDown
-                  className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground ${
-                    outrosOpen ? "rotate-180 text-foreground" : ""
-                  }`}
+                  className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-foreground ${outrosOpen ? "rotate-180 text-foreground" : ""
+                    }`}
                 />
               </button>
             </CollapsibleTrigger>

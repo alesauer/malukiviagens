@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { AssistantMessageCard } from "@/components/chat/MarkdownContent";
 
 export const Route = createFileRoute("/_authenticated/assistente")({
   validateSearch: z.object({ trip: z.string().optional() }),
@@ -102,12 +103,24 @@ function Assistant() {
             </div>
           </div>
         )}
-        {msgs.map((m, i) => (
-          <div key={i} className={cn("max-w-[88%] sm:max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm leading-relaxed", m.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "border bg-card shadow-soft")}>
-            {m.content}
+        {msgs.map((m, i) =>
+          m.role === "user" ? (
+            <div
+              key={i}
+              className="ml-auto max-w-[88%] sm:max-w-[80%] rounded-2xl rounded-br-xs bg-primary px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-primary-foreground leading-relaxed shadow-soft whitespace-pre-wrap break-words"
+            >
+              {m.content}
+            </div>
+          ) : (
+            <AssistantMessageCard key={i} content={m.content} />
+          )
+        )}
+        {busy && (
+          <div className="flex items-center gap-2.5 w-fit rounded-2xl border border-border/70 bg-card px-4 py-3 text-xs sm:text-sm text-muted-foreground shadow-xs animate-pulse">
+            <Sparkles className="size-4 text-accent animate-spin" />
+            <span>Consultando a inteligência artificial…</span>
           </div>
-        ))}
-        {busy && <div className="w-fit animate-pulse rounded-2xl border bg-card px-4 py-3 text-xs sm:text-sm text-muted-foreground">Pensando…</div>}
+        )}
         <div ref={endRef} />
       </div>
 

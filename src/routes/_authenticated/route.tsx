@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { Compass, Menu, Plane, Sparkles, Users } from "lucide-react";
+import { Compass, Menu, Plane, Sparkles, FolderKanban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated")({
 const MOBILE_NAV = [
   { to: "/viagens", label: "Viagens", icon: Compass },
   { to: "/assistente", label: "Assistente", icon: Sparkles },
-  { to: "/familia", label: "Outros", icon: Users },
+  { to: "/geral", label: "Outros", icon: FolderKanban },
 ] as const;
 
 function AppShell() {

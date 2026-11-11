@@ -286,6 +286,9 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          deepseek_api_key: string | null
+          openai_api_key: string | null
+          ai_provider: string | null
         }
         Insert: {
           created_at?: string
@@ -293,6 +296,9 @@ export type Database = {
           id?: string
           invite_code?: string
           name: string
+          deepseek_api_key?: string | null
+          openai_api_key?: string | null
+          ai_provider?: string | null
         }
         Update: {
           created_at?: string
@@ -300,6 +306,9 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          deepseek_api_key?: string | null
+          openai_api_key?: string | null
+          ai_provider?: string | null
         }
         Relationships: []
       }

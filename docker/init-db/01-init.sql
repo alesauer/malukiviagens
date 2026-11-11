@@ -41,7 +41,10 @@ create table if not exists public.families (
   name text not null,
   invite_code text not null unique default upper(substr(md5(random()::text),1,8)),
   created_by uuid not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  deepseek_api_key text,
+  openai_api_key text,
+  ai_provider text default 'deepseek'
 );
 grant select, update on public.families to authenticated;
 grant all on public.families to service_role;
@@ -88,7 +91,8 @@ drop policy if exists "members read family" on public.families;
 create policy "members read family" on public.families for select to authenticated using (public.is_family_member(id));
 
 drop policy if exists "admins update family" on public.families;
-create policy "admins update family" on public.families for update to authenticated using (public.is_family_admin(id));
+drop policy if exists "members update family" on public.families;
+create policy "members update family" on public.families for update to authenticated using (public.is_family_member(id));
 
 drop policy if exists "members read members" on public.family_members;
 create policy "members read members" on public.family_members for select to authenticated using (public.is_family_member(family_id));

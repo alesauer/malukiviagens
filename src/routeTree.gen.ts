@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
 import { Route as AuthenticatedFamiliaRouteImport } from './routes/_authenticated/familia'
+import { Route as AuthenticatedGeralRouteImport } from './routes/_authenticated/geral'
 import { Route as AuthenticatedViagensIndexRouteImport } from './routes/_authenticated/viagens.index'
 import { Route as AuthenticatedViagensIdRouteImport } from './routes/_authenticated/viagens.$id'
 
@@ -47,6 +48,11 @@ const AuthenticatedFamiliaRoute = AuthenticatedFamiliaRouteImport.update({
   path: '/familia',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGeralRoute = AuthenticatedGeralRouteImport.update({
+  id: '/geral',
+  path: '/geral',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedViagensIndexRoute =
   AuthenticatedViagensIndexRouteImport.update({
     id: '/viagens/',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/assistente': typeof AuthenticatedAssistenteRoute
   '/familia': typeof AuthenticatedFamiliaRoute
+  '/geral': typeof AuthenticatedGeralRoute
   '/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/viagens/': typeof AuthenticatedViagensIndexRoute
 }
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/assistente': typeof AuthenticatedAssistenteRoute
   '/familia': typeof AuthenticatedFamiliaRoute
+  '/geral': typeof AuthenticatedGeralRoute
   '/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/viagens': typeof AuthenticatedViagensIndexRoute
 }
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
   '/_authenticated/familia': typeof AuthenticatedFamiliaRoute
+  '/_authenticated/geral': typeof AuthenticatedGeralRoute
   '/_authenticated/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/_authenticated/viagens/': typeof AuthenticatedViagensIndexRoute
 }
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/assistente'
     | '/familia'
+    | '/geral'
     | '/viagens/$id'
     | '/viagens/'
   fileRoutesByTo: FileRoutesByTo
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/assistente'
     | '/familia'
+    | '/geral'
     | '/viagens/$id'
     | '/viagens'
   id:
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/assistente'
     | '/_authenticated/familia'
+    | '/_authenticated/geral'
     | '/_authenticated/viagens/$id'
     | '/_authenticated/viagens/'
   fileRoutesById: FileRoutesById
@@ -170,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFamiliaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/geral': {
+      id: '/_authenticated/geral'
+      path: '/geral'
+      fullPath: '/geral'
+      preLoaderRoute: typeof AuthenticatedGeralRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/viagens/': {
       id: '/_authenticated/viagens/'
       path: '/viagens'
@@ -190,6 +209,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
   AuthenticatedFamiliaRoute: typeof AuthenticatedFamiliaRoute
+  AuthenticatedGeralRoute: typeof AuthenticatedGeralRoute
   AuthenticatedViagensIdRoute: typeof AuthenticatedViagensIdRoute
   AuthenticatedViagensIndexRoute: typeof AuthenticatedViagensIndexRoute
 }
@@ -197,6 +217,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
   AuthenticatedFamiliaRoute: AuthenticatedFamiliaRoute,
+  AuthenticatedGeralRoute: AuthenticatedGeralRoute,
   AuthenticatedViagensIdRoute: AuthenticatedViagensIdRoute,
   AuthenticatedViagensIndexRoute: AuthenticatedViagensIndexRoute,
 }

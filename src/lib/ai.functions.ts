@@ -7,14 +7,90 @@ const Input = z.object({
   tripId: z.string().uuid().optional(),
 });
 
+const TestInput = z.object({
+  provider: z.enum(["deepseek", "openai"]),
+  apiKey: z.string().min(10).max(300),
+});
+
+export const testAiConnection = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => TestInput.parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const endpoint = data.provider === "deepseek"
+        ? "https://api.deepseek.com/chat/completions"
+        : "https://api.openai.com/v1/chat/completions";
+      const model = data.provider === "deepseek" ? "deepseek-chat" : "gpt-4o-mini";
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${data.apiKey.trim()}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 5,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+
+      if (!res.ok) {
+        if (res.status === 401) return { ok: false, message: "Chave inválida ou não autorizada (código 401)." };
+        if (res.status === 402) return { ok: false, message: "Saldo insuficiente na conta da IA (código 402)." };
+        if (res.status === 429) return { ok: false, message: "Limite de requisições excedido no provedor (código 429)." };
+        return { ok: false, message: `Erro ao conectar com ${data.provider} (status ${res.status}).` };
+      }
+
+      return { ok: true, message: `Conexão com ${data.provider === "deepseek" ? "DeepSeek" : "OpenAI"} testada com sucesso!` };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Tempo limite de conexão esgotado.";
+      return { ok: false, message: `Falha na conexão: ${msg}` };
+    }
+  });
+
 export const askAssistant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const directApiKey = process.env["DEEPSEEK_API_KEY"];
-    const openaiApiKey = process.env["OPENAI_API_KEY"];
-    const gatewayKey = process.env["LOVABLE_API_KEY"];
-    const connectionKey = process.env["UDC_DEEPSEEK_API_KEY"];
+    // 1. Busca configurações de IA da família se existirem no banco
+    let familyAi: { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | null = null;
+    try {
+      const { data: mems } = await context.supabase
+        .from("family_members")
+        .select("family_id, families(deepseek_api_key, openai_api_key, ai_provider)")
+        .eq("user_id", context.userId)
+        .order("joined_at", { ascending: false })
+        .limit(1);
+      const fam = mems?.[0]?.families as { deepseek_api_key?: string | null; openai_api_key?: string | null; ai_provider?: string | null } | undefined;
+      if (fam) familyAi = fam;
+    } catch {
+      // Ignora se não encontrar
+    }
+
+    const preferredProvider = familyAi?.ai_provider || "deepseek";
+    const familyDeepseek = familyAi?.deepseek_api_key?.trim() || undefined;
+    const familyOpenai = familyAi?.openai_api_key?.trim() || undefined;
+    const envDeepseek = process.env["DEEPSEEK_API_KEY"]?.trim() || undefined;
+    const envOpenai = process.env["OPENAI_API_KEY"]?.trim() || undefined;
+    const gatewayKey = process.env["LOVABLE_API_KEY"]?.trim() || undefined;
+    const connectionKey = process.env["UDC_DEEPSEEK_API_KEY"]?.trim() || undefined;
+
+    // Determina chave e provedor ativo com base na preferência da família ou fallback
+    let activeKey: string | undefined;
+    let activeProvider: "deepseek" | "openai" = "deepseek";
+
+    if (preferredProvider === "openai" && (familyOpenai || envOpenai)) {
+      activeKey = familyOpenai || envOpenai;
+      activeProvider = "openai";
+    } else if (familyDeepseek || envDeepseek) {
+      activeKey = familyDeepseek || envDeepseek;
+      activeProvider = "deepseek";
+    } else if (familyOpenai || envOpenai) {
+      activeKey = familyOpenai || envOpenai;
+      activeProvider = "openai";
+    }
 
     let tripInfo: { title: string; main_destination: string | null; start_date: string; end_date: string; budget: number | null; description: string | null } | null = null;
     let tripContext = "Nenhuma viagem selecionada.";
@@ -27,10 +103,10 @@ export const askAssistant = createServerFn({ method: "POST" })
       }
     }
 
-    if (!directApiKey && !openaiApiKey && (!gatewayKey || !connectionKey)) {
+    if (!activeKey && (!gatewayKey || !connectionKey)) {
       if (tripInfo) {
         return {
-          reply: `Para respostas automáticas com IA, adicione sua chave \`DEEPSEEK_API_KEY\` (ou \`OPENAI_API_KEY\`) no arquivo \`.env\` e reinicie com \`docker compose up -d app\`.\n\n` +
+          reply: `Para respostas automáticas com IA, adicione sua chave \`DEEPSEEK_API_KEY\` ou \`OPENAI_API_KEY\` no menu **Outros > Geral > IA** ou no arquivo \`.env\` do servidor.\n\n` +
             `**Contexto da Viagem Atual (${tripInfo.title}):**\n` +
             `- **Destino:** ${tripInfo.main_destination || "Não informado"}\n` +
             `- **Período:** ${tripInfo.start_date} a ${tripInfo.end_date}\n` +
@@ -39,7 +115,7 @@ export const askAssistant = createServerFn({ method: "POST" })
         };
       }
       return {
-        reply: "Para ativar o assistente inteligente, adicione a chave `DEEPSEEK_API_KEY` (ou `OPENAI_API_KEY`) no seu arquivo `.env` e reinicie os containers com `docker compose up -d app`.",
+        reply: "Para ativar o assistente inteligente, adicione a chave do **DeepSeek** ou **OpenAI** no menu **Outros > Geral > IA** ou no seu arquivo `.env`.",
       };
     }
 
@@ -54,14 +130,16 @@ export const askAssistant = createServerFn({ method: "POST" })
         "Content-Type": "application/json",
       };
 
-      if (directApiKey) {
-        endpoint = "https://api.deepseek.com/chat/completions";
-        model = "deepseek-chat";
-        headers["Authorization"] = `Bearer ${directApiKey}`;
-      } else if (openaiApiKey) {
-        endpoint = "https://api.openai.com/v1/chat/completions";
-        model = "gpt-4o-mini";
-        headers["Authorization"] = `Bearer ${openaiApiKey}`;
+      if (activeKey) {
+        if (activeProvider === "openai") {
+          endpoint = "https://api.openai.com/v1/chat/completions";
+          model = "gpt-4o-mini";
+          headers["Authorization"] = `Bearer ${activeKey}`;
+        } else {
+          endpoint = "https://api.deepseek.com/chat/completions";
+          model = "deepseek-chat";
+          headers["Authorization"] = `Bearer ${activeKey}`;
+        }
       } else {
         endpoint = "https://connector-gateway.lovable.dev/udc_deepseek/chat/completions";
         model = "deepseek-flash";
@@ -82,10 +160,9 @@ export const askAssistant = createServerFn({ method: "POST" })
       });
       if (!response.ok) {
         const body = await response.text();
-        const activeKey = directApiKey || openaiApiKey || gatewayKey || "";
-        const safeBody = body.split(activeKey).join("[redacted]").replace(/sk-[a-zA-Z0-9_-]+/g, "[redacted]");
+        const safeBody = body.split(activeKey || gatewayKey || "").join("[redacted]").replace(/sk-[a-zA-Z0-9_-]+/g, "[redacted]");
         console.error("AI assistant request failed", response.status, safeBody);
-        if (response.status === 401) return { reply: "A chave da API de IA não é válida ou expirou. Verifique o arquivo .env." };
+        if (response.status === 401) return { reply: "A chave da API de IA não é válida ou expirou. Verifique as configurações em Outros > Geral > IA." };
         if (response.status === 402) return { reply: "O saldo da conta de IA acabou. Adicione créditos para continuar." };
         if (response.status === 429) return { reply: "Muitas requisições enviadas ao provedor de IA. Aguarde um momento e tente novamente." };
         return { reply: `Não foi possível consultar a IA (código ${response.status}). Tente novamente em instantes.` };

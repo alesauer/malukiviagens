@@ -9,6 +9,7 @@ import {
   HeartHandshake,
   ChevronDown,
   FolderKanban,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
@@ -23,13 +24,15 @@ export const PRIMARY_NAV = [
 
 // Itens dentro do menu Outros
 export const OUTROS_NAV = [
+  { to: "/geral", label: "Geral", icon: Settings, description: "IA e configurações" },
   { to: "/familia", label: "Família", icon: Users, description: "Membros e convites" },
 ] as const;
 
 // Todos os itens combinados para compatibilidade e rotas móveis
 export const ALL_NAV_ITEMS = [
   ...PRIMARY_NAV,
-  { to: "/familia", label: "Outros (Família)", icon: Users, description: "Membros e convites" },
+  { to: "/geral", label: "Geral", icon: Settings, description: "IA e configurações" },
+  { to: "/familia", label: "Família", icon: Users, description: "Membros e convites" },
 ] as const;
 
 interface AppSidebarProps {
@@ -41,9 +44,9 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
   const { data: family } = useFamily();
   const navigate = useNavigate();
 
-  // Detecta se a rota atual está dentro do menu Outros (/familia)
+  // Detecta se a rota atual está dentro do menu Outros (/geral ou /familia)
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isOutrosActive = pathname.startsWith("/familia");
+  const isOutrosActive = pathname.startsWith("/geral") || pathname.startsWith("/familia");
 
   // Estado do menu Outros (expandido por padrão ou se a rota atual for filha)
   const [outrosOpen, setOutrosOpen] = useState(true);

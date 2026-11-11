@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Check, Download, FileText, Phone, Plus, Trash2, Upload } from "lucide-react";
+import { Check, Download, FileText, Phone, Plus, Sparkles, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { createDefaultTripChecklist } from "@/lib/checklist-template";
 
 type Props = { tripId: string; familyId?: string | undefined };
 
@@ -17,49 +18,104 @@ const SUGGESTED = ["Documentos com foto", "Seguro-viagem", "Carregadores", "Rem�
 export function ChecklistTab({ tripId, familyId }: Props) {
   const { data = [] } = useTripRows("checklist_items", tripId);
   const m = useTripMutations("checklist_items", tripId, familyId);
+  const qc = useQueryClient();
+  const [generating, setGenerating] = useState(false);
+
+  async function handleAutoChecklist() {
+    if (!familyId) return;
+    setGenerating(true);
+    try {
+      const { data: trip } = await supabase
+        .from("trips")
+        .select("title, main_destination, category")
+        .eq("id", tripId)
+        .maybeSingle();
+
+      const { count } = await createDefaultTripChecklist(tripId, familyId, {
+        title: trip?.title || "",
+        destination: trip?.main_destination || "",
+        category: trip?.category || "ferias",
+      });
+
+      qc.invalidateQueries({ queryKey: ["checklist_items", tripId] });
+      toast.success(`${count} itens de checklist e malas adicionados!`);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Erro ao gerar";
+      toast.error(`Não foi possível gerar: ${msg}`);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   const groups: { kind: "preparo" | "bagagem"; title: string; hint: string }[] = [
     { kind: "preparo", title: "Antes de viajar", hint: "Tarefas e preparativos" },
     { kind: "bagagem", title: "Malas", hint: "Informe de quem é cada item" },
   ];
+
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      {groups.map((g) => {
-        const items = data.filter((i) => i.kind === g.kind);
-        const done = items.filter((i) => i.done).length;
-        return (
-          <section key={g.kind} className="rounded-2xl border bg-card p-5 shadow-soft">
-            <div className="flex items-baseline justify-between">
-              <h3 className="text-xl font-semibold">{g.title}</h3>
-              <span className="text-sm text-muted-foreground">{done}/{items.length}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">{g.hint}</p>
-            <ul className="mt-3 space-y-1">
-              {items.map((i) => (
-                <li key={i.id} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted">
-                  <button
-                    aria-label="Alternar"
-                    onClick={() => m.update.mutate({ id: i.id, done: !i.done })}
-                    className={cn("flex size-5 items-center justify-center rounded-md border-2", i.done ? "border-success bg-success text-primary-foreground" : "border-input")}
-                  >
-                    {i.done && <Check className="size-3" />}
-                  </button>
-                  <span className={cn("flex-1", i.done && "text-muted-foreground line-through")}>{i.title}</span>
-                  {i.owner_name && <span className="rounded-full bg-secondary px-2 text-xs">{i.owner_name}</span>}
-                  <button aria-label="Remover" className="opacity-0 group-hover:opacity-100" onClick={() => m.remove.mutate(i.id)}><Trash2 className="size-4 text-muted-foreground" /></button>
-                </li>
-              ))}
-            </ul>
-            <AddItem withOwner={g.kind === "bagagem"} onAdd={(title, owner) => m.add.mutate({ kind: g.kind, title, owner_name: owner || null })} />
-            {g.kind === "preparo" && items.length === 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {SUGGESTED.map((s) => (
-                  <button key={s} onClick={() => m.add.mutate({ kind: "preparo", title: s })} className="rounded-full border border-dashed px-3 py-1 text-xs hover:border-primary hover:text-primary">+ {s}</button>
-                ))}
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          {data.length > 0 ? (
+            <span>
+              Total: {data.filter((i) => i.done).length} de {data.length} itens concluídos
+            </span>
+          ) : (
+            <span>Nenhum item cadastrado ainda.</span>
+          )}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="rounded-full text-xs font-medium"
+          onClick={handleAutoChecklist}
+          disabled={generating}
+        >
+          <Sparkles className="mr-1.5 size-3.5 text-primary" />
+          {generating ? "Gerando itens…" : "Gerar checklist automático"}
+        </Button>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {groups.map((g) => {
+          const items = data.filter((i) => i.kind === g.kind);
+          const done = items.filter((i) => i.done).length;
+          return (
+            <section key={g.kind} className="rounded-2xl border bg-card p-5 shadow-soft">
+              <div className="flex items-baseline justify-between">
+                <h3 className="text-xl font-semibold">{g.title}</h3>
+                <span className="text-sm text-muted-foreground">{done}/{items.length}</span>
               </div>
-            )}
-          </section>
-        );
-      })}
+              <p className="text-xs text-muted-foreground">{g.hint}</p>
+              <ul className="mt-3 space-y-1">
+                {items.map((i) => (
+                  <li key={i.id} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-muted">
+                    <button
+                      aria-label="Alternar"
+                      onClick={() => m.update.mutate({ id: i.id, done: !i.done })}
+                      className={cn("flex size-5 items-center justify-center rounded-md border-2", i.done ? "border-success bg-success text-primary-foreground" : "border-input")}
+                    >
+                      {i.done && <Check className="size-3" />}
+                    </button>
+                    <span className={cn("flex-1", i.done && "text-muted-foreground line-through")}>{i.title}</span>
+                    {i.owner_name && <span className="rounded-full bg-secondary px-2 text-xs">{i.owner_name}</span>}
+                    <button aria-label="Remover" className="opacity-0 group-hover:opacity-100" onClick={() => m.remove.mutate(i.id)}><Trash2 className="size-4 text-muted-foreground" /></button>
+                  </li>
+                ))}
+              </ul>
+              <AddItem withOwner={g.kind === "bagagem"} onAdd={(title, owner) => m.add.mutate({ kind: g.kind, title, owner_name: owner || null })} />
+              {g.kind === "preparo" && items.length === 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {SUGGESTED.map((s) => (
+                    <button key={s} onClick={() => m.add.mutate({ kind: "preparo", title: s })} className="rounded-full border border-dashed px-3 py-1 text-xs hover:border-primary hover:text-primary">+ {s}</button>
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

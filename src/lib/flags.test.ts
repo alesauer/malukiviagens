@@ -78,3 +78,4 @@ describe("flags.ts utility functions", () => {
     expect(franca?.emoji).toBe("🇫🇷");
   });
 });
+

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Images, MapPin, Plus, Plane } from "lucide-react";
+import { Images, MapPin, Plus, Plane, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
 import { CATEGORIES, brl, daysUntil, fmtDate, tripLength, tripPhase } from "@/lib/format";
@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTripCover } from "@/lib/album-cover";
 import { useFlagDetector } from "@/lib/flags";
 import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/trip/LocationFlagBadge";
+import { createDefaultTripChecklist } from "@/lib/checklist-template";
 
 export const Route = createFileRoute("/_authenticated/viagens/")({
   head: () => ({
@@ -203,6 +205,7 @@ function NewTripDialog() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [autoChecklist, setAutoChecklist] = useState(true);
   const [form, setForm] = useState({
     title: "",
     main_destination: "",
@@ -242,6 +245,20 @@ function NewTripDialog() {
         .select("id")
         .single();
       if (error) throw error;
+
+      // Gerar automaticamente o checklist de preparativos e malas se habilitado
+      if (autoChecklist) {
+        try {
+          await createDefaultTripChecklist(data.id, family.id, {
+            title: form.title,
+            destination: form.main_destination,
+            category: form.category,
+          });
+        } catch (err) {
+          console.error("Erro ao gerar checklist inicial:", err);
+        }
+      }
+
       return data.id;
     },
     onSuccess: (id) => {
@@ -258,7 +275,7 @@ function NewTripDialog() {
         description: "",
         photos_url: "",
       });
-      toast.success("Viagem criada!");
+      toast.success(autoChecklist ? "Viagem criada com checklist e malas!" : "Viagem criada!");
       navigate({ to: "/viagens/$id", params: { id } });
     },
     onError: (e) => toast.error(e.message),
@@ -409,6 +426,29 @@ function NewTripDialog() {
           <div className="space-y-1.5">
             <Label htmlFor="trip-desc">Observações</Label>
             <Textarea id="trip-desc" rows={2} value={form.description} onChange={set("description")} />
+          </div>
+
+          {/* Opção Inteligente: Criar Checklist de Viagem e Malas Automaticamente */}
+          <div className="rounded-2xl border border-primary/25 bg-primary/5 p-3.5 shadow-xs transition-colors">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="auto-checklist"
+                  className="text-sm font-semibold flex items-center gap-1.5 cursor-pointer text-foreground"
+                >
+                  <Sparkles className="size-4 text-primary shrink-0" />
+                  Criar checklist de viagem e malas automaticamente
+                </Label>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Gera tarefas essenciais (passaportes/documentos, seguro, cartões, mapas) e lista de bagagens inspirados nas suas outras viagens.
+                </p>
+              </div>
+              <Switch
+                id="auto-checklist"
+                checked={autoChecklist}
+                onCheckedChange={setAutoChecklist}
+              />
+            </div>
           </div>
 
           <Button type="submit" className="w-full rounded-full" disabled={create.isPending}>

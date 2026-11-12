@@ -2,6 +2,14 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { startBackgroundAlertsWorker } from "./lib/notification-scheduler";
+
+// Inicia o worker em background para envio automático periódico de programação e lembretes
+try {
+  startBackgroundAlertsWorker();
+} catch (e) {
+  console.error("Falha ao iniciar startBackgroundAlertsWorker:", e);
+}
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -50,6 +58,26 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
+
+    // Rota HTTP Cron para disparar rotina automática externamente (via n8n Schedule Trigger ou Cron job)
+    if (url.pathname === "/api/cron/daily-alerts") {
+      try {
+        const { processAllAutomatedAlerts } = await import("./lib/notification-scheduler");
+        const { getServiceSupabase } = await import("./lib/supabase-service");
+        const serviceDb = getServiceSupabase();
+        const result = await processAllAutomatedAlerts(serviceDb);
+        return new Response(JSON.stringify(result, null, 2), {
+          status: result.ok ? 200 : 500,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ ok: false, error: err.message }), {
+          status: 500,
+          headers: { "content-type": "application/json; charset=utf-8" },
+        });
+      }
+    }
+
     if (url.pathname.startsWith("/auth/v1") || url.pathname.startsWith("/rest/v1") || url.pathname.startsWith("/storage/v1")) {
       const kongBase = (process.env["KONG_INTERNAL_URL"] || "http://kong:8000").replace(/\/+$/, "");
       const targetUrl = `${kongBase}${url.pathname}${url.search}`;

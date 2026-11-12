@@ -18,7 +18,11 @@ import {
   Users,
   Shield,
   Check,
+  Bot,
+  Play,
+  RefreshCw,
 } from "lucide-react";
+import { runAutomatedAlertsJob } from "@/lib/notification-scheduler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,15 +78,45 @@ export function NotificationAlertsSettings({
 }: NotificationAlertsSettingsProps) {
   const qc = useQueryClient();
   const testWebhookFn = useServerFn(testWebhookConnection);
+  const runAutoJob = useServerFn(runAutomatedAlertsJob);
 
   const [settings, setSettings] = useState<FamilyNotificationSettings>(
     DEFAULT_NOTIFICATION_SETTINGS
   );
   const [saving, setSaving] = useState(false);
+  const [runningAuto, setRunningAuto] = useState(false);
+  const [autoStatusMessage, setAutoStatusMessage] = useState<string | null>(null);
   const [previewTab, setPreviewTab] = useState<
     "nova_viagem" | "programacao_do_dia" | "lembrete_viagem" | "atualizacao_viagem"
   >("nova_viagem");
   const [testingSend, setTestingSend] = useState(false);
+
+  async function handleRunAutoJob() {
+    setRunningAuto(true);
+    setAutoStatusMessage(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const res = await runAutoJob({
+        data: family?.id ? { familyId: family.id } : {},
+        headers,
+      });
+
+      if (res.ok) {
+        setAutoStatusMessage(res.message);
+        toast.success(res.message);
+      } else {
+        setAutoStatusMessage(res.message);
+        toast.error(res.message || "Erro ao executar rotina automática");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Falha na execução");
+    } finally {
+      setRunningAuto(false);
+    }
+  }
 
   useEffect(() => {
     if (family?.notification_settings) {
@@ -268,6 +302,51 @@ export function NotificationAlertsSettings({
               Configurar Webhook
             </Button>
           )}
+        </div>
+      </Card>
+
+      {/* Card: Monitoramento e Disparo Automático Diário */}
+      <Card className="rounded-3xl border-primary/20 bg-primary/5 shadow-soft p-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-primary/20 text-primary">
+                <Bot className="size-4" />
+              </div>
+              <h3 className="font-semibold text-sm sm:text-base text-foreground">
+                Disparo Automático Contínuo Ativo
+              </h3>
+              <Badge className="bg-emerald-500 text-white text-[10px] px-2 py-0.5">
+                Automático
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+              O robô do servidor monitora suas viagens automaticamente. Se a viagem estiver em andamento hoje, ele envia a <strong>Programação do Dia</strong>. Se a viagem for futura, ele calcula a contagem regressiva e envia os <strong>Lembretes</strong> nos dias configurados, sem você precisar clicar em nenhum botão.
+            </p>
+            {autoStatusMessage && (
+              <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 pt-1">
+                ℹ️ {autoStatusMessage}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRunAutoJob}
+              disabled={runningAuto || !isWebhookReady}
+              className="rounded-xl gap-2 text-xs border-primary/30 hover:bg-primary/10 shadow-xs"
+            >
+              {runningAuto ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Play className="size-3.5 text-primary fill-primary" />
+              )}
+              Executar Rotina Agora
+            </Button>
+          </div>
         </div>
       </Card>
 

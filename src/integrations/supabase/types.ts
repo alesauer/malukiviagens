@@ -377,6 +377,39 @@ export type Database = {
           },
         ]
       }
+      notification_history: {
+        Row: {
+          details: Json | null
+          event: string
+          family_id: string
+          id: string
+          sent_at: string
+          status: string
+          target_key: string
+          trip_id: string
+        }
+        Insert: {
+          details?: Json | null
+          event: string
+          family_id: string
+          id?: string
+          sent_at?: string
+          status?: string
+          target_key: string
+          trip_id: string
+        }
+        Update: {
+          details?: Json | null
+          event?: string
+          family_id?: string
+          id?: string
+          sent_at?: string
+          status?: string
+          target_key?: string
+          trip_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

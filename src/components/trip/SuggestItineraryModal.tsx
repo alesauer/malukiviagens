@@ -293,12 +293,12 @@ export function SuggestItineraryModal({
             </Button>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
               className={cn(
-                "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                 selectedCategory === "all"
                   ? "bg-primary text-primary-foreground shadow-xs"
                   : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
@@ -315,7 +315,7 @@ export function SuggestItineraryModal({
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
                   className={cn(
-                    "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                     selectedCategory === cat
                       ? "bg-primary text-primary-foreground shadow-xs"
                       : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"

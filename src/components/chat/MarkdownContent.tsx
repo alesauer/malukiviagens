@@ -200,3 +200,4 @@ export function AssistantMessageCard({ content }: { content: string }) {
     </div>
   );
 }
+

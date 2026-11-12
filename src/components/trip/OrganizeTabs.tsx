@@ -172,13 +172,40 @@ export function ChecklistTab({ tripId, familyId }: Props) {
           <Progress value={pct} className="h-2.5 rounded-full" />
         </div>
 
-        {/* Filtros por Categoria (Pills horizontais com rolagem suave em mobile) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 pt-2 border-t border-border/50">
+        {/* Filtro Mobile: Dropdown Seletor (Zero Scroll) */}
+        <div className="pt-2 border-t border-border/50 sm:hidden">
+          <Select value={selectedCat} onValueChange={setSelectedCat}>
+            <SelectTrigger className="h-10 w-full rounded-xl bg-secondary/70 text-xs font-semibold">
+              <div className="flex items-center gap-2 truncate">
+                <Tag className="size-3.5 text-primary shrink-0" />
+                <span className="truncate">
+                  {selectedCat === "all"
+                    ? `Todas as categorias (${data.length})`
+                    : `${CHECKLIST_CATEGORIES.find((c) => c.id === selectedCat)?.name} (${data.filter((i) => normalizeChecklistKind(i.kind) === selectedCat).length})`}
+                </span>
+              </div>
+            </SelectTrigger>
+            <SelectContent className="text-xs">
+              <SelectItem value="all">Todas as categorias ({data.length})</SelectItem>
+              {CHECKLIST_CATEGORIES.map((cat) => {
+                const count = data.filter((i) => normalizeChecklistKind(i.kind) === cat.id).length;
+                return (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name} ({count})
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filtros Desktop/Tablet: Pills Horizontais Sem Scroll */}
+        <div className="hidden sm:flex flex-wrap items-center gap-1.5 pt-2 border-t border-border/50">
           <button
             type="button"
             onClick={() => setSelectedCat("all")}
             className={cn(
-              "shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors",
+              "rounded-full px-3 py-1 text-xs font-medium transition-colors",
               selectedCat === "all"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -196,7 +223,7 @@ export function ChecklistTab({ tripId, familyId }: Props) {
                 type="button"
                 onClick={() => setSelectedCat(cat.id)}
                 className={cn(
-                  "shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   selectedCat === cat.id
                     ? "bg-primary text-primary-foreground shadow-xs"
                     : "bg-secondary/70 text-muted-foreground hover:bg-secondary hover:text-foreground"

@@ -279,16 +279,16 @@ function GeralPage() {
         </div>
       </div>
 
-      {/* Sistema de Abas */}
+      {/* Sistema de Abas (Zero scroll no mobile com grid equilibrado) */}
       <Tabs defaultValue="ia" className="w-full">
-        <TabsList className="flex h-11 w-full items-center justify-start gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-secondary/80 p-1 md:w-auto">
-          <TabsTrigger value="ia" className="shrink-0 whitespace-nowrap rounded-xl px-4 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
-            <Sparkles className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-accent" />
-            IA (Inteligência Artificial)
+        <TabsList className="grid grid-cols-2 h-11 w-full rounded-2xl bg-secondary/80 p-1 md:inline-flex md:w-auto md:gap-2">
+          <TabsTrigger value="ia" className="rounded-xl px-2 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+            <Sparkles className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-accent shrink-0" />
+            <span className="truncate">IA</span>
           </TabsTrigger>
-          <TabsTrigger value="integracoes" className="shrink-0 whitespace-nowrap rounded-xl px-4 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
-            <Webhook className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-primary" />
-            Integrações & Webhook
+          <TabsTrigger value="integracoes" className="rounded-xl px-2 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+            <Webhook className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-primary shrink-0" />
+            <span className="truncate">Integrações & Webhook</span>
           </TabsTrigger>
         </TabsList>
 

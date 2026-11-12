@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2, Compass, Ticket, WalletCards, CheckSquare, FileText, PhoneCall } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -38,6 +38,15 @@ export const Route = createFileRoute("/_authenticated/viagens/$id")({
   }),
   component: TripPage,
 });
+
+const TRIP_TABS = [
+  { id: "roteiro", label: "Roteiro", icon: Compass },
+  { id: "reservas", label: "Reservas", icon: Ticket },
+  { id: "gastos", label: "Gastos", icon: WalletCards },
+  { id: "checklist", label: "Checklist", fullLabel: "Checklist e malas", icon: CheckSquare },
+  { id: "documentos", label: "Documentos", icon: FileText },
+  { id: "emergencia", label: "Emergência", icon: PhoneCall },
+] as const;
 
 function TripPage() {
   const { id } = Route.useParams();
@@ -442,11 +451,24 @@ function TripPage() {
         </DialogContent>
       </Dialog>
 
-      <Tabs defaultValue="roteiro">
-        <TabsList className="flex w-full items-center justify-start gap-1 overflow-x-auto no-scrollbar rounded-2xl bg-secondary p-1">
-          {([["roteiro", "Roteiro"], ["reservas", "Reservas"], ["gastos", "Gastos"], ["checklist", "Checklist e malas"], ["documentos", "Documentos"], ["emergencia", "Emergência"]] as const).map(([v, l]) => (
-            <TabsTrigger key={v} value={v} className="shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs md:px-4 md:text-sm font-medium">{l}</TabsTrigger>
-          ))}
+      <Tabs defaultValue="roteiro" className="w-full">
+        <TabsList className="grid h-auto w-full grid-cols-3 gap-1.5 rounded-2xl bg-secondary/80 p-1.5 md:flex md:flex-wrap md:justify-start md:gap-2">
+          {TRIP_TABS.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex h-[52px] sm:h-10 flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 rounded-xl px-2 py-1.5 text-[11px] sm:text-xs md:text-sm font-semibold transition-all data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-soft"
+              >
+                <Icon className="size-4 shrink-0 text-primary" />
+                <span className="truncate leading-none">
+                  {tab.label}
+                  {"fullLabel" in tab && <span className="hidden lg:inline"> e malas</span>}
+                </span>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
         <div className="mt-6">
           <TabsContent value="roteiro">

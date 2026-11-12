@@ -31,3 +31,4 @@ describe("phone utilities", () => {
     expect(isValidPhone("")).toBe(false);
   });
 });
+

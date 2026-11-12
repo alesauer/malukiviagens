@@ -179,11 +179,23 @@ export const testWebhookConnection = createServerFn({ method: "POST" })
       const durationMs = Date.now() - startMs;
 
       if (!res.ok) {
+        let detail = res.statusText || "";
+        try {
+          const bodyJson = await res.json();
+          if (bodyJson.hint) {
+            detail = bodyJson.hint;
+          } else if (bodyJson.message) {
+            detail = bodyJson.message;
+          }
+        } catch {
+          // não é JSON, mantém statusText
+        }
+
         return {
           ok: false,
           status: res.status,
           durationMs,
-          message: `O n8n respondeu com erro HTTP ${res.status} (${res.statusText || "Falha na requisição"}).`,
+          message: `O n8n respondeu com erro HTTP ${res.status}${detail ? `: ${detail}` : "."}`,
         };
       }
 
@@ -323,7 +335,21 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       });
 
       if (!res.ok) {
-        return { ok: false, status: res.status, message: `Erro ao enviar para n8n: HTTP ${res.status}` };
+        let detail = res.statusText || "";
+        try {
+          const bodyJson = await res.json();
+          if (bodyJson.hint) {
+            detail = bodyJson.hint;
+          } else if (bodyJson.message) {
+            detail = bodyJson.message;
+          }
+        } catch {}
+
+        return {
+          ok: false,
+          status: res.status,
+          message: `Erro ao enviar para n8n: HTTP ${res.status}${detail ? ` — ${detail}` : ""}`,
+        };
       }
 
       return { ok: true, status: res.status, message: "Webhook enviado com sucesso ao n8n!" };

@@ -122,3 +122,4 @@ describe("notification-settings", () => {
     expect(msg).toContain("passaportes");
   });
 });
+

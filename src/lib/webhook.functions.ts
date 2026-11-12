@@ -230,42 +230,52 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
   .validator((d: unknown) => DispatchWebhookSchema.parse(d))
   .handler(async ({ data, context }) => {
     try {
-      // 1. Busca os dados da viagem
-      const { data: trip, error: tripErr } = await supabase
+      const db = context.supabase;
+
+      // 1. Busca os dados da viagem usando o cliente autenticado
+      const { data: trip, error: tripErr } = await db
         .from("trips")
         .select("*")
         .eq("id", data.tripId)
         .maybeSingle();
 
       if (tripErr || !trip) {
-        return { ok: false, message: "Viagem não encontrada." };
+        console.error("[Webhook] Erro ao buscar viagem:", tripErr);
+        return { ok: false, message: `Viagem não encontrada: ${tripErr?.message || "Registro não localizado"}` };
       }
 
       // 2. Busca as configurações de webhook da família
-      const { data: family, error: famErr } = await supabase
+      const { data: family, error: famErr } = await db
         .from("families")
         .select("id, name, webhook_url, webhook_enabled, webhook_secret, webhook_events")
         .eq("id", trip.family_id)
         .maybeSingle();
 
       if (famErr || !family) {
-        return { ok: false, message: "Família não encontrada." };
+        console.error("[Webhook] Erro ao buscar família:", famErr);
+        return { ok: false, message: `Família não encontrada: ${famErr?.message || "Registro não localizado"}` };
       }
 
       if (!family.webhook_enabled || !family.webhook_url?.trim()) {
+        console.log(`[Webhook] Webhook desabilitado para a família ${family.name} (${family.id})`);
         return { ok: false, message: "Webhook desabilitado para esta família." };
       }
 
       const enabledEvents = family.webhook_events || ["trip_created"];
       if (!enabledEvents.includes(data.event)) {
+        console.log(`[Webhook] Evento ${data.event} não está habilitado para ${family.name}. Ativos:`, enabledEvents);
         return { ok: false, message: `O evento ${data.event} não está habilitado para envio.` };
       }
 
       // 3. Busca os integrantes da família para compor os destinatários vinculados a esta viagem
-      const { data: members } = await supabase
+      const { data: members, error: memErr } = await db
         .from("family_members")
-        .select("user_id, role, all_trips_access, allowed_trip_ids, profiles(full_name, email, phone)")
+        .select("user_id, role, all_trips_access, allowed_trip_ids")
         .eq("family_id", family.id);
+
+      if (memErr) {
+        console.error("[Webhook] Erro ao buscar membros da família:", memErr);
+      }
 
       // Filtra apenas membros que possuem acesso a esta viagem (ou todos no caso de teste)
       const allowedMembers = (members || []).filter((m: any) => {
@@ -276,11 +286,23 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         return allowedIds.includes(trip.id);
       });
 
-      const recipients: WebhookRecipient[] = allowedMembers.map((m: any) => ({
-        name: m.profiles?.full_name || "Membro da Família",
-        email: m.profiles?.email || undefined,
-        phone: m.profiles?.phone ? normalizeWhatsApp(m.profiles.phone) : undefined,
-      }));
+      const allowedUserIds = allowedMembers.map((m: any) => m.user_id);
+      const { data: profiles, error: profErr } = allowedUserIds.length > 0
+        ? await db.from("profiles").select("id, full_name, email, phone").in("id", allowedUserIds)
+        : { data: [], error: null };
+
+      if (profErr) {
+        console.error("[Webhook] Erro ao buscar perfis dos membros:", profErr);
+      }
+
+      const recipients: WebhookRecipient[] = allowedMembers.map((m: any) => {
+        const prof = (profiles || []).find((p: any) => p.id === m.user_id);
+        return {
+          name: prof?.full_name || "Membro da Família",
+          email: prof?.email || undefined,
+          phone: prof?.phone ? normalizeWhatsApp(prof.phone) : undefined,
+        };
+      });
 
       // Calcula a quantidade de dias
       let daysCount: number | undefined = undefined;
@@ -327,6 +349,8 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         headers["Authorization"] = `Bearer ${family.webhook_secret.trim()}`;
       }
 
+      console.log(`[Webhook] Enviando evento "${data.event}" para "${family.webhook_url}" com ${recipients.length} destinatários.`);
+
       const res = await fetch(family.webhook_url.trim(), {
         method: "POST",
         headers,
@@ -334,10 +358,13 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         signal: AbortSignal.timeout(8000),
       });
 
+      const resText = await res.text().catch(() => "");
+      console.log(`[Webhook] Resposta n8n HTTP ${res.status}:`, resText);
+
       if (!res.ok) {
         let detail = res.statusText || "";
         try {
-          const bodyJson = await res.json();
+          const bodyJson = JSON.parse(resText);
           if (bodyJson.hint) {
             detail = bodyJson.hint;
           } else if (bodyJson.message) {
@@ -355,6 +382,7 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       return { ok: true, status: res.status, message: "Webhook enviado com sucesso ao n8n!" };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro desconhecido";
+      console.error("[Webhook] Exceção ao enviar webhook:", err);
       return { ok: false, message: `Falha no envio do webhook: ${msg}` };
     }
   });

@@ -136,16 +136,16 @@ function TripPage() {
     qc.invalidateQueries({ queryKey: ["trips"] });
     setEditOpen(false);
 
-    // Dispara webhook em background se a família tiver webhook configurado
-    supabase.auth.getSession().then(({ data: sessionData }) => {
+    // Dispara webhook se a família tiver webhook configurado
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-      dispatchWebhook({ data: { tripId: id, event: "trip_updated" }, headers }).catch((err) => {
-        console.warn("Aviso ao disparar webhook de viagem atualizada:", err);
-      });
-    }).catch((err) => {
-      console.warn("Aviso ao obter sessão para webhook:", err);
-    });
+      const webhookRes = await dispatchWebhook({ data: { tripId: id, event: "trip_updated" }, headers });
+      console.log("[Webhook trip_updated] Resposta:", webhookRes);
+    } catch (err) {
+      console.warn("Aviso ao disparar webhook de viagem atualizada:", err);
+    }
 
     toast.success("Viagem atualizada com sucesso!");
   }

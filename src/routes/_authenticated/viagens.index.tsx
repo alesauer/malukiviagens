@@ -278,7 +278,7 @@ function NewTripDialog() {
 
       return data.id;
     },
-    onSuccess: (id) => {
+    onSuccess: async (id) => {
       qc.invalidateQueries({ queryKey: ["trips"] });
       setOpen(false);
       setCoverFile(null);
@@ -293,16 +293,16 @@ function NewTripDialog() {
         photos_url: "",
       });
 
-      // Dispara webhook em background se a família tiver webhook configurado
-      supabase.auth.getSession().then(({ data: sessionData }) => {
+      // Dispara webhook se a família tiver webhook configurado
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData.session?.access_token;
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        dispatchWebhook({ data: { tripId: id, event: "trip_created" }, headers }).catch((err) => {
-          console.warn("Aviso ao disparar webhook de nova viagem:", err);
-        });
-      }).catch((err) => {
-        console.warn("Aviso ao obter sessão para webhook:", err);
-      });
+        const webhookRes = await dispatchWebhook({ data: { tripId: id, event: "trip_created" }, headers });
+        console.log("[Webhook trip_created] Resposta:", webhookRes);
+      } catch (err) {
+        console.warn("Aviso ao disparar webhook de nova viagem:", err);
+      }
 
       toast.success(autoChecklist ? "Viagem criada com checklist e malas!" : "Viagem criada!");
       navigate({ to: "/viagens/$id", params: { id } });

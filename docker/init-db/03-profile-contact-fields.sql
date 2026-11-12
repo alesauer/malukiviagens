@@ -87,3 +87,18 @@ BEGIN
 END
 $$;
 
+-- 4. Chave estrangeira entre family_members e profiles para permitir queries relacionais (joins) no PostgREST
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'family_members_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.family_members 
+    ADD CONSTRAINT family_members_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
+  END IF;
+END
+$$;
+
+

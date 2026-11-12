@@ -186,7 +186,12 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
       {/* Rodapé: Perfil & Sair */}
       <div className="border-t border-border/60 pt-4">
         <div className="flex items-center justify-between gap-2 rounded-2xl bg-secondary/40 p-2">
-          <div className="flex items-center gap-2.5 min-w-0">
+          <Link
+            to="/familia"
+            onClick={onItemClick}
+            className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-80 transition-opacity"
+            title="Ver meu perfil e membros da família"
+          >
             <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
               {initials}
             </div>
@@ -194,7 +199,7 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
               <p className="truncate text-xs font-semibold text-foreground">{family?.userName || "Usuário"}</p>
               <p className="truncate text-[10px] text-muted-foreground">{family?.name || "Maluki"}</p>
             </div>
-          </div>
+          </Link>
 
           <Button
             type="button"

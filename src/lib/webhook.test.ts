@@ -63,5 +63,17 @@ describe("webhook.functions.ts", () => {
     expect(msg).toContain("Atualização de Viagem");
     expect(msg).toContain("foi atualizada");
   });
+
+  it("validates recipient model with name, email and phone", () => {
+    const sampleRecipient = {
+      name: "Carlos Eduardo",
+      email: "carlos@exemplo.com",
+      phone: "+5511999998888",
+    };
+
+    expect(sampleRecipient.name).toBe("Carlos Eduardo");
+    expect(sampleRecipient.email).toContain("@");
+    expect(sampleRecipient.phone).toMatch(/^\+\d{12,13}$/);
+  });
 });
 

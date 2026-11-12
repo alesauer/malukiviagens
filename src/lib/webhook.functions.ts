@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeWhatsApp } from "@/lib/phone";
 
 export type WebhookEventKind = "test" | "trip_created" | "trip_updated" | "trip_reminder";
 
@@ -248,14 +249,25 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         return { ok: false, message: `O evento ${data.event} não está habilitado para envio.` };
       }
 
-      // 3. Busca os integrantes da família para compor os destinatários
+      // 3. Busca os integrantes da família para compor os destinatários vinculados a esta viagem
       const { data: members } = await supabase
         .from("family_members")
-        .select("user_id, profiles(full_name)")
+        .select("user_id, role, all_trips_access, allowed_trip_ids, profiles(full_name, email, phone)")
         .eq("family_id", family.id);
 
-      const recipients: WebhookRecipient[] = (members || []).map((m: any) => ({
+      // Filtra apenas membros que possuem acesso a esta viagem (ou todos no caso de teste)
+      const allowedMembers = (members || []).filter((m: any) => {
+        if (!trip.id) return true; // evento de teste ou genérico
+        if (m.role === "admin") return true; // admin sempre recebe
+        if (m.all_trips_access !== false) return true; // acesso a todas as viagens
+        const allowedIds: string[] = Array.isArray(m.allowed_trip_ids) ? m.allowed_trip_ids : [];
+        return allowedIds.includes(trip.id);
+      });
+
+      const recipients: WebhookRecipient[] = allowedMembers.map((m: any) => ({
         name: m.profiles?.full_name || "Membro da Família",
+        email: m.profiles?.email || undefined,
+        phone: m.profiles?.phone ? normalizeWhatsApp(m.profiles.phone) : undefined,
       }));
 
       // Calcula a quantidade de dias

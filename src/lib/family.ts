@@ -8,6 +8,8 @@ export type Family = {
   role: string;
   userId: string;
   userName: string;
+  userEmail?: string;
+  userPhone?: string;
   deepseek_api_key?: string | null;
   openai_api_key?: string | null;
   ai_provider?: string | null;
@@ -32,8 +34,15 @@ export function useFamily() {
       if (error) throw error;
       const row = rows?.[0];
       if (!row?.families) throw new Error("Família não encontrada");
-      const { data: p } = await supabase.from("profiles").select("full_name").eq("id", u.user.id).maybeSingle();
-      return { ...row.families, role: row.role, userId: u.user.id, userName: p?.full_name || u.user.email || "" };
+      const { data: p } = await supabase.from("profiles").select("full_name, email, phone").eq("id", u.user.id).maybeSingle();
+      return {
+        ...row.families,
+        role: row.role,
+        userId: u.user.id,
+        userName: p?.full_name || u.user.email || "",
+        userEmail: p?.email || u.user.email || "",
+        userPhone: p?.phone || "",
+      };
     },
   });
 }

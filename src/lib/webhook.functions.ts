@@ -478,7 +478,7 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         const start = new Date(trip.start_date);
         const end = new Date(trip.end_date);
         daysCount = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
-      } catch {}
+      } catch { }
 
       const tripData: WebhookTripData = {
         id: trip.id,
@@ -552,7 +552,7 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
           } else if (bodyJson.message) {
             detail = bodyJson.message;
           }
-        } catch {}
+        } catch { }
 
         return {
           ok: false,

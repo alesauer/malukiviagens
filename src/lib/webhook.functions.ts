@@ -403,14 +403,37 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         return { ok: false, message: "Webhook desabilitado para esta família." };
       }
 
-      const enabledEvents = family.webhook_events || ["trip_created"];
-      const isManualTrigger = data.event === "trip_reminder" || data.event === "daily_schedule";
-      if (!isManualTrigger && !enabledEvents.includes(data.event)) {
-        console.log(`[Webhook] Evento ${data.event} não está habilitado para ${family.name}. Ativos:`, enabledEvents);
-        return { ok: false, message: `O evento ${data.event} não está habilitado para envio.` };
+      // 3. Validação das preferências de alertas da família
+      const famNotif = family.notification_settings as unknown as FamilyNotificationSettings | null;
+
+      if (data.event === "trip_created" && famNotif?.nova_viagem?.enabled === false) {
+        console.log(`[Webhook] Alerta de nova viagem desativado nas configurações para ${family.name}`);
+        return { ok: false, message: "Alerta de nova viagem está desativado nas configurações." };
+      }
+      if (data.event === "trip_updated" && famNotif?.atualizacao_viagem?.enabled === false) {
+        console.log(`[Webhook] Alerta de atualização de viagem desativado nas configurações para ${family.name}`);
+        return { ok: false, message: "Alerta de atualização de viagem está desativado nas configurações." };
+      }
+      if (data.event === "daily_schedule" && famNotif?.programacao_do_dia?.enabled === false) {
+        console.log(`[Webhook] Alerta de programação do dia desativado nas configurações para ${family.name}`);
+        return { ok: false, message: "Alerta de programação do dia está desativado nas configurações." };
+      }
+      if (data.event === "trip_reminder" && famNotif?.lembrete_viagem?.enabled === false) {
+        console.log(`[Webhook] Alerta de lembrete de viagem desativado nas configurações para ${family.name}`);
+        return { ok: false, message: "Alerta de lembrete de viagem está desativado nas configurações." };
       }
 
-      // 3. Busca os integrantes da família para compor os destinatários vinculados a esta viagem
+      // Se não houver notification_settings específico, valida a lista de eventos legada
+      if (!famNotif) {
+        const enabledEvents = family.webhook_events || ["trip_created"];
+        const isManualTrigger = data.event === "trip_reminder" || data.event === "daily_schedule";
+        if (!isManualTrigger && !enabledEvents.includes(data.event)) {
+          console.log(`[Webhook] Evento ${data.event} não está habilitado para ${family.name}. Ativos:`, enabledEvents);
+          return { ok: false, message: `O evento ${data.event} não está habilitado para envio.` };
+        }
+      }
+
+      // 4. Busca os integrantes da família para compor os destinatários vinculados a esta viagem
       const { data: members, error: memErr } = await db
         .from("family_members")
         .select("user_id, role, all_trips_access, allowed_trip_ids")
@@ -421,7 +444,6 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       }
 
       // Filtra apenas membros que possuem acesso a esta viagem (ou todos no caso de teste ou configuração geral)
-      const famNotif = family.notification_settings as unknown as FamilyNotificationSettings | null;
       const onlyTripMembers = famNotif?.only_trip_members ?? true;
       const allowedMembers = (members || []).filter((m: any) => {
         if (!onlyTripMembers) return true; // todos os membros recebem se configurado

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2, Compass, Ticket, WalletCards, CheckSquare, FileText, PhoneCall } from "lucide-react";
+import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2, Compass, Ticket, WalletCards, CheckSquare, FileText, PhoneCall, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -24,6 +24,7 @@ import { LocationFlagBadge, InlineFlagIcon, TripFlagTitle } from "@/components/t
 import { useFlagDetector } from "@/lib/flags";
 import { TripWeatherPreview } from "@/components/trip/TripWeatherPreview";
 import { dispatchTripWebhook } from "@/lib/webhook.functions";
+import { SendTripNotificationModal } from "@/components/trip/SendTripNotificationModal";
 
 export const Route = createFileRoute("/_authenticated/viagens/$id")({
   head: () => ({
@@ -60,6 +61,7 @@ function TripPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverSaving, setCoverSaving] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     main_destination: "",
@@ -78,6 +80,38 @@ function TripPage() {
       const { data, error } = await supabase.from("trips").select("*").eq("id", id).maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: tripRecipients = [] } = useQuery({
+    queryKey: ["trip_recipients", id, family?.id],
+    enabled: !!family?.id && !!id,
+    queryFn: async () => {
+      const { data: ms } = await supabase
+        .from("family_members")
+        .select("user_id, role, all_trips_access, allowed_trip_ids")
+        .eq("family_id", family!.id);
+
+      const allowed = (ms || []).filter(
+        (m) => m.role === "admin" || m.all_trips_access !== false || m.allowed_trip_ids?.includes(id)
+      );
+
+      const userIds = allowed.map((m) => m.user_id);
+      if (userIds.length === 0) return [];
+
+      const { data: ps } = await supabase
+        .from("profiles")
+        .select("id, full_name, phone, email")
+        .in("id", userIds);
+
+      return allowed.map((m) => {
+        const p = ps?.find((prof) => prof.id === m.user_id);
+        return {
+          name: p?.full_name || "Membro",
+          phone: p?.phone || null,
+          email: p?.email || null,
+        };
+      });
     },
   });
   const { data: checklist = [] } = useTripRows("checklist_items", id);
@@ -253,6 +287,19 @@ function TripPage() {
             <Button asChild variant="secondary" size="sm" className="rounded-full min-h-[36px]">
               <Link to="/assistente" search={{ trip: trip.id }}><Sparkles className="size-3.5" /> Ideias</Link>
             </Button>
+            {family?.webhook_enabled && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="rounded-full min-h-[36px] bg-emerald-600 hover:bg-emerald-700 text-white border-0 gap-1.5 shadow-soft transition-all"
+                onClick={() => setNotifyOpen(true)}
+                title="Notificar participantes no WhatsApp (Lembrete ou Programação do Dia)"
+              >
+                <MessageSquare className="size-3.5" />
+                <span>Notificar WhatsApp</span>
+              </Button>
+            )}
             <Button variant="ghost" size="icon" aria-label="Excluir viagem" onClick={del} className="size-9 text-primary-foreground hover:bg-background/20 hover:text-primary-foreground"><Trash2 className="size-4" /></Button>
           </div>
         </div>
@@ -489,6 +536,14 @@ function TripPage() {
           <TabsContent value="emergencia"><EmergencyTab tripId={id} familyId={fid} /></TabsContent>
         </div>
       </Tabs>
+
+      <SendTripNotificationModal
+        open={notifyOpen}
+        onOpenChange={setNotifyOpen}
+        trip={trip}
+        familyName={family?.name || "Família"}
+        recipients={tripRecipients}
+      />
     </div>
   );
 }

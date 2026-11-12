@@ -4,7 +4,23 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeWhatsApp } from "@/lib/phone";
 
-export type WebhookEventKind = "test" | "trip_created" | "trip_updated" | "trip_reminder";
+export type WebhookEventKind = "test" | "trip_created" | "trip_updated" | "trip_reminder" | "daily_schedule";
+
+export type WebhookMessageType = "nova_viagem" | "programacao_do_dia" | "lembrete_viagem" | "atualizacao_viagem" | "teste";
+
+export interface WebhookControlData {
+  type: WebhookMessageType;
+  action: WebhookEventKind;
+  description: string;
+  category: "viagem" | "roteiro" | "sistema";
+  target_channel: "whatsapp" | "email" | "all";
+}
+
+export interface WebhookActivityItem {
+  title: string;
+  time?: string | null;
+  location?: string | null;
+}
 
 export interface WebhookRecipient {
   name: string;
@@ -25,6 +41,8 @@ export interface WebhookTripData {
 
 export interface WebhookPayload {
   event: WebhookEventKind;
+  message_type: WebhookMessageType;
+  control: WebhookControlData;
   timestamp: string;
   family: {
     id: string;
@@ -33,6 +51,56 @@ export interface WebhookPayload {
   trip: WebhookTripData;
   recipients: WebhookRecipient[];
   formatted_message: string;
+  daily_activities?: WebhookActivityItem[] | undefined;
+}
+
+/**
+ * Retorna os dados de controle para o n8n rotear via Switch / IF
+ */
+export function getControlDataForEvent(event: WebhookEventKind): WebhookControlData {
+  switch (event) {
+    case "trip_created":
+      return {
+        type: "nova_viagem",
+        action: "trip_created",
+        description: "Nova Viagem Cadastrada",
+        category: "viagem",
+        target_channel: "all",
+      };
+    case "daily_schedule":
+      return {
+        type: "programacao_do_dia",
+        action: "daily_schedule",
+        description: "Programação do Dia",
+        category: "roteiro",
+        target_channel: "whatsapp",
+      };
+    case "trip_reminder":
+      return {
+        type: "lembrete_viagem",
+        action: "trip_reminder",
+        description: "Lembrete de Viagem",
+        category: "viagem",
+        target_channel: "all",
+      };
+    case "trip_updated":
+      return {
+        type: "atualizacao_viagem",
+        action: "trip_updated",
+        description: "Atualização de Viagem",
+        category: "viagem",
+        target_channel: "all",
+      };
+    case "test":
+    default:
+      return {
+        type: "teste",
+        action: "test",
+        description: "Teste de Conexão",
+        category: "sistema",
+        target_channel: "all",
+      };
+  }
 }
 
 /**
@@ -42,10 +110,14 @@ export function buildTripWhatsAppMessage({
   event,
   trip,
   familyName,
+  activities,
+  date,
 }: {
   event: WebhookEventKind;
   trip: WebhookTripData;
   familyName: string;
+  activities?: WebhookActivityItem[] | undefined;
+  date?: string | undefined;
 }): string {
   const pad = (d: string) => {
     try {
@@ -67,6 +139,30 @@ export function buildTripWhatsAppMessage({
       `📍 *Destino exemplo:* ${trip.destination || "Gramado, RS"}\n` +
       `📅 *Período exemplo:* ${periodStr}${daysText}\n\n` +
       `✅ Sua automação no WhatsApp está pronta para receber os alertas de viagens!`
+    );
+  }
+
+  if (event === "daily_schedule") {
+    const today = new Date().toISOString().split("T")[0] || "";
+    const formattedDate = date ? pad(date) : pad(today);
+    const acts = (activities || []).map((a) => {
+      const timePart = a.time ? `• *${a.time}* - ` : "• ";
+      const locPart = a.location ? ` (${a.location})` : "";
+      return `${timePart}${a.title}${locPart}`;
+    });
+
+    const actsList = acts.length > 0
+      ? acts.join("\n")
+      : "• Nenhuma atividade específica agendada para hoje.";
+
+    return (
+      `📅 *Programação do Dia — ${familyName}*\n\n` +
+      `🧳 *${trip.title}*\n` +
+      `📆 *Data:* ${formattedDate}\n` +
+      (trip.destination ? `📍 *Destino:* ${trip.destination}\n\n` : "\n") +
+      `*Atividades planejadas:*\n` +
+      actsList +
+      `\n\n🌟 Tenham um excelente dia de viagem!`
     );
   }
 
@@ -136,8 +232,12 @@ export const testWebhookConnection = createServerFn({ method: "POST" })
     const userEmail = (context.claims?.email as string) || "viajante@malukiviagens.com";
     const userName = userEmail.split("@")[0] || "Viajante";
 
+    const control = getControlDataForEvent("test");
+
     const payload: WebhookPayload = {
       event: "test",
+      message_type: control.type,
+      control,
       timestamp: new Date().toISOString(),
       family: {
         id: familyId,
@@ -219,7 +319,8 @@ export const testWebhookConnection = createServerFn({ method: "POST" })
 
 const DispatchWebhookSchema = z.object({
   tripId: z.string().uuid(),
-  event: z.enum(["trip_created", "trip_updated", "trip_reminder"]),
+  event: z.enum(["trip_created", "trip_updated", "trip_reminder", "daily_schedule"]),
+  targetDate: z.string().optional(),
 });
 
 /**
@@ -262,7 +363,8 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       }
 
       const enabledEvents = family.webhook_events || ["trip_created"];
-      if (!enabledEvents.includes(data.event)) {
+      const isManualTrigger = data.event === "trip_reminder" || data.event === "daily_schedule";
+      if (!isManualTrigger && !enabledEvents.includes(data.event)) {
         console.log(`[Webhook] Evento ${data.event} não está habilitado para ${family.name}. Ativos:`, enabledEvents);
         return { ok: false, message: `O evento ${data.event} não está habilitado para envio.` };
       }
@@ -304,6 +406,28 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         };
       });
 
+      // 4. Se for programação do dia, busca as atividades da data correspondente
+      let dailyActivities: WebhookActivityItem[] | undefined = undefined;
+      const targetDate: string = data.targetDate || new Date().toISOString().split("T")[0] || "";
+
+      if (data.event === "daily_schedule") {
+        const { data: acts, error: actsErr } = await db
+          .from("activities")
+          .select("title, time, location")
+          .eq("trip_id", trip.id)
+          .eq("date", targetDate)
+          .order("time", { ascending: true, nullsFirst: false });
+
+        if (actsErr) {
+          console.warn("[Webhook] Erro ao buscar atividades:", actsErr);
+        }
+        dailyActivities = (acts || []).map((a: any) => ({
+          title: a.title,
+          time: a.time,
+          location: a.location,
+        }));
+      }
+
       // Calcula a quantidade de dias
       let daysCount: number | undefined = undefined;
       try {
@@ -323,8 +447,13 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         days_count: daysCount,
       };
 
+      // Dados de controle para o n8n
+      const control = getControlDataForEvent(data.event);
+
       const payload: WebhookPayload = {
         event: data.event,
+        message_type: control.type,
+        control,
         timestamp: new Date().toISOString(),
         family: {
           id: family.id,
@@ -332,10 +461,13 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         },
         trip: tripData,
         recipients,
+        daily_activities: dailyActivities,
         formatted_message: buildTripWhatsAppMessage({
           event: data.event,
           trip: tripData,
           familyName: family.name,
+          activities: dailyActivities,
+          date: targetDate,
         }),
       };
 

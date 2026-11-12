@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTripWhatsAppMessage, type WebhookTripData } from "./webhook.functions";
+import { buildTripWhatsAppMessage, getControlDataForEvent, type WebhookTripData } from "./webhook.functions";
 
 describe("webhook.functions.ts", () => {
   const sampleTrip: WebhookTripData = {
@@ -12,6 +12,48 @@ describe("webhook.functions.ts", () => {
     budget: 3500.0,
     days_count: 6,
   };
+
+  it("returns correct control data for each event type for n8n routing", () => {
+    const createdCtrl = getControlDataForEvent("trip_created");
+    expect(createdCtrl.type).toBe("nova_viagem");
+    expect(createdCtrl.action).toBe("trip_created");
+    expect(createdCtrl.description).toBe("Nova Viagem Cadastrada");
+
+    const scheduleCtrl = getControlDataForEvent("daily_schedule");
+    expect(scheduleCtrl.type).toBe("programacao_do_dia");
+    expect(scheduleCtrl.action).toBe("daily_schedule");
+    expect(scheduleCtrl.description).toBe("Programação do Dia");
+
+    const reminderCtrl = getControlDataForEvent("trip_reminder");
+    expect(reminderCtrl.type).toBe("lembrete_viagem");
+    expect(reminderCtrl.action).toBe("trip_reminder");
+
+    const updatedCtrl = getControlDataForEvent("trip_updated");
+    expect(updatedCtrl.type).toBe("atualizacao_viagem");
+
+    const testCtrl = getControlDataForEvent("test");
+    expect(testCtrl.type).toBe("teste");
+  });
+
+  it("builds daily schedule message with formatted activities", () => {
+    const msg = buildTripWhatsAppMessage({
+      event: "daily_schedule",
+      trip: sampleTrip,
+      familyName: "Família Maluki",
+      date: "2026-11-21",
+      activities: [
+        { time: "09:00", title: "Passeio Snowland", location: "Gramado" },
+        { time: "14:30", title: "Almoço no Centro Colonial", location: "Canela" },
+      ],
+    });
+
+    expect(msg).toContain("Programação do Dia");
+    expect(msg).toContain("Férias em Gramado");
+    expect(msg).toContain("Passeio Snowland");
+    expect(msg).toContain("09:00");
+    expect(msg).toContain("Almoço no Centro Colonial");
+    expect(msg).toContain("21/11/2026");
+  });
 
   it("builds friendly test message with sample data and WhatsApp emojis", () => {
     const msg = buildTripWhatsAppMessage({

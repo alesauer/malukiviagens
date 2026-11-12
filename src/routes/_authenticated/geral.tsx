@@ -227,6 +227,14 @@ function GeralPage() {
 
   const sampleJson = {
     event: "trip_created",
+    message_type: "nova_viagem",
+    control: {
+      type: "nova_viagem",
+      action: "trip_created",
+      description: "Nova Viagem Cadastrada",
+      category: "viagem",
+      target_channel: "all",
+    },
     timestamp: "2026-11-20T10:00:00.000Z",
     family: {
       id: family?.id || "familia-id",
@@ -245,6 +253,8 @@ function GeralPage() {
     recipients: [
       {
         name: family?.userName || "Membro da Família",
+        email: family?.userEmail || "membro@email.com",
+        phone: family?.userPhone || "+5531999998888",
       },
     ],
     formatted_message: `✈️ *Nova Viagem Planejada — ${family?.name || "Família Maluki"}*\n\n` +
@@ -678,6 +688,30 @@ function GeralPage() {
                         </Label>
                         <p className="text-[11px] text-muted-foreground leading-tight">
                           Dispara avisos quando a data da viagem estiver se aproximando.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition-colors ${
+                        webhookEvents.includes("daily_schedule")
+                          ? "border-primary/50 bg-primary/5"
+                          : "border-border/60 hover:bg-muted/40"
+                      }`}
+                      onClick={() => toggleEvent("daily_schedule")}
+                    >
+                      <Checkbox
+                        id="evt-daily-schedule"
+                        checked={webhookEvents.includes("daily_schedule")}
+                        onCheckedChange={() => toggleEvent("daily_schedule")}
+                        className="mt-0.5"
+                      />
+                      <div className="space-y-0.5">
+                        <Label htmlFor="evt-daily-schedule" className="cursor-pointer font-medium text-xs sm:text-sm text-foreground">
+                          📅 Programação do dia
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground leading-tight">
+                          Dispara a lista de atividades e passeios do dia para os participantes.
                         </p>
                       </div>
                     </div>

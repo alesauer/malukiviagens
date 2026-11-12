@@ -22,3 +22,4 @@ describe("notification-scheduler", () => {
     expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+

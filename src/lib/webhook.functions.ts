@@ -3,6 +3,11 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeWhatsApp } from "@/lib/phone";
+import {
+  buildPersonalizedWhatsAppMessage,
+  mergeNotificationSettings,
+  type FamilyNotificationSettings,
+} from "@/lib/notification-settings";
 
 export type WebhookEventKind = "test" | "trip_created" | "trip_updated" | "trip_reminder" | "daily_schedule";
 
@@ -51,6 +56,9 @@ export interface WebhookPayload {
   trip: WebhookTripData;
   recipients: WebhookRecipient[];
   formatted_message: string;
+  whatsapp_message?: string;
+  target_date?: string;
+  notification_settings?: any;
   daily_activities?: WebhookActivityItem[] | undefined;
 }
 
@@ -112,13 +120,46 @@ export function buildTripWhatsAppMessage({
   familyName,
   activities,
   date,
+  notificationSettings,
 }: {
   event: WebhookEventKind;
   trip: WebhookTripData;
   familyName: string;
   activities?: WebhookActivityItem[] | undefined;
   date?: string | undefined;
+  notificationSettings?: FamilyNotificationSettings | null | undefined;
 }): string {
+  if (notificationSettings) {
+    const s = mergeNotificationSettings(notificationSettings);
+    const eventMap: Record<
+      WebhookEventKind,
+      "nova_viagem" | "programacao_do_dia" | "lembrete_viagem" | "atualizacao_viagem" | "teste"
+    > = {
+      trip_created: "nova_viagem",
+      daily_schedule: "programacao_do_dia",
+      trip_reminder: "lembrete_viagem",
+      trip_updated: "atualizacao_viagem",
+      test: "teste",
+    };
+
+    return buildPersonalizedWhatsAppMessage({
+      event: eventMap[event] || "nova_viagem",
+      settings: s,
+      familyName,
+      trip: {
+        title: trip.title,
+        destination: trip.destination,
+        start_date: trip.start_date,
+        end_date: trip.end_date,
+        budget: trip.budget,
+        category: trip.category,
+        days_count: trip.days_count,
+      },
+      activities: activities || [],
+      date,
+    });
+  }
+
   const pad = (d: string) => {
     try {
       const [y, m, day] = d.split("-");
@@ -348,7 +389,7 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       // 2. Busca as configurações de webhook da família
       const { data: family, error: famErr } = await db
         .from("families")
-        .select("id, name, webhook_url, webhook_enabled, webhook_secret, webhook_events")
+        .select("id, name, webhook_url, webhook_enabled, webhook_secret, webhook_events, notification_settings")
         .eq("id", trip.family_id)
         .maybeSingle();
 
@@ -379,8 +420,11 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         console.error("[Webhook] Erro ao buscar membros da família:", memErr);
       }
 
-      // Filtra apenas membros que possuem acesso a esta viagem (ou todos no caso de teste)
+      // Filtra apenas membros que possuem acesso a esta viagem (ou todos no caso de teste ou configuração geral)
+      const famNotif = family.notification_settings as unknown as FamilyNotificationSettings | null;
+      const onlyTripMembers = famNotif?.only_trip_members ?? true;
       const allowedMembers = (members || []).filter((m: any) => {
+        if (!onlyTripMembers) return true; // todos os membros recebem se configurado
         if (!trip.id) return true; // evento de teste ou genérico
         if (m.role === "admin") return true; // admin sempre recebe
         if (m.all_trips_access !== false) return true; // acesso a todas as viagens
@@ -450,6 +494,15 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
       // Dados de controle para o n8n
       const control = getControlDataForEvent(data.event);
 
+      const formattedMessage = buildTripWhatsAppMessage({
+        event: data.event,
+        trip: tripData,
+        familyName: family.name,
+        activities: dailyActivities,
+        date: targetDate,
+        notificationSettings: famNotif,
+      });
+
       const payload: WebhookPayload = {
         event: data.event,
         message_type: control.type,
@@ -462,13 +515,10 @@ export const dispatchTripWebhook = createServerFn({ method: "POST" })
         trip: tripData,
         recipients,
         daily_activities: dailyActivities,
-        formatted_message: buildTripWhatsAppMessage({
-          event: data.event,
-          trip: tripData,
-          familyName: family.name,
-          activities: dailyActivities,
-          date: targetDate,
-        }),
+        formatted_message: formattedMessage,
+        whatsapp_message: formattedMessage,
+        notification_settings: family.notification_settings,
+        ...(data.event === "daily_schedule" ? { target_date: targetDate } : {}),
       };
 
       const headers: Record<string, string> = {

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { FamilyNotificationSettings } from "@/lib/notification-settings";
 
 export type Family = {
   id: string;
@@ -17,6 +18,7 @@ export type Family = {
   webhook_enabled?: boolean | null;
   webhook_secret?: string | null;
   webhook_events?: string[] | null;
+  notification_settings?: FamilyNotificationSettings | null;
 };
 
 /** The signed-in user's current family (first one joined, or the most recent if they joined another). */
@@ -28,21 +30,22 @@ export function useFamily() {
       if (!u.user) throw new Error("Sem sessão");
       const { data: rows, error } = await supabase
         .from("family_members")
-        .select("role, joined_at, families(id, name, invite_code, deepseek_api_key, openai_api_key, ai_provider, webhook_url, webhook_enabled, webhook_secret, webhook_events)")
+        .select("role, joined_at, families(id, name, invite_code, deepseek_api_key, openai_api_key, ai_provider, webhook_url, webhook_enabled, webhook_secret, webhook_events, notification_settings)")
         .eq("user_id", u.user.id)
         .order("joined_at", { ascending: false });
       if (error) throw error;
       const row = rows?.[0];
       if (!row?.families) throw new Error("Família não encontrada");
+      const fam = row.families as unknown as Record<string, any>;
       const { data: p } = await supabase.from("profiles").select("full_name, email, phone").eq("id", u.user.id).maybeSingle();
       return {
-        ...row.families,
+        ...fam,
         role: row.role,
         userId: u.user.id,
         userName: p?.full_name || u.user.email || "",
         userEmail: p?.email || u.user.email || "",
         userPhone: p?.phone || "",
-      };
+      } as Family;
     },
   });
 }

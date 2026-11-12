@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   Sparkles,
   Settings,
@@ -23,11 +24,13 @@ import {
   MessageSquareCode,
   Radio,
   Info,
+  BellRing,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
 import { testAiConnection } from "@/lib/ai.functions";
 import { testWebhookConnection } from "@/lib/webhook.functions";
+import { NotificationAlertsSettings } from "@/components/settings/NotificationAlertsSettings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,20 +42,33 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/geral")({
+  validateSearch: z.object({
+    tab: z.enum(["ia", "alertas", "integracoes"]).optional(),
+  }),
   head: () => ({
     meta: [
       { title: "Configurações Gerais — Maluki Viagens" },
-      { name: "description", content: "Gerencie as configurações gerais, chaves de IA e integrações da família." },
+      { name: "description", content: "Gerencie as configurações gerais, chaves de IA, alertas personalizados e integrações da família." },
     ],
   }),
   component: GeralPage,
 });
 
 function GeralPage() {
+  const search = Route.useSearch();
+  const [activeTab, setActiveTab] = useState<"ia" | "alertas" | "integracoes">(
+    search.tab || "ia"
+  );
   const { data: family, isLoading: familyLoading } = useFamily();
   const qc = useQueryClient();
   const testConn = useServerFn(testAiConnection);
   const testWebhookFn = useServerFn(testWebhookConnection);
+
+  useEffect(() => {
+    if (search.tab) {
+      setActiveTab(search.tab);
+    }
+  }, [search.tab]);
 
   // Estados de IA
   const [deepseekKey, setDeepseekKey] = useState("");
@@ -290,15 +306,23 @@ function GeralPage() {
       </div>
 
       {/* Sistema de Abas (Zero scroll no mobile com grid equilibrado) */}
-      <Tabs defaultValue="ia" className="w-full">
-        <TabsList className="grid grid-cols-2 h-11 w-full rounded-2xl bg-secondary/80 p-1 md:inline-flex md:w-auto md:gap-2">
-          <TabsTrigger value="ia" className="rounded-xl px-2 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as "ia" | "alertas" | "integracoes")}
+        className="w-full"
+      >
+        <TabsList className="grid grid-cols-3 h-11 w-full rounded-2xl bg-secondary/80 p-1 md:inline-flex md:w-auto md:gap-2">
+          <TabsTrigger value="ia" className="rounded-xl px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
             <Sparkles className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-accent shrink-0" />
             <span className="truncate">IA</span>
           </TabsTrigger>
-          <TabsTrigger value="integracoes" className="rounded-xl px-2 sm:px-5 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+          <TabsTrigger value="alertas" className="rounded-xl px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
+            <BellRing className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-amber-500 shrink-0" />
+            <span className="truncate">Alertas</span>
+          </TabsTrigger>
+          <TabsTrigger value="integracoes" className="rounded-xl px-2 sm:px-4 text-xs sm:text-sm data-[state=active]:bg-card data-[state=active]:shadow-soft">
             <Webhook className="mr-1.5 sm:mr-2 size-3.5 sm:size-4 text-primary shrink-0" />
-            <span className="truncate">Integrações & Webhook</span>
+            <span className="truncate">Integrações</span>
           </TabsTrigger>
         </TabsList>
 
@@ -507,7 +531,15 @@ function GeralPage() {
           </form>
         </TabsContent>
 
-        {/* 2. ABA: INTEGRAÇÕES & WEBHOOK (N8N / WHATSAPP) */}
+        {/* 2. ABA: ALERTAS & NOTIFICAÇÕES PERSONALIZADAS */}
+        <TabsContent value="alertas" className="mt-6">
+          <NotificationAlertsSettings
+            family={family}
+            onNavigateToIntegrations={() => setActiveTab("integracoes")}
+          />
+        </TabsContent>
+
+        {/* 3. ABA: INTEGRAÇÕES & WEBHOOK (N8N / WHATSAPP) */}
         <TabsContent value="integracoes" className="mt-6 space-y-6">
           <form onSubmit={handleSaveWebhook} className="space-y-6">
             <Card className="rounded-3xl border-border/70 shadow-soft">

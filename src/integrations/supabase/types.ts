@@ -308,6 +308,7 @@ export type Database = {
           webhook_enabled: boolean | null
           webhook_secret: string | null
           webhook_events: string[] | null
+          notification_settings: Json | null
         }
         Insert: {
           created_at?: string
@@ -322,6 +323,7 @@ export type Database = {
           webhook_enabled?: boolean | null
           webhook_secret?: string | null
           webhook_events?: string[] | null
+          notification_settings?: Json | null
         }
         Update: {
           created_at?: string
@@ -336,6 +338,7 @@ export type Database = {
           webhook_enabled?: boolean | null
           webhook_secret?: string | null
           webhook_events?: string[] | null
+          notification_settings?: Json | null
         }
         Relationships: []
       }

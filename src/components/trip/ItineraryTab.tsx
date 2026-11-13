@@ -1,10 +1,28 @@
 import { useState } from "react";
-import { Check, Clock, Compass, MapPin, Plus, Sparkles, Ticket, Trash2 } from "lucide-react";
+import { Check, Clock, Compass, MapPin, Plus, Sparkles, Ticket, Trash2, CalendarPlus, Calendar } from "lucide-react";
 import { mapsHref } from "@/components/trip/MoneyTabs";
 import { useTripMutations, useTripRows } from "@/lib/trip-data";
 import { RESERVATION_KINDS, brl, fmtLongDay, tripDays } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { itineraryReservations } from "@/lib/reservation-fields";
 import { SuggestItineraryModal } from "@/components/trip/SuggestItineraryModal";
@@ -19,6 +37,32 @@ type Props = {
   category?: string | null | undefined;
 };
 
+function getMatchingReservation(
+  activity: { title: string; notes?: string | null },
+  reservations: Array<{ title: string; confirmation_code?: string | null; kind?: string }>
+) {
+  const clean = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+
+  const aTitle = clean(activity.title);
+  const aNotes = activity.notes ? clean(activity.notes) : "";
+
+  return reservations.find((r) => {
+    const rTitle = clean(r.title);
+    if (!rTitle) return false;
+    if (aTitle.includes(rTitle) || rTitle.includes(aTitle)) return true;
+    if (r.confirmation_code && (aTitle.includes(clean(r.confirmation_code)) || aNotes.includes(clean(r.confirmation_code)))) {
+      return true;
+    }
+    const words = aTitle.split(/\s+/).filter((w) => w.length > 4);
+    return words.some((w) => rTitle.includes(w));
+  });
+}
+
 export function ItineraryTab({
   tripId,
   familyId,
@@ -32,6 +76,9 @@ export function ItineraryTab({
   const m = useTripMutations("activities", tripId, familyId);
   const { data: res = [] } = useTripRows("reservations", tripId);
   const [suggestOpen, setSuggestOpen] = useState(false);
+  const [schedulingActivity, setSchedulingActivity] = useState<(typeof data)[0] | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
 
   const days = tripDays(start, end);
   const localDay = (iso: string) => {
@@ -125,9 +172,30 @@ export function ItineraryTab({
                       {Number(a.estimated_cost) > 0 && <span>{brl(a.estimated_cost)}</span>}
                     </p>
                   </div>
-                  <button aria-label="Remover" onClick={() => m.remove.mutate(a.id)} className="opacity-70 sm:opacity-0 transition group-hover:opacity-100 sm:group-focus-within:opacity-100 p-1 text-muted-foreground hover:text-destructive shrink-0">
-                    <Trash2 className="size-4" />
-                  </button>
+                  <div className="flex items-center gap-1 opacity-70 sm:opacity-0 transition group-hover:opacity-100 sm:group-focus-within:opacity-100 shrink-0">
+                    <button
+                      type="button"
+                      aria-label="Reagendar atividade"
+                      title="Reagendar atividade"
+                      onClick={() => {
+                        setSchedulingActivity(a);
+                        setSelectedDay(a.date || days[0] || "");
+                        setSelectedTime(a.time ? a.time.slice(0, 5) : "");
+                      }}
+                      className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Calendar className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Remover"
+                      title="Remover atividade"
+                      onClick={() => m.remove.mutate(a.id)}
+                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -135,19 +203,236 @@ export function ItineraryTab({
           </section>
         );
       })}
-      <section className="rounded-2xl border border-dashed p-5">
-        <h3 className="text-lg font-semibold">Ideias sem data</h3>
-        <p className="text-sm text-muted-foreground">Lugares que vocês querem conhecer, sem dia definido.</p>
-        <ul className="mt-3 space-y-1">
-          {undated.map((a) => (
-            <li key={a.id} className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-muted">
-              <span>{a.title}{a.location ? <span className="text-muted-foreground"> · {a.location}</span> : null}</span>
-              <button aria-label="Remover" onClick={() => m.remove.mutate(a.id)}><Trash2 className="size-4 text-muted-foreground hover:text-destructive" /></button>
-            </li>
-          ))}
-        </ul>
-        <QuickAdd onAdd={(r) => m.add.mutate({ ...r, date: null })} />
+      <section className="rounded-2xl border border-dashed border-border/80 bg-card/40 p-5 shadow-soft">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              Ideias sem data
+              {undated.length > 0 && (
+                <Badge variant="secondary" className="rounded-full px-2 py-0.5 text-xs font-normal">
+                  {undated.length}
+                </Badge>
+              )}
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Lugares e reservas que vocês querem conhecer, sem dia definido no roteiro.
+            </p>
+          </div>
+        </div>
+
+        {undated.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic py-2">
+            Nenhuma ideia pendente no momento. Todas as atividades estão distribuídas nos dias da viagem!
+          </p>
+        ) : (
+          <ul className="space-y-2.5">
+            {undated.map((a) => {
+              const matchingRes = getMatchingReservation(a, res);
+              const isFromRes = !!matchingRes || (a.notes && /reserva|passaporte|voucher|ingresso/i.test(a.notes));
+
+              return (
+                <li
+                  key={a.id}
+                  className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border/70 bg-card p-3.5 shadow-soft hover:border-primary/40 hover:bg-muted/30 transition-all"
+                >
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-sm text-foreground">{a.title}</span>
+                      {isFromRes && (
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] gap-1 px-2 py-0.5 font-medium bg-accent/15 text-accent border border-accent/30 rounded-full"
+                        >
+                          <Ticket className="size-2.5 shrink-0" />
+                          Reserva vinculada
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Descrição detalhada da ideia / reserva */}
+                    {a.notes && (
+                      <p className="text-xs text-muted-foreground/90 leading-relaxed">
+                        {a.notes}
+                      </p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pt-0.5">
+                      {a.location && (
+                        <a
+                          className="flex items-center gap-1 hover:text-primary transition-colors"
+                          target="_blank"
+                          rel="noreferrer"
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.location)}`}
+                        >
+                          <MapPin className="size-3 text-primary/70 shrink-0" />
+                          <span>{a.location}</span>
+                        </a>
+                      )}
+                      {matchingRes?.confirmation_code && (
+                        <span className="text-[11px] text-muted-foreground/80 font-mono">
+                          Cód.: {matchingRes.confirmation_code}
+                        </span>
+                      )}
+                      {Number(a.estimated_cost) > 0 && <span>{brl(a.estimated_cost)}</span>}
+                    </div>
+                  </div>
+
+                  {/* Ações: Ícone para adicionar ao roteiro ao lado do ícone excluir */}
+                  <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 w-full sm:w-auto justify-end">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="h-8 px-2.5 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 border-primary/30 gap-1.5 rounded-lg shadow-none"
+                      title="Adicionar ideia ao roteiro"
+                      aria-label="Adicionar ideia ao roteiro"
+                      onClick={() => {
+                        setSchedulingActivity(a);
+                        setSelectedDay(days[0] || "");
+                        setSelectedTime(a.time ? a.time.slice(0, 5) : "");
+                      }}
+                    >
+                      <CalendarPlus className="size-3.5 text-primary" />
+                      <span>Adicionar ao roteiro</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                      aria-label="Remover ideia"
+                      title="Remover ideia"
+                      onClick={() => m.remove.mutate(a.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <div className="mt-3">
+          <QuickAdd onAdd={(r) => m.add.mutate({ ...r, date: null })} />
+        </div>
       </section>
+
+      {/* Modal para agendar ideia no roteiro */}
+      <Dialog open={!!schedulingActivity} onOpenChange={(open) => !open && setSchedulingActivity(null)}>
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-md p-5 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-display">
+              <CalendarPlus className="size-5 text-primary" />
+              Adicionar ao Roteiro
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+              Escolha em qual dia e horário da viagem você deseja agendar esta atividade.
+            </DialogDescription>
+          </DialogHeader>
+
+          {schedulingActivity && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!selectedDay) {
+                  toast.error("Por favor, selecione um dia.");
+                  return;
+                }
+                await m.update.mutateAsync({
+                  id: schedulingActivity.id,
+                  date: selectedDay === "__undated__" ? null : selectedDay,
+                  time: selectedTime ? `${selectedTime}:00` : null,
+                });
+                if (selectedDay === "__undated__") {
+                  toast.success(`"${schedulingActivity.title}" movida para Ideias sem data!`);
+                } else {
+                  const dayIdx = days.indexOf(selectedDay);
+                  toast.success(`"${schedulingActivity.title}" adicionada ao Dia ${dayIdx + 1}!`);
+                }
+                setSchedulingActivity(null);
+              }}
+              className="space-y-4 pt-2"
+            >
+              <div className="rounded-xl border border-border/60 bg-muted/40 p-3 space-y-1">
+                <p className="font-semibold text-sm text-foreground">{schedulingActivity.title}</p>
+                {schedulingActivity.location && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="size-3 shrink-0 text-primary/70" />
+                    {schedulingActivity.location}
+                  </p>
+                )}
+                {schedulingActivity.notes && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 italic">
+                    {schedulingActivity.notes}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="schedule-day">Dia da Viagem *</Label>
+                <Select value={selectedDay} onValueChange={setSelectedDay} required>
+                  <SelectTrigger id="schedule-day">
+                    <SelectValue placeholder="Selecione o dia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {days.map((day, idx) => (
+                      <SelectItem key={day} value={day}>
+                        Dia {idx + 1} · {fmtLongDay(day)}
+                      </SelectItem>
+                    ))}
+                    {schedulingActivity.date && (
+                      <SelectItem value="__undated__" className="text-muted-foreground italic">
+                        Mover de volta para Ideias sem data
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="schedule-time">Horário (opcional)</Label>
+                <Input
+                  id="schedule-time"
+                  type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                />
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {["09:00", "10:30", "14:00", "16:00", "19:30"].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setSelectedTime(preset)}
+                      className={cn(
+                        "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
+                        selectedTime === preset
+                          ? "border-primary bg-primary text-primary-foreground font-medium"
+                          : "border-border hover:bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <DialogFooter className="flex sm:justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setSchedulingActivity(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={!selectedDay} className="gap-1.5">
+                  <CalendarPlus className="size-4" />
+                  Confirmar e Adicionar
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

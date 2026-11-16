@@ -33,7 +33,7 @@ function AuthPage() {
 
   async function completeGoogleInvite() {
     const code = window.localStorage.getItem("maluki:pending-family-invite");
-    if (!code) { navigate({ to: "/viagens" }); return; }
+    if (!code) { navigate({ to: "/meu-mundo" }); return; }
     const { error } = await supabase.rpc("join_family", { _code: code });
     if (error) {
       setMode("up");
@@ -43,7 +43,7 @@ function AuthPage() {
     }
     window.localStorage.removeItem("maluki:pending-family-invite");
     toast.success("Você entrou na família!");
-    navigate({ to: "/viagens" });
+    navigate({ to: "/meu-mundo" });
   }
 
   useEffect(() => {
@@ -61,12 +61,12 @@ function AuthPage() {
       if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/viagens" });
+        navigate({ to: "/meu-mundo" });
       } else if (mode === "up") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/viagens", data: signupMetadata(name, inviteCode) },
+          options: { emailRedirectTo: window.location.origin + "/meu-mundo", data: signupMetadata(name, inviteCode) },
         });
         if (error) throw error;
         toast.success(inviteCode.trim() ? "Conta criada na família convidada! Confirme seu e-mail para acessar as viagens." : "Conta criada! Confirme pelo link que enviamos para seu e-mail.");

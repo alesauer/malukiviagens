@@ -32,7 +32,7 @@ function ResetPassword() {
           const { error } = await supabase.auth.updateUser({ password });
           if (error) { toast.error(error.message); return; }
           toast.success("Senha atualizada!");
-          navigate({ to: "/viagens" });
+          navigate({ to: "/meu-mundo" });
         }}
       >
         <h1 className="text-3xl font-semibold">Criar nova senha</h1>

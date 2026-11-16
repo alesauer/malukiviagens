@@ -19,8 +19,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 // Itens principais de navegação
 export const PRIMARY_NAV = [
-  { to: "/viagens", label: "Viagens", icon: Compass, description: "Roteiros e memórias" },
   { to: "/meu-mundo", label: "Meu Mundo", icon: Globe2, description: "Países e cidades visitadas" },
+  { to: "/viagens", label: "Viagens", icon: Compass, description: "Roteiros e memórias" },
   { to: "/assistente", label: "Assistente IA", icon: Sparkles, description: "Dicas e ideias de passeios" },
 ] as const;
 
@@ -80,7 +80,7 @@ export function AppSidebar({ onItemClick, className = "" }: AppSidebarProps) {
       <div className="space-y-6">
         {/* Brand */}
         <Link
-          to="/viagens"
+          to="/meu-mundo"
           onClick={onItemClick}
           className="group flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-secondary/60"
         >

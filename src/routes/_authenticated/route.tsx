@@ -17,8 +17,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 const MOBILE_NAV = [
-  { to: "/viagens", label: "Viagens", icon: Compass },
   { to: "/meu-mundo", label: "Meu Mundo", icon: Globe2 },
+  { to: "/viagens", label: "Viagens", icon: Compass },
   { to: "/assistente", label: "Assistente", icon: Sparkles },
   { to: "/geral", label: "Outros", icon: FolderKanban },
 ] as const;
@@ -58,7 +58,7 @@ function AppShell() {
               </SheetContent>
             </Sheet>
 
-            <Link to="/viagens" className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
+            <Link to="/meu-mundo" className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
               <div className="flex size-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-xs">
                 <Plane className="size-4" />
               </div>

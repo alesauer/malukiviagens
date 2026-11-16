@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Compass, Globe2, MapPin, Search } from "lucide-react";
+import { Calendar, Compass, Globe2, MapPin, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamily } from "@/lib/family";
+import { useTripCover } from "@/lib/album-cover";
+import { daysUntil, fmtDate, tripLength, tripPhase } from "@/lib/format";
+import { TripFlagTitle } from "@/components/trip/LocationFlagBadge";
 import {
   buildWorldMapData,
   type TripSummary,
@@ -54,6 +57,20 @@ function MeuMundoPage() {
     () => buildWorldMapData(trips, { includePlanned }),
     [trips, includePlanned]
   );
+
+  const { lastTrip, nextTrip } = useMemo(() => {
+    const ongoing = trips.find((t) => tripPhase(t.start_date, t.end_date) === "em_andamento");
+    const futures = trips
+      .filter((t) => tripPhase(t.start_date, t.end_date) === "futura")
+      .sort((a, b) => a.start_date.localeCompare(b.start_date));
+    const pasts = trips
+      .filter((t) => tripPhase(t.start_date, t.end_date) === "passada")
+      .sort((a, b) => b.end_date.localeCompare(a.end_date) || b.start_date.localeCompare(a.start_date));
+    return {
+      nextTrip: ongoing ?? futures[0] ?? null,
+      lastTrip: pasts[0] ?? null,
+    };
+  }, [trips]);
 
   const query = search.trim().toLowerCase();
   const filteredCountries = useMemo(() => {
@@ -112,6 +129,14 @@ function MeuMundoPage() {
           </div>
         </div>
       </div>
+
+      {/* Última viagem e/ou Próxima viagem */}
+      {!isLoading && (lastTrip || nextTrip) && (
+        <div className={lastTrip && nextTrip ? "grid gap-4 md:grid-cols-2" : "grid gap-4"}>
+          {nextTrip && <TripHighlightCard trip={nextTrip} kind="next" />}
+          {lastTrip && <TripHighlightCard trip={lastTrip} kind="last" />}
+        </div>
+      )}
 
       {/* KPIs */}
       {isLoading ? (
@@ -312,6 +337,78 @@ function MeuMundoPage() {
 
       <CountryTripsModal country={selectedCountry} onClose={() => setSelectedCountry(null)} />
     </div>
+  );
+}
+
+function TripHighlightCard({ trip, kind }: { trip: TripSummary; kind: "next" | "last" }) {
+  const cover = useTripCover(trip.cover_path);
+  const phase = tripPhase(trip.start_date, trip.end_date);
+  const d = daysUntil(trip.start_date);
+  const label =
+    kind === "next"
+      ? phase === "em_andamento"
+        ? "Acontecendo agora"
+        : "Próxima viagem"
+      : "Última viagem";
+
+  return (
+    <Link
+      to="/viagens/$id"
+      params={{ id: trip.id }}
+      style={
+        cover
+          ? {
+              backgroundImage: `linear-gradient(to top, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.25)), url("${cover}")`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }
+          : undefined
+      }
+      className={
+        cover
+          ? "group flex flex-col justify-between overflow-hidden rounded-3xl p-5 sm:p-6 text-primary-foreground shadow-lift transition hover:-translate-y-0.5 min-h-[175px]"
+          : kind === "next"
+            ? "group flex flex-col justify-between overflow-hidden rounded-3xl bg-sunset p-5 sm:p-6 text-primary-foreground shadow-lift transition hover:-translate-y-0.5 min-h-[175px]"
+            : "group flex flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 p-5 sm:p-6 text-white shadow-lift transition hover:-translate-y-0.5 min-h-[175px]"
+      }
+    >
+      <div className="flex items-start justify-between gap-3">
+        <span className="rounded-full bg-background/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider backdrop-blur-xs">
+          {label}
+        </span>
+        {kind === "next" && phase === "futura" && (
+          <div className="text-right leading-none">
+            <span className="font-display text-2xl sm:text-3xl font-semibold">{d}</span>
+            <span className="block text-[11px] opacity-85">
+              {d === 1 ? "dia" : "dias"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 space-y-1.5">
+        <h2 className="text-xl sm:text-2xl font-semibold leading-tight break-words">
+          <TripFlagTitle title={trip.title} destination={trip.main_destination} />
+        </h2>
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm opacity-90">
+          {trip.main_destination && (
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="size-3.5 shrink-0" />
+              {trip.main_destination}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1">
+            <Calendar className="size-3.5 shrink-0" />
+            {fmtDate(trip.start_date, { day: "2-digit", month: "short" })} –{" "}
+            {fmtDate(trip.end_date, { day: "2-digit", month: "short", year: "numeric" })} ·{" "}
+            {tripLength(trip.start_date, trip.end_date)} dias
+          </span>
+        </p>
+        <p className="pt-1 text-xs font-medium opacity-90 group-hover:underline">
+          {kind === "next" ? "Abrir planejamento →" : "Rever memórias e roteiro →"}
+        </p>
+      </div>
+    </Link>
   );
 }
 

@@ -8,12 +8,13 @@ services:
     container_name: malukiviagens-app
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${APP_PORT:-8801}:3000"
+      - "${APP_PORT:-8801}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - HOST=0.0.0.0
       - SUPABASE_URL=http://kong:8000
+      - PUBLIC_SUPABASE_URL=${PUBLIC_SUPABASE_URL:-}
       - SITE_URL=${SITE_URL:-http://localhost:8801}
       - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
@@ -126,7 +127,7 @@ services:
     container_name: malukiviagens-kong
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${KONG_PORT:-8002}:8000"
+      - "${KONG_PORT:-8002}:8000"
     depends_on:
       - auth
       - rest

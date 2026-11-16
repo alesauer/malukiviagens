@@ -95,10 +95,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   const publicSupabaseUrl = process.env["PUBLIC_SUPABASE_URL"] || process.env["SITE_URL"] || "";
-  const envScript = `window.__ENV__ = {
-    SUPABASE_URL: ${JSON.stringify(publicSupabaseUrl)},
-    SUPABASE_PUBLISHABLE_KEY: ${JSON.stringify(process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "")}
-  };`;
+  const publishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] || "";
+  const envScript = `(function(){var u=${JSON.stringify(publicSupabaseUrl)};if(typeof window!=="undefined"&&window.location.protocol==="https:"&&u.indexOf("http://")===0){u=window.location.origin;}window.__ENV__={SUPABASE_URL:u,SUPABASE_PUBLISHABLE_KEY:${JSON.stringify(publishableKey)}};})();`;
 
   return (
     <html lang="pt-BR">

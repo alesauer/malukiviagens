@@ -5,6 +5,16 @@ import { ArrowLeft, Camera, Images, ImagePlus, MapPin, Pencil, Sparkles, Trash2,
 import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +72,8 @@ function TripPage() {
   const [coverSaving, setCoverSaving] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [notifyOpen, setNotifyOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
     main_destination: "",
@@ -241,9 +253,14 @@ function TripPage() {
   }
 
   async function del() {
-    if (!confirm("Excluir esta viagem e tudo dentro dela?")) return;
+    setDeleting(true);
     const { error } = await supabase.from("trips").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      setDeleting(false);
+      return;
+    }
+    setDeleteOpen(false);
     qc.invalidateQueries({ queryKey: ["trips"] });
     navigate({ to: "/viagens" });
   }
@@ -300,7 +317,7 @@ function TripPage() {
                 <span>Notificar WhatsApp</span>
               </Button>
             )}
-            <Button variant="ghost" size="icon" aria-label="Excluir viagem" onClick={del} className="size-9 text-primary-foreground hover:bg-background/20 hover:text-primary-foreground"><Trash2 className="size-4" /></Button>
+            <Button variant="ghost" size="icon" aria-label="Excluir viagem" onClick={() => setDeleteOpen(true)} className="size-9 text-primary-foreground hover:bg-background/20 hover:text-primary-foreground"><Trash2 className="size-4" /></Button>
           </div>
         </div>
         <dl className="relative mt-4 grid grid-cols-2 gap-2 sm:gap-3 md:mt-8 md:grid-cols-4 md:gap-4">
@@ -544,6 +561,30 @@ function TripPage() {
         familyName={family?.name || "Família"}
         recipients={tripRecipients}
       />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir esta viagem?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente &ldquo;{trip.title}&rdquo; e todo o roteiro, reservas, gastos, checklists e documentos vinculados a ela.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void del();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Excluindo…" : "Excluir viagem"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

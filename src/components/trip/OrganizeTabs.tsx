@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DocumentPreviewModal, type PreviewDocument } from "@/components/trip/DocumentPreviewModal";
 import { useTripMutations, useTripRows } from "@/lib/trip-data";
 import { DOC_KINDS, fmtDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -423,6 +424,7 @@ export function DocumentsTab({ tripId, familyId }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState("voucher");
   const [busy, setBusy] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<PreviewDocument | null>(null);
 
   async function upload(file: File) {
     if (!familyId) return;
@@ -445,10 +447,10 @@ export function DocumentsTab({ tripId, familyId }: Props) {
     }
   }
 
-  async function open(path: string) {
-    const { data: s, error } = await supabase.storage.from("documents").createSignedUrl(path, 60);
+  async function open(doc: { file_path: string; title: string; file_name: string }) {
+    const { data: s, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 300);
     if (error) { toast.error(error.message); return; }
-    window.open(s.signedUrl, "_blank");
+    setPreviewDoc({ title: doc.title, fileName: doc.file_name, url: s.signedUrl });
   }
 
   async function remove(id: string, path: string) {
@@ -479,11 +481,12 @@ export function DocumentsTab({ tripId, familyId }: Props) {
               <p className="truncate font-medium">{d.title}</p>
               <p className="text-xs text-muted-foreground">{DOC_KINDS[d.kind]} · {fmtDate(d.created_at)}</p>
             </div>
-            <Button variant="ghost" size="icon" aria-label="Abrir" onClick={() => open(d.file_path)}><Download /></Button>
+            <Button variant="ghost" size="icon" aria-label="Abrir" onClick={() => open(d)}><Download /></Button>
             <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => remove(d.id, d.file_path)}><Trash2 /></Button>
           </div>
         ))}
       </div>
+      <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
   );
 }

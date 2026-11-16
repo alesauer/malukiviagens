@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { applicableReservationValues, reservationFields } from "@/lib/reservation-fields";
+import { DocumentPreviewModal, type PreviewDocument } from "@/components/trip/DocumentPreviewModal";
 
 type Props = { tripId: string; familyId?: string | undefined };
 
@@ -26,6 +27,7 @@ export function ReservationsTab({ tripId, familyId }: Props) {
   const [open, setOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<PreviewDocument | null>(null);
   const [f, setF] = useState({ kind: "hospedagem", title: "", provider: "", starts_at: "", ends_at: "", confirmation_code: "", cost: "", address: "", maps_url: "" });
   const fields = reservationFields(f.kind);
 
@@ -45,10 +47,10 @@ export function ReservationsTab({ tripId, familyId }: Props) {
     qc.invalidateQueries({ queryKey: ["documents", tripId] });
   }
 
-  async function openDoc(path: string) {
-    const { data: s, error } = await supabase.storage.from("documents").createSignedUrl(path, 60);
+  async function openDoc(doc: { file_path: string; title: string; file_name: string }) {
+    const { data: s, error } = await supabase.storage.from("documents").createSignedUrl(doc.file_path, 300);
     if (error) { toast.error(error.message); return; }
-    window.open(s.signedUrl, "_blank");
+    setPreviewDoc({ title: doc.title, fileName: doc.file_name, url: s.signedUrl });
   }
 
   async function save() {
@@ -132,7 +134,7 @@ export function ReservationsTab({ tripId, familyId }: Props) {
                 )}
                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                   {docs.filter((d) => d.reservation_id === r.id).map((d) => (
-                    <button key={d.id} onClick={() => openDoc(d.file_path)} className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs hover:bg-muted">
+                    <button key={d.id} onClick={() => openDoc(d)} className="flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs hover:bg-muted">
                       <Paperclip className="size-3" />{d.file_name}
                     </button>
                   ))}
@@ -156,6 +158,7 @@ export function ReservationsTab({ tripId, familyId }: Props) {
           </div>
         );
       })}
+      <DocumentPreviewModal doc={previewDoc} onClose={() => setPreviewDoc(null)} />
     </div>
   );
 }

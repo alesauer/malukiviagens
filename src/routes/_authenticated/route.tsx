@@ -81,18 +81,18 @@ function AppShell() {
 
       {/* Navegação rápida no rodapé para dispositivos móveis com safe area */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border/80 bg-card/95 backdrop-blur-md md:hidden pb-[env(safe-area-inset-bottom)]"
         aria-label="Navegação Rápida Mobile"
       >
         {MOBILE_NAV.map((n) => (
           <Link
             key={n.to}
             to={n.to}
-            className="flex min-h-[50px] flex-col items-center justify-center gap-0.5 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            className="flex min-h-[50px] flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
             activeProps={{ className: "!text-primary font-semibold" }}
           >
-            <n.icon className="size-5" />
-            <span>{n.label}</span>
+            <n.icon className="size-5 shrink-0" />
+            <span className="truncate max-w-full whitespace-nowrap">{n.label}</span>
           </Link>
         ))}
       </nav>

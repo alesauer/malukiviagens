@@ -83,12 +83,24 @@ export default {
       const targetUrl = `${kongBase}${url.pathname}${url.search}`;
       const reqHeaders = new Headers(request.headers);
       reqHeaders.set("host", new URL(kongBase).host);
-      return fetch(targetUrl, {
+      // Evita que o undici/fetch descompacte o corpo mantendo Content-Encoding: gzip (ERR_CONTENT_DECODING_FAILED)
+      reqHeaders.delete("accept-encoding");
+      const upstreamRes = await fetch(targetUrl, {
         method: request.method,
         headers: reqHeaders,
+        redirect: "manual",
         body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
         // @ts-expect-error Node fetch duplex option
         duplex: "half",
+      });
+      const resHeaders = new Headers(upstreamRes.headers);
+      resHeaders.delete("content-encoding");
+      resHeaders.delete("content-length");
+      resHeaders.delete("transfer-encoding");
+      return new Response(upstreamRes.body, {
+        status: upstreamRes.status,
+        statusText: upstreamRes.statusText,
+        headers: resHeaders,
       });
     }
 

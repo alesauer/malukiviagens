@@ -16,6 +16,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
 import { Route as AuthenticatedFamiliaRouteImport } from './routes/_authenticated/familia'
 import { Route as AuthenticatedGeralRouteImport } from './routes/_authenticated/geral'
+import { Route as AuthenticatedMeuMundoRouteImport } from './routes/_authenticated/meu-mundo'
 import { Route as AuthenticatedViagensIndexRouteImport } from './routes/_authenticated/viagens.index'
 import { Route as AuthenticatedViagensIdRouteImport } from './routes/_authenticated/viagens.$id'
 
@@ -53,6 +54,11 @@ const AuthenticatedGeralRoute = AuthenticatedGeralRouteImport.update({
   path: '/geral',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMeuMundoRoute = AuthenticatedMeuMundoRouteImport.update({
+  id: '/meu-mundo',
+  path: '/meu-mundo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedViagensIndexRoute =
   AuthenticatedViagensIndexRouteImport.update({
     id: '/viagens/',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/assistente': typeof AuthenticatedAssistenteRoute
   '/familia': typeof AuthenticatedFamiliaRoute
   '/geral': typeof AuthenticatedGeralRoute
+  '/meu-mundo': typeof AuthenticatedMeuMundoRoute
   '/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/viagens/': typeof AuthenticatedViagensIndexRoute
 }
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/assistente': typeof AuthenticatedAssistenteRoute
   '/familia': typeof AuthenticatedFamiliaRoute
   '/geral': typeof AuthenticatedGeralRoute
+  '/meu-mundo': typeof AuthenticatedMeuMundoRoute
   '/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/viagens': typeof AuthenticatedViagensIndexRoute
 }
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
   '/_authenticated/familia': typeof AuthenticatedFamiliaRoute
   '/_authenticated/geral': typeof AuthenticatedGeralRoute
+  '/_authenticated/meu-mundo': typeof AuthenticatedMeuMundoRoute
   '/_authenticated/viagens/$id': typeof AuthenticatedViagensIdRoute
   '/_authenticated/viagens/': typeof AuthenticatedViagensIndexRoute
 }
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/familia'
     | '/geral'
+    | '/meu-mundo'
     | '/viagens/$id'
     | '/viagens/'
   fileRoutesByTo: FileRoutesByTo
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/assistente'
     | '/familia'
     | '/geral'
+    | '/meu-mundo'
     | '/viagens/$id'
     | '/viagens'
   id:
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistente'
     | '/_authenticated/familia'
     | '/_authenticated/geral'
+    | '/_authenticated/meu-mundo'
     | '/_authenticated/viagens/$id'
     | '/_authenticated/viagens/'
   fileRoutesById: FileRoutesById
@@ -189,6 +201,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGeralRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/meu-mundo': {
+      id: '/_authenticated/meu-mundo'
+      path: '/meu-mundo'
+      fullPath: '/meu-mundo'
+      preLoaderRoute: typeof AuthenticatedMeuMundoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/viagens/': {
       id: '/_authenticated/viagens/'
       path: '/viagens'
@@ -210,6 +229,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
   AuthenticatedFamiliaRoute: typeof AuthenticatedFamiliaRoute
   AuthenticatedGeralRoute: typeof AuthenticatedGeralRoute
+  AuthenticatedMeuMundoRoute: typeof AuthenticatedMeuMundoRoute
   AuthenticatedViagensIdRoute: typeof AuthenticatedViagensIdRoute
   AuthenticatedViagensIndexRoute: typeof AuthenticatedViagensIndexRoute
 }
@@ -218,6 +238,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
   AuthenticatedFamiliaRoute: AuthenticatedFamiliaRoute,
   AuthenticatedGeralRoute: AuthenticatedGeralRoute,
+  AuthenticatedMeuMundoRoute: AuthenticatedMeuMundoRoute,
   AuthenticatedViagensIdRoute: AuthenticatedViagensIdRoute,
   AuthenticatedViagensIndexRoute: AuthenticatedViagensIndexRoute,
 }

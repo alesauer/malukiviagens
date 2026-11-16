@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Compass,
+  Globe2,
   Sparkles,
   Users,
   LogOut,
@@ -19,6 +20,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 // Itens principais de navegação
 export const PRIMARY_NAV = [
   { to: "/viagens", label: "Viagens", icon: Compass, description: "Roteiros e memórias" },
+  { to: "/meu-mundo", label: "Meu Mundo", icon: Globe2, description: "Países e cidades visitadas" },
   { to: "/assistente", label: "Assistente IA", icon: Sparkles, description: "Dicas e ideias de passeios" },
 ] as const;
 

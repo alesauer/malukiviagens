@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Clock, Compass, MapPin, Plus, Sparkles, Ticket, Trash2, CalendarPlus, Calendar } from "lucide-react";
+import { Check, Clock, Compass, MapPin, Plus, Sparkles, Ticket, Trash2, CalendarPlus, Calendar, Pencil } from "lucide-react";
 import { mapsHref } from "@/components/trip/MoneyTabs";
 import { useTripMutations, useTripRows } from "@/lib/trip-data";
 import { RESERVATION_KINDS, brl, fmtLongDay, tripDays } from "@/lib/format";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -76,9 +77,61 @@ export function ItineraryTab({
   const m = useTripMutations("activities", tripId, familyId);
   const { data: res = [] } = useTripRows("reservations", tripId);
   const [suggestOpen, setSuggestOpen] = useState(false);
-  const [schedulingActivity, setSchedulingActivity] = useState<(typeof data)[0] | null>(null);
-  const [selectedDay, setSelectedDay] = useState<string>("");
-  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [editingActivity, setEditingActivity] = useState<(typeof data)[0] | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    date: "",
+    time: "",
+    location: "",
+    cost: "",
+    notes: "",
+  });
+
+  function openEditModal(activity: (typeof data)[0], defaultDay?: string) {
+    setEditingActivity(activity);
+    setEditForm({
+      title: activity.title || "",
+      date: activity.date || defaultDay || "__undated__",
+      time: activity.time ? activity.time.slice(0, 5) : "",
+      location: activity.location || "",
+      cost: activity.estimated_cost && Number(activity.estimated_cost) > 0 ? String(activity.estimated_cost) : "",
+      notes: activity.notes || "",
+    });
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingActivity) return;
+    if (!editForm.title.trim()) {
+      toast.error("O título da atividade é obrigatório.");
+      return;
+    }
+
+    const targetDate = editForm.date === "__undated__" || !editForm.date ? null : editForm.date;
+
+    await m.update.mutateAsync({
+      id: editingActivity.id,
+      title: editForm.title.trim(),
+      date: targetDate,
+      time: editForm.time ? `${editForm.time}:00` : null,
+      location: editForm.location.trim() || null,
+      estimated_cost: editForm.cost ? Number(editForm.cost) : 0,
+      notes: editForm.notes.trim() || null,
+    });
+
+    if (targetDate) {
+      const dayIdx = days.indexOf(targetDate);
+      toast.success(
+        dayIdx >= 0
+          ? `Atividade salva no Dia ${dayIdx + 1}!`
+          : "Atividade atualizada com sucesso!"
+      );
+    } else {
+      toast.success("Atividade salva em Ideias sem data!");
+    }
+
+    setEditingActivity(null);
+  }
 
   const days = tripDays(start, end);
   const localDay = (iso: string) => {
@@ -162,7 +215,12 @@ export function ItineraryTab({
                   </button>
                   <div className="min-w-0 flex-1">
                     <p className={cn("font-medium", a.done && "text-muted-foreground line-through")}>{a.title}</p>
-                    <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+                    {a.notes && (
+                      <p className="text-xs text-muted-foreground/85 line-clamp-2 mt-0.5 italic">
+                        {a.notes}
+                      </p>
+                    )}
+                    <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground mt-0.5">
                       {a.time && <span className="flex items-center gap-1"><Clock className="size-3" />{a.time.slice(0, 5)}</span>}
                       {a.location && (
                         <a className="flex items-center gap-1 hover:text-primary" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.location)}`}>
@@ -173,28 +231,28 @@ export function ItineraryTab({
                     </p>
                   </div>
                   <div className="flex items-center gap-1 opacity-70 sm:opacity-0 transition group-hover:opacity-100 sm:group-focus-within:opacity-100 shrink-0">
-                    <button
+                    <Button
                       type="button"
-                      aria-label="Reagendar atividade"
-                      title="Reagendar atividade"
-                      onClick={() => {
-                        setSchedulingActivity(a);
-                        setSelectedDay(a.date || days[0] || "");
-                        setSelectedTime(a.time ? a.time.slice(0, 5) : "");
-                      }}
-                      className="p-1 text-muted-foreground hover:text-primary transition-colors"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Editar atividade"
+                      title="Editar atividade"
+                      onClick={() => openEditModal(a)}
+                      className="size-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                     >
-                      <Calendar className="size-4" />
-                    </button>
-                    <button
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
                       type="button"
-                      aria-label="Remover"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Remover atividade"
                       title="Remover atividade"
                       onClick={() => m.remove.mutate(a.id)}
-                      className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                      className="size-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                     >
                       <Trash2 className="size-4" />
-                    </button>
+                    </Button>
                   </div>
                 </li>
               ))}
@@ -277,7 +335,7 @@ export function ItineraryTab({
                     </div>
                   </div>
 
-                  {/* Ações: Ícone para adicionar ao roteiro ao lado do ícone excluir */}
+                  {/* Ações: Adicionar ao roteiro, Editar e Excluir */}
                   <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 w-full sm:w-auto justify-end">
                     <Button
                       type="button"
@@ -286,14 +344,21 @@ export function ItineraryTab({
                       className="h-8 px-2.5 text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 border-primary/30 gap-1.5 rounded-lg shadow-none"
                       title="Adicionar ideia ao roteiro"
                       aria-label="Adicionar ideia ao roteiro"
-                      onClick={() => {
-                        setSchedulingActivity(a);
-                        setSelectedDay(days[0] || "");
-                        setSelectedTime(a.time ? a.time.slice(0, 5) : "");
-                      }}
+                      onClick={() => openEditModal(a, days[0] || "")}
                     >
                       <CalendarPlus className="size-3.5 text-primary" />
-                      <span>Adicionar ao roteiro</span>
+                      <span>Adicionar ao dia</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      className="size-8 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      aria-label="Editar ideia"
+                      title="Editar ideia"
+                      onClick={() => openEditModal(a)}
+                    >
+                      <Pencil className="size-4" />
                     </Button>
                     <Button
                       type="button"
@@ -317,116 +382,143 @@ export function ItineraryTab({
         </div>
       </section>
 
-      {/* Modal para agendar ideia no roteiro */}
-      <Dialog open={!!schedulingActivity} onOpenChange={(open) => !open && setSchedulingActivity(null)}>
-        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-md p-5 sm:p-6">
+      {/* Modal para editar atividade ou ideia */}
+      <Dialog open={!!editingActivity} onOpenChange={(open) => !open && setEditingActivity(null)}>
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:max-w-lg max-h-[88dvh] overflow-y-auto p-5 sm:p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-display">
-              <CalendarPlus className="size-5 text-primary" />
-              Adicionar ao Roteiro
+              <Pencil className="size-5 text-primary" />
+              {editingActivity?.date ? "Editar Atividade" : "Editar Ideia / Agendar no Roteiro"}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
-              Escolha em qual dia e horário da viagem você deseja agendar esta atividade.
+              Personalize o título, dia, horário, localização, notas e custos desta atividade.
             </DialogDescription>
           </DialogHeader>
 
-          {schedulingActivity && (
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!selectedDay) {
-                  toast.error("Por favor, selecione um dia.");
-                  return;
-                }
-                await m.update.mutateAsync({
-                  id: schedulingActivity.id,
-                  date: selectedDay === "__undated__" ? null : selectedDay,
-                  time: selectedTime ? `${selectedTime}:00` : null,
-                });
-                if (selectedDay === "__undated__") {
-                  toast.success(`"${schedulingActivity.title}" movida para Ideias sem data!`);
-                } else {
-                  const dayIdx = days.indexOf(selectedDay);
-                  toast.success(`"${schedulingActivity.title}" adicionada ao Dia ${dayIdx + 1}!`);
-                }
-                setSchedulingActivity(null);
-              }}
-              className="space-y-4 pt-2"
-            >
-              <div className="rounded-xl border border-border/60 bg-muted/40 p-3 space-y-1">
-                <p className="font-semibold text-sm text-foreground">{schedulingActivity.title}</p>
-                {schedulingActivity.location && (
-                  <p className="text-xs text-muted-foreground flex items-center gap-1">
-                    <MapPin className="size-3 shrink-0 text-primary/70" />
-                    {schedulingActivity.location}
-                  </p>
-                )}
-                {schedulingActivity.notes && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 italic">
-                    {schedulingActivity.notes}
-                  </p>
-                )}
-              </div>
-
+          {editingActivity && (
+            <form onSubmit={handleSaveEdit} className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <Label htmlFor="schedule-day">Dia da Viagem *</Label>
-                <Select value={selectedDay} onValueChange={setSelectedDay} required>
-                  <SelectTrigger id="schedule-day">
-                    <SelectValue placeholder="Selecione o dia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {days.map((day, idx) => (
-                      <SelectItem key={day} value={day}>
-                        Dia {idx + 1} · {fmtLongDay(day)}
-                      </SelectItem>
-                    ))}
-                    {schedulingActivity.date && (
-                      <SelectItem value="__undated__" className="text-muted-foreground italic">
-                        Mover de volta para Ideias sem data
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="schedule-time">Horário (opcional)</Label>
+                <Label htmlFor="edit-title">Título da Atividade *</Label>
                 <Input
-                  id="schedule-time"
-                  type="time"
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
+                  id="edit-title"
+                  required
+                  placeholder="Ex.: Visita ao Parque, Almoço..."
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                 />
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {["09:00", "10:30", "14:00", "16:00", "19:30"].map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setSelectedTime(preset)}
-                      className={cn(
-                        "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
-                        selectedTime === preset
-                          ? "border-primary bg-primary text-primary-foreground font-medium"
-                          : "border-border hover:bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {preset}
-                    </button>
-                  ))}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-day">Dia da Viagem</Label>
+                  <Select
+                    value={editForm.date}
+                    onValueChange={(v) => setEditForm({ ...editForm, date: v })}
+                  >
+                    <SelectTrigger id="edit-day">
+                      <SelectValue placeholder="Selecione o dia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__undated__">
+                        Sem data definida (Ideias sem data)
+                      </SelectItem>
+                      {days.map((day, idx) => (
+                        <SelectItem key={day} value={day}>
+                          Dia {idx + 1} · {fmtLongDay(day)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-time">Horário</Label>
+                    {editForm.time && (
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, time: "" })}
+                        className="text-[11px] text-muted-foreground hover:text-destructive underline"
+                      >
+                        Limpar
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    id="edit-time"
+                    type="time"
+                    value={editForm.time}
+                    onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                <span className="text-[11px] text-muted-foreground mr-1">Sugestões de horário:</span>
+                {["09:00", "10:30", "14:00", "16:00", "19:30"].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, time: preset })}
+                    className={cn(
+                      "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
+                      editForm.time === preset
+                        ? "border-primary bg-primary text-primary-foreground font-medium"
+                        : "border-border hover:bg-muted text-muted-foreground"
+                    )}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-location">Localização / Onde?</Label>
+                  <Input
+                    id="edit-location"
+                    placeholder="Ex.: Av. das Hortênsias, 5507"
+                    value={editForm.location}
+                    onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-cost">Custo Estimado (R$)</Label>
+                  <Input
+                    id="edit-cost"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0,00"
+                    value={editForm.cost}
+                    onChange={(e) => setEditForm({ ...editForm, cost: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-notes">Observações / Notas</Label>
+                <Textarea
+                  id="edit-notes"
+                  rows={3}
+                  placeholder="Dicas, códigos de ingressos, regras ou lembretes sobre esta atividade..."
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                />
               </div>
 
               <DialogFooter className="flex sm:justify-end gap-2 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
-                  onClick={() => setSchedulingActivity(null)}
+                  onClick={() => setEditingActivity(null)}
                 >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={!selectedDay} className="gap-1.5">
-                  <CalendarPlus className="size-4" />
-                  Confirmar e Adicionar
+                <Button type="submit" className="gap-1.5">
+                  <Check className="size-4" />
+                  Salvar alterações
                 </Button>
               </DialogFooter>
             </form>

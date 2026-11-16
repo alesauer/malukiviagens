@@ -20,7 +20,7 @@ if [[ ! "$CONFIRM" =~ ^[sS]$ ]]; then
   exit 0
 fi
 
-echo "==> Restaurando $BACKUP_FILE para maluki_db..."
-gunzip -c "$BACKUP_FILE" | docker exec -i maluki_db psql -U postgres -d postgres
+echo "==> Restaurando $BACKUP_FILE para malukiviagens-db..."
+gunzip -c "$BACKUP_FILE" | docker exec -i malukiviagens-db psql -U postgres -d postgres
 
 echo "==> Restauração concluída com sucesso!"

@@ -4,7 +4,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: maluki_app
+    image: malukiviagens-app:latest
+    container_name: malukiviagens-app
     restart: unless-stopped
     ports:
       - "127.0.0.1:${APP_PORT:-8002}:3000"
@@ -29,7 +30,7 @@ services:
   # 2. Banco de Dados PostgreSQL (Imagem oficial Supabase com RLS e Auth)
   db:
     image: supabase/postgres:15.8.1.085
-    container_name: maluki_db
+    container_name: malukiviagens-db
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
@@ -50,7 +51,7 @@ services:
   # 3. Autenticação GoTrue (Supabase Auth)
   auth:
     image: supabase/gotrue:v2.164.0
-    container_name: maluki_auth
+    container_name: malukiviagens-auth
     restart: unless-stopped
     depends_on:
       db:
@@ -81,7 +82,7 @@ services:
   # 4. PostgREST (API REST automática e RLS)
   rest:
     image: postgrest/postgrest:v12.2.3
-    container_name: maluki_rest
+    container_name: malukiviagens-rest
     restart: unless-stopped
     depends_on:
       db:
@@ -97,7 +98,7 @@ services:
   # 5. Supabase Storage API (Armazenamento de fotos de capa e comprovantes)
   storage:
     image: supabase/storage-api:v1.14.3
-    container_name: maluki_storage
+    container_name: malukiviagens-storage
     restart: unless-stopped
     depends_on:
       db:
@@ -122,7 +123,7 @@ services:
   # 6. Kong API Gateway (Roteamento unificado /auth/v1, /rest/v1, /storage/v1)
   kong:
     image: kong:2.8.1
-    container_name: maluki_kong
+    container_name: malukiviagens-kong
     restart: unless-stopped
     ports:
       - "127.0.0.1:${KONG_PORT:-8003}:8000"

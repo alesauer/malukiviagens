@@ -98,5 +98,5 @@ Pronto! O Certbot configurará os certificados HTTPS automaticamente no Apache.
 * **Reiniciar aplicação:** `docker compose restart app`
 * **Backup diário do banco Postgres:**
   ```bash
-  docker exec -t maluki_db pg_dump -U postgres postgres > backup_$(date +%Y%m%d).sql
+  docker exec -t malukiviagens-db pg_dump -U postgres postgres > backup_$(date +%Y%m%d).sql
   ```

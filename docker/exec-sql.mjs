@@ -8,8 +8,8 @@ if (!file) {
 }
 
 const baseName = path.basename(file);
-console.log(`Copiando ${file} para o container maluki_db...`);
-execSync(`docker cp "${file}" maluki_db:/tmp/${baseName}`);
+console.log(`Copiando ${file} para o container malukiviagens-db...`);
+execSync(`docker cp "${file}" malukiviagens-db:/tmp/${baseName}`);
 console.log(`Executando ${baseName} com encoding UTF-8 no PostgreSQL...`);
 execSync(`docker compose exec -T db psql -U postgres -d postgres -f /tmp/${baseName}`, { stdio: 'inherit' });
 console.log(`Sucesso: ${file} aplicado sem distorção de caracteres.`);

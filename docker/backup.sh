@@ -12,8 +12,8 @@ FILENAME="$BACKUP_DIR/maluki_backup_$TIMESTAMP.sql.gz"
 
 mkdir -p "$BACKUP_DIR"
 
-echo "==> Iniciando backup do PostgreSQL (maluki_db)..."
-docker exec -t maluki_db pg_dump -U postgres postgres | gzip > "$FILENAME"
+echo "==> Iniciando backup do PostgreSQL (malukiviagens-db)..."
+docker exec -t malukiviagens-db pg_dump -U postgres postgres | gzip > "$FILENAME"
 
 echo "==> Backup concluído com sucesso em: $FILENAME"
 echo "==> Tamanho do arquivo: $(du -h "$FILENAME" | cut -f1)"
